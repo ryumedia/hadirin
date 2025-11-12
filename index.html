@@ -4,16 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Kehadiran Karyawan (SPA)</title>
+    <!-- Memuat Font Montserrat dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Memuat Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Menetapkan Montserrat sebagai font 'sans' default Tailwind
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <!-- Memuat icon (Ionicons) -->
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background-color: #f3f4f6;
         }
         /* Menyembunyikan tampilan secara default */
@@ -83,179 +97,594 @@
         </div>
         
         <!-- 2. Tampilan Karyawan -->
-        <div id="karyawanView" class="view flex flex-grow max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div class="w-full">
-                <!-- Header Karyawan -->
-                <header class="flex justify-between items-center mb-8 border-b pb-4">
-                    <div class="flex flex-col">
-                        <h1 class="text-xl sm:text-2xl font-extrabold text-blue-700">Halo, <span id="karyawanUserName"></span>!</h1>
-                        <p class="text-sm text-gray-500" id="karyawanCurrentDate">Senin, 12 November 2025</p>
+        <div id="karyawanView" class="view flex flex-grow items-start justify-center p-4 sm:p-6 lg:p-8 pb-20">
+            <div class="w-full max-w-lg">
+                <!-- Karyawan Header (Tetap sticky dan di atas) -->
+                <header id="karyawanHeader" class="flex justify-between rounded-lg items-start p-4 bg-white/70 backdrop-blur sticky top-0 z-10 border-b border-gray-200">
+                    
+                    <!-- KONTEN KIRI: NAMA, PERUSAHAAN, dan JAM PUSAT -->
+                    <div class="flex-1 min-w-0">
+                        
+                        <!-- BARIS 1: NAMA KARYAWAN (Tidak Wrap) -->
+                        <!-- Gunakan whitespace-nowrap, overflow-hidden, dan text-ellipsis -->
+                        <p id="karyawanUserName" class="text-lg font-bold text-gray-800 transition-opacity duration-300 whitespace-nowrap overflow-hidden text-ellipsis">
+                            Halo, [Nama Pengguna]
+                        </p>
+                        
+                        <!-- BARIS 2: NAMA PERUSAHAAN -->
+                        <p id="companyText" class="text-sm text-gray-600 mt-0.5 transition-opacity duration-300">
+                            Company Name
+                        </p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="text-4xl sm:text-5xl font-mono font-bold text-gray-800" id="karyawanCurrentTime">00:00:00</div>
-                        <!-- Tombol ke Admin (Hanya untuk Admin/Super Admin) -->
-                        <button onclick="changeView('adminView')" id="karyawanAdminLink" class="hidden text-gray-500 hover:text-blue-600 transition">
-                            <ion-icon name="cog" class="text-3xl"></ion-icon>
+                    
+                    <!-- KONTEN KANAN: ICON ADMIN & LOGOUT (Tetap) -->
+                    <div class="flex items-center space-x-4 ml-4">
+                        <!-- Tombol Admin/Pengaturan (id="karyawanAdminLink" wajib ada untuk JS) -->
+                        <!-- onclick harus memanggil changeView dan showAdminSection untuk memastikan Admin Dashboard dimuat di Ringkasan Harian -->
+                        <button onclick="changeView('adminView'); showAdminSection('summary');" id="karyawanAdminLink" class="p-2 text-gray-600 hover:text-blue-600 transition duration-150 hidden">
+                            <!-- Icon Admin/Pengaturan: Menggunakan Icon Gerigi (Cog) -->
+                            <ion-icon name="settings-outline" class="text-2xl"></ion-icon>
                         </button>
-                        <button onclick="doLogout()" class="text-red-500 hover:text-red-700 transition">
-                            <ion-icon name="log-out-outline" class="text-3xl"></ion-icon>
+                        <!-- Tombol Logout (Menambahkan onclick yang benar) -->
+                        <button id="logoutBtn" onclick="doLogout()" class="p-2 text-red-500 hover:text-red-700 transition duration-150">
+                            <!-- Icon Logout -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         </button>
                     </div>
                 </header>
 
-                <!-- Status Presensi Hari Ini -->
-                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-8">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <ion-icon name="alarm-outline" class="mr-2 text-blue-500"></ion-icon>
-                        Presensi Hari Ini
-                    </h2>
-                    <div id="karyawanAttendanceStatus" class="text-center p-4 rounded-lg bg-gray-100 text-gray-700 font-medium">
-                        Memuat status...
-                    </div>
+                    <!-- JAM (DIPUSATKAN) -->
+                    <!-- Gunakan div dengan w-full dan text-center untuk memusatkan jam -->
+                        <div class="w-full text-center mt-3 mb-3">
+                            <p id="currentTime" class="text-5xl font-extrabold text-blue-600 transition-opacity duration-300">
+                                00:00:00
+                            </p>
+                        </div>
 
-                    <div class="mt-6 grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-3 rounded-lg text-center">
-                            <p class="text-xs text-gray-500">Jam Masuk</p>
-                            <p id="karyawanClockInTime" class="text-lg font-bold text-gray-700">-</p>
+                <!-- Karyawan Absensi Section -->
+                    <div id="karyawanSection_Absensi" class="p-6 bg-white rounded-xl shadow-lg transition-all duration-300" style="display: block;">
+                        <!-- KONTEN HEADER CARD: JUDUL + TANGGAL/HARI -->
+                        <!-- KONTEN HEADER CARD: JUDUL, TANGGAL, DAN IKON RIWAYAT -->
+                        <div class="mb-4 border-b pb-2 flex justify-between items-start">
+                            <!-- KIRI: Judul dan Tanggal -->
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">Presensi Hari Ini</h3>
+                                <p id="currentDateTime" class="text-base text-gray-500 mt-0.5"></p> 
+                            </div>
+                            
+                            <!-- KANAN: Tombol Riwayat (BARU) -->
+                            <button onclick="showKaryawanContent('History')" class="text-gray-500 hover:text-blue-600 transition p-1 -mt-1 -mr-1">
+                                <ion-icon name="clipboard-outline" class="text-2xl"></ion-icon>
+                            </button>
                         </div>
-                        <div class="bg-gray-50 p-3 rounded-lg text-center">
-                            <p class="text-xs text-gray-500">Jam Pulang</p>
-                            <p id="karyawanClockOutTime" class="text-lg font-bold text-gray-700">-</p>
+                        <div id="karyawanAttendanceStatus" class="text-center p-4 rounded-lg bg-gray-100 text-gray-700 font-medium">
+                            Memuat status...
+                        </div>
+                            <p id="karyawanLocationDisplay" class="text-center text-sm text-gray-500 mt-2">
+                                Lokasi: Belum diambil
+                            </p>
+                        <div class="mt-6 grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded-lg text-center">
+                                <p class="text-xs text-gray-500">Jam Masuk</p>
+                                <p id="karyawanClockInTime" class="text-lg font-bold text-gray-700">-</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg text-center">
+                                <p class="text-xs text-gray-500">Jam Pulang</p>
+                                <p id="karyawanClockOutTime" class="text-lg font-bold text-gray-700">-</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Tombol Aksi Absensi -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                <div class="grid grid-cols-2 gap-4 mb-6 mt-6">
                     <button id="karyawanClockInButton" class="bg-green-600 text-white p-4 rounded-xl shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50">
                         <ion-icon name="time-outline" class="text-2xl mr-2"></ion-icon>
-                        Absen Masuk
+                        Clock-In
                     </button>
                     <button id="karyawanClockOutButton" class="bg-red-600 text-white p-4 rounded-xl shadow-md hover:bg-red-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50" disabled>
                         <ion-icon name="log-out-outline" class="text-2xl mr-2"></ion-icon>
-                        Absen Pulang
+                        Clock-Out
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 3. Tampilan Admin -->
-        <div id="adminView" class="view flex flex-grow max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div class="w-full">
-                <!-- Header Admin -->
-                <header class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b pb-4">
-                    <div>
-                        <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Admin <span id="adminRoleDisplay" class="text-sm font-medium text-blue-600"></span></h1>
-                        <p class="text-gray-500 mt-1">Ringkasan Kehadiran Harian</p>
-                    </div>
-                    <div class="mt-4 sm:mt-0 flex items-center space-x-4">
-                        <button onclick="changeView('karyawanView')" class="flex items-center text-blue-600 hover:text-blue-800 transition text-sm font-medium">
-                            <ion-icon name="person-outline" class="mr-1"></ion-icon> Halaman Karyawan
-                        </button>
-                        <button onclick="doLogout()" class="flex items-center text-red-500 hover:text-red-700 transition text-sm font-medium">
-                            <ion-icon name="log-out-outline" class="mr-1"></ion-icon> Logout
-                        </button>
-                    </div>
-                </header>
-
-                <!-- Kartu Statistik -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
-                        <p class="text-sm font-medium text-gray-500">Total Karyawan</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1" id="adminTotalEmployees">0</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
-                        <p class="text-sm font-medium text-gray-500">Hadir (Clock In)</p>
-                        <p class="text-3xl font-bold text-green-600 mt-1" id="adminTotalHadir">0</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
-                        <p class="text-sm font-medium text-gray-500">Izin / Sakit</p>
-                        <p class="text-3xl font-bold text-yellow-600 mt-1" id="adminTotalIzin">0</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
-                        <p class="text-sm font-medium text-gray-500">Alpa</p>
-                        <p class="text-3xl font-bold text-red-600 mt-1" id="adminTotalAlpa">0</p>
-                    </div>
-                </div>
+        <!-- =============================================================== -->
+        <!-- 3. TAMPILAN ADMIN (STRUKTUR DIPERBAIKI)                     -->
+        <!-- =============================================================== -->
+        <div id="adminView" class="view flex flex-grow w-full p-0 sm:p-0 lg:p-0">
+            <!-- Kontainer Flexbox untuk Sidebar + Konten Utama -->
+            <div class="w-full max-w-full mx-auto flex flex-col min-h-screen sm:flex-row">
                 
-                <!-- Filter dan Tabel -->
-                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-3 sm:space-y-0">
-                        <h2 class="text-xl font-semibold text-gray-800">Tabel Kehadiran Harian</h2>
-                        <input type="date" id="adminAttendanceDateFilter" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+                <!-- SIDEBAR (Menu Samping) -->
+                <nav class="bg-gray-800 text-white w-full sm:w-64 flex-shrink-0 p-4 sm:p-6 border-r border-gray-700">
+                    <h2 class="text-xl font-bold mb-6 hidden sm:block">Menu Admin</h2>
+                    
+                    <ul class="space-y-2">
+                        <li>
+                            <button id="menuSummary" onclick="showAdminSection('summary')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 bg-blue-600 hover:bg-blue-700">
+                                <ion-icon name="speedometer-outline" class="text-lg mr-3"></ion-icon> Ringkasan Harian
+                            </button>
+                        </li>
+                        <li>
+                            <button id="menuEmployees" onclick="showAdminSection('employees')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="people-outline" class="text-lg mr-3"></ion-icon> Manajemen Karyawan
+                            </button>
+                        </li>
+                        <li id="menuCompaniesContainer" class="hidden"> <!-- Kontainer untuk menu Super Admin -->
+                            <button id="menuCompanies" onclick="showAdminSection('companies')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="business-outline" class="text-lg mr-3"></ion-icon> Manajemen Perusahaan
+                            </button>
+                        </li>
+                        <li>
+                            <button id="menuRekap" onclick="showAdminSection('rekap')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="calendar-outline" class="text-lg mr-3"></ion-icon> Rekap Kehadiran
+                            </button>
+                        </li>
+                        <!-- Tambahkan menu-menu baru di sini di masa depan -->
+                    </ul>
+                </nav>
 
-                    <!-- Tabel Responsif -->
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="adminAttendanceTableBody">
-                                <!-- Data akan dimasukkan di sini oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <p id="adminNoDataMessage" class="hidden text-center text-gray-500 mt-4">Tidak ada data kehadiran untuk tanggal ini.</p>
-                </div>
+                <!-- KONTEN UTAMA (Tempat Header dan Isi Dashboard berada) -->
+                <main class="flex-grow p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-y-auto">
+                    
+                    <!-- Header Admin (Dipindahkan ke dalam <main>) -->
+                    <header class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b pb-4">
+                        <div> <!-- Kolom Kiri Header -->
+                            <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Admin <span id="adminRoleDisplay" class="text-sm font-medium text-blue-600"></span></h1>
+                            <p class="text-gray-500 mt-1">Ringkasan Kehadiran Harian</p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 flex items-center space-x-4"> <!-- Kolom Kanan Header -->
+                            <button onclick="changeView('karyawanView')" class="flex items-center text-blue-600 hover:text-blue-800 transition text-sm font-medium">
+                                <ion-icon name="person-outline" class="mr-1"></ion-icon> Halaman Karyawan
+                            </button>
+                            <button onclick="doLogout()" class="flex items-center text-red-500 hover:text-red-700 transition text-sm font-medium">
+                                <ion-icon name="log-out-outline" class="mr-1"></ion-icon> Logout
+                            </button>
+                        </div>
+                    </header>
 
-                <!-- Modal Ubah Status -->
-                <div id="statusModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                    <!-- Kode Modal (Sama seperti sebelumnya) -->
-                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
-                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                    Ubah Status Kehadiran
-                                </h3>
-                                <div class="mt-4">
-                                    <p class="text-sm text-gray-500 mb-4">Karyawan: <span id="modalEmployeeName" class="font-semibold text-gray-700"></span></p>
-                                    
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label for="modalStatus" class="block text-sm font-medium text-gray-700">Status</label>
-                                            <select id="modalStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                                <option value="Hadir">Hadir</option>
-                                                <option value="Terlambat">Terlambat</option>
-                                                <option value="Izin">Izin</option>
-                                                <option value="Sakit">Sakit</option>
-                                                <option value="Alpa">Alpa</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label for="modalClockIn" class="block text-sm font-medium text-gray-700">Jam Masuk (Jika Hadir)</label>
-                                            <input type="time" id="modalClockIn" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
-                                        </div>
-                                        <div>
-                                            <label for="modalClockOut" class="block text-sm font-medium text-gray-700">Jam Pulang (Jika Hadir)</label>
-                                            <input type="time" id="modalClockOut" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
-                                        </div>
-                                    </div>
+                    <!-- Kontainer Konten Sesuai Sidebar -->
+                    <div id="adminContentContainer">
+                        
+                        <!-- SECTION 1: RINGKASAN HARIAN (ID DIPERBAIKI) -->
+                        <div id="sectionSummary" style="display: none;">
+                            <!-- Kartu Statistik -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                                <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                                    <p class="text-sm font-medium text-gray-500">Total Karyawan</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-1" id="adminTotalEmployees">0</p>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                                    <p class="text-sm font-medium text-gray-500">Hadir (Clock In)</p>
+                                    <p class="text-3xl font-bold text-green-600 mt-1" id="adminTotalHadir">0</p>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                                    <p class="text-sm font-medium text-gray-500">Izin / Sakit</p>
+                                    <p class="text-3xl font-bold text-yellow-600 mt-1" id="adminTotalIzin">0</p>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                                    <p class="text-sm font-medium text-gray-500">Alpa</p>
+                                    <p class="text-3xl font-bold text-red-600 mt-1" id="adminTotalAlpa">0</p>
                                 </div>
                             </div>
-                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button type="button" id="modalSaveButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Simpan
+                        
+                            <!-- Filter dan Tabel -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-3 sm:space-y-0">
+                                    <h2 class="text-xl font-semibold text-gray-800">Tabel Kehadiran Harian</h2>
+                                    <input type="date" id="adminAttendanceDateFilter" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <!-- Tabel Responsif -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="adminAttendanceTableBody">
+                                            <!-- Data akan dimasukkan di sini oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p id="adminNoDataMessage" class="hidden text-center text-gray-500 mt-4">Tidak ada data kehadiran untuk tanggal ini.</p>
+                            </div>
+                        </div> <!-- End sectionSummary -->
+
+                        <!-- SECTION 2: MANAJEMEN KARYAWAN (ID DIPERBAIKI) -->
+                        <div id="sectionEmployees" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold text-gray-800">Daftar Karyawan</h2>
+                                    <button onclick="openEmployeeModal()" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                        <ion-icon name="person-add-outline" class="mr-1"></ion-icon> Tambah Karyawan Baru
+                                    </button>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Karyawan</th>
+                                                <th id="companyColumnHeader" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="employeeListTableBody">
+                                            <!-- Data akan dimuat di sini oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionEmployees -->
+
+
+
+                        <!-- SECTION 3: MANAJEMEN PERUSAHAAN (BARU) -->
+                        <div id="sectionCompanies" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold text-gray-800">Daftar Perusahaan</h2>
+                                    <button onclick="openCompanyModal()" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                        <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Perusahaan Baru
+                                    </button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Perusahaan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="companyListTableBody">
+                                            <!-- Data perusahaan akan dimuat oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionCompanies -->
+
+                        <!-- SECTION 4: REKAP KEHADIRAN (BARU) -->
+                        <div id="sectionRekap" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-6">Filter Laporan Kehadiran</h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    
+                                    <!-- Filter Rentang Tanggal -->
+                                    <div class="md:col-span-2 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="rekapStartDate" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                            <input type="date" id="rekapStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="rekapEndDate" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                            <input type="date" id="rekapEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Karyawan -->
+                                    <div>
+                                        <label for="rekapEmployeeFilter" class="block text-xs font-medium text-gray-700 mb-1">Nama Karyawan</label>
+                                        <select id="rekapEmployeeFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Karyawan --</option>
+                                            <!-- Opsi akan diisi oleh JS -->
+                                        </select>
+                                    </div>
+
+                                    <!-- Filter Status -->
+                                    <div>
+                                        <label for="rekapStatusFilter" class="block text-xs font-medium text-gray-700 mb-1">Status Kehadiran</label>
+                                        <select id="rekapStatusFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Status --</option>
+                                            <option value="Hadir">Hadir</option>
+                                            <option value="Terlambat">Terlambat</option>
+                                            <option value="Izin">Izin</option>
+                                            <option value="Sakit">Sakit</option>
+                                            <option value="Alpa">Alpa</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <button id="rekapFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium mb-8">
+                                    <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Rekap
                                 </button>
-                                <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Batal
+                                
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Hasil Rekap</h3>
+
+                                <!-- Tabel Hasil Rekap -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="rekapTableBody">
+                                            <tr><td colspan="6" class="text-center py-8 text-gray-500">Silakan atur filter dan klik 'Tampilkan Rekap'.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionRekap -->
+
+                        </div> <!-- Penutup untuk karyawanSection_Requests -->
+
+                        <!-- ============================================== -->
+                        <!-- SECTION 3: RIWAYAT KEHADIRAN (HISTORY) (BARU)-->
+                        <!-- ============================================== -->
+                        <div id="karyawanSection_History" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-4">Riwayat Kehadiran Saya</h2>
+                                <p class="text-sm text-gray-500 mb-4">Menampilkan riwayat 60 hari terakhir.</p>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masuk</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pulang</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="historyListTableBody">
+                                            <!-- Data riwayat akan dimuat di sini oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button onclick="showKaryawanContent('Absensi')" class="mt-4 text-sm text-gray-500 hover:text-gray-700 transition flex items-center">
+                                    <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Absensi
                                 </button>
+                            </div>
+                        </div>
+            
+                        <!-- SECTION 4: TIMEOFF (KONTEN BARU) -->
+                        <div id="karyawanSection_Timeoff" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800">Manajemen Cuti & Izin</h2>
+                                <p class="text-gray-500 mt-2">Fitur pengajuan cuti akan ditambahkan di sini.</p>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: OVERTIME (KONTEN BARU) -->
+                        <div id="karyawanSection_Overtime" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800">Manajemen Lembur</h2>
+                                <p class="text-gray-500 mt-2">Fitur pengajuan lembur akan ditambahkan di sini.</p>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 6: SALARY (KONTEN BARU) -->
+                        <div id="karyawanSection_Salary" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800">Informasi Gaji</h2>
+                                <p class="text-gray-500 mt-2">Slip gaji dan rincian akan ditampilkan di sini.</p>
+                            </div>
+                        </div>
+
+                    </div> <!-- End adminContentContainer -->
+                </main> <!-- End main -->
+            </div> <!-- End flex container -->
+        </div> <!-- End adminView -->
+
+        <!-- ============================================== -->
+        <!-- FOOTER NAVIGASI KARYAWAN (BARU)              -->
+        <!-- ============================================== -->
+        <footer id="karyawanFooterNav" class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-xl hidden">
+            <div class="grid grid-cols-5 h-16 max-w-lg mx-auto">
+                
+                <!-- 1. Request Attendance (Koreksi Absensi) -->
+                <button id="tabRequestAttendance" onclick="showKaryawanContent('Requests')" class="flex flex-col items-center justify-center text-gray-500 hover:text-blue-600 transition duration-150 text-xs">
+                    <ion-icon name="document-text-outline" class="text-xl"></ion-icon>
+                    <span class="mt-1 hidden sm:inline">Request</span>
+                </button>
+
+                <!-- 2. Request Timeoff (Cuti/Izin) -->
+                <button id="tabRequestTimeoff" onclick="showKaryawanContent('Timeoff')" class="flex flex-col items-center justify-center text-gray-500 hover:text-blue-600 transition duration-150 text-xs">
+                    <ion-icon name="calendar-outline" class="text-xl"></ion-icon>
+                    <span class="mt-1 hidden sm:inline">Timeoff</span>
+                </button>
+
+                <!-- 3. Attendance (HOME) - Default Active -->
+                <button id="tabAttendanceHome" onclick="showKaryawanContent('Absensi')" class="flex flex-col items-center justify-center text-blue-600 transition duration-150 text-xs">
+                    <ion-icon name="home-outline" class="text-2xl"></ion-icon>
+                    <span class="mt-1 hidden sm:inline">Absensi</span>
+                </button>
+
+                <!-- 4. Overtime (Lembur) -->
+                <button id="tabOvertime" onclick="showKaryawanContent('Overtime')" class="flex flex-col items-center justify-center text-gray-500 hover:text-blue-600 transition duration-150 text-xs">
+                    <ion-icon name="stopwatch-outline" class="text-xl"></ion-icon>
+                    <span class="mt-1 hidden sm:inline">Lembur</span>
+                </button>
+
+                <!-- 5. Salary (Gaji) -->
+                <button id="tabSalary" onclick="showKaryawanContent('Salary')" class="flex flex-col items-center justify-center text-gray-500 hover:text-blue-600 transition duration-150 text-xs">
+                    <ion-icon name="wallet-outline" class="text-xl"></ion-icon>
+                    <span class="mt-1 hidden sm:inline">Gaji</span>
+                </button>
+
+            </div>
+        </footer>
+
+    </div> <!-- End AppContainer -->
+
+    <!-- =============================================================== -->
+    <!-- MODALS (DIPINDAHKAN KE LUAR TAMPILAN)                         -->
+    <!-- =============================================================== -->
+
+    <!-- Modal Ubah Status Kehadiran -->
+    <div id="statusModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        Ubah Status Kehadiran
+                    </h3>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 mb-4">Karyawan: <span id="modalEmployeeName" class="font-semibold text-gray-700"></span></p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="modalStatus" class="block text-sm font-medium text-gray-700">Status</label>
+                                <select id="modalStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option value="Hadir">Hadir</option>
+                                    <option value="Terlambat">Terlambat</option>
+                                    <option value="Izin">Izin</option>
+                                    <option value="Sakit">Sakit</option>
+                                    <option value="Alpa">Alpa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="modalClockIn" class="block text-sm font-medium text-gray-700">Jam Masuk (Jika Hadir)</label>
+                                <input type="time" id="modalClockIn" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
+                            </div>
+                            <div>
+                                <label for="modalClockOut" class="block text-sm font-medium text-gray-700">Jam Pulang (Jika Hadir)</label>
+                                <input type="time" id="modalClockOut" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="modalSaveButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Modal Tambah/Edit Karyawan -->
+    <div id="employeeModal" class="fixed z-20 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEmployeeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                <form id="employeeForm">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="employeeModalTitle">
+                            Tambah Karyawan Baru
+                        </h3>
+                        <div class="mt-4 space-y-4">
+                            <!-- Input Email & Password -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="employeeEmail" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="employeeEmail" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+                                <div>
+                                    <label for="employeePassword" class="block text-sm font-medium text-gray-700">Password</label>
+                                    <input type="password" id="employeePassword" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+                            </div>
 
+                            <!-- Nama & ID Karyawan -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="employeeFullName" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                                    <input type="text" id="employeeFullName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+                                <div>
+                                    <label for="employeeIDNumber" class="block text-sm font-medium text-gray-700">ID Karyawan</label>
+                                    <input type="text" id="employeeIDNumber" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+                            </div>
+                            
+                            <!-- Pilih Perusahaan (Hanya untuk Super Admin) -->
+                            <div id="companySelectContainer" class="hidden">
+                                <label for="employeeCompany" class="block text-sm font-medium text-gray-700">Perusahaan</label>
+                                <select id="employeeCompany" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    <!-- Opsi perusahaan akan dimuat oleh JS -->
+                                </select>
+                            </div>
+
+                            <!-- Role & Status -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="employeeRole" class="block text-sm font-medium text-gray-700">Peran (Role)</label>
+                                    <select id="employeeRole" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                        <option value="karyawan">Karyawan</option>
+                                        <option value="company_admin">Company Admin</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="employeeStatus" class="block text-sm font-medium text-gray-700">Status</label>
+                                    <select id="employeeStatus" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                        <option value="Percobaan">Percobaan</option>
+                                        <option value="Kontrak">Kontrak</option>
+                                        <option value="Tetap">Tetap</option>
+                                        <option value="Freelance">Freelance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Note: Kolom Workhour ID (workhour_id) perlu diisi, nanti bisa ditambahkan dropdown setelah Anda membuat data workhours di Supabase. Untuk sementara, kita biarkan kosong. -->
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" id="saveEmployeeButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                            Simpan & Daftarkan
+                        </button>
+                        <button type="button" onclick="closeEmployeeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    
+
+    <!-- Modal Tambah/Edit Perusahaan -->
+    <div id="companyModal" class="fixed z-20 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCompanyModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="companyForm">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="companyModalTitle">
+                            Tambah Perusahaan Baru
+                        </h3>
+                        <div class="mt-4">
+                            <div>
+                                <label for="companyName" class="block text-sm font-medium text-gray-700">Nama Perusahaan</label>
+                                <input type="text" id="companyName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" id="saveCompanyButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                            Simpan
+                        </button>
+                        <button type="button" onclick="closeCompanyModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Kotak Pesan Global -->
@@ -263,7 +692,7 @@
 
     <script>
         // ===============================================================
-        // KONFIGURASI SUPABASE (WAJIB DIGANTI)
+        // KONFIGURASI SUPABASE
         // ===============================================================
         const SUPABASE_URL = 'https://fmknmegucccckdivoslm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZta25tZWd1Y2NjY2tkaXZvc2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NzAyMTUsImV4cCI6MjA3ODQ0NjIxNX0.usJdg1Pcl_UezylR09srX_-Z0W9Vo4Xxn1XAWWhCOhI';
@@ -297,6 +726,7 @@
         const adminRoleDisplay = document.getElementById('adminRoleDisplay');
         const adminAttendanceTableBody = document.getElementById('adminAttendanceTableBody');
         const adminAttendanceDateFilter = document.getElementById('adminAttendanceDateFilter');
+        const employeeListTableBody = document.getElementById('employeeListTableBody');
 
         // --- MODAL ELEMENTS ---
         const statusModal = document.getElementById('statusModal');
@@ -309,6 +739,325 @@
         // ===============================================================
         // HELPER FUNCTIONS (UTILITY)
         // ===============================================================
+
+        // FUNGSI NAVIGASI SIDEBAR ADMIN (DIPERBAIKI)
+        function showAdminSection(sectionName) {
+            // Daftar semua section (akan diperluas nanti)
+            const sections = ['summary', 'employees', 'companies']; // <-- TAMBAHKAN
+            
+            // Daftar semua tombol menu (akan diperluas nanti)
+            const menus = ['menuSummary', 'menuEmployees', 'menuCompanies']; // <-- TAMBAHKAN
+            
+            // Reset semua section dan menu
+            sections.forEach(name => {
+                // Menggunakan 'section' + 'Summary' / 'Employees'
+                const sectionId = 'section' + name.charAt(0).toUpperCase() + name.slice(1);
+                const sectionElement = document.getElementById(sectionId);
+                if (sectionElement) sectionElement.style.display = 'none';
+            });
+
+            menus.forEach(menuId => {
+                const menuElement = document.getElementById(menuId);
+                if (menuElement) {
+                    menuElement.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    menuElement.classList.add('hover:bg-gray-700'); // Atur ulang warna default sidebar
+                }
+            });
+
+            // Tampilkan section yang dipilih
+            const selectedSectionId = 'section' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            const selectedMenuId = 'menu' + sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            
+            const selectedSection = document.getElementById(selectedSectionId);
+            const selectedMenu = document.getElementById(selectedMenuId);
+
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+            if (selectedMenu) {
+                selectedMenu.classList.remove('hover:bg-gray-700');
+                selectedMenu.classList.add('bg-blue-600', 'hover:bg-blue-700'); // Tandai menu aktif
+            }
+
+            // Panggil fungsi pemuatan data
+            if (sectionName === 'summary') {
+                loadAdminAttendanceData(adminAttendanceDateFilter.value);
+            } else if (sectionName === 'employees') {
+                loadEmployeeList(); 
+            } else if (sectionName === 'companies') { // <-- TAMBAHKAN BLOK INI
+                loadCompanyList();
+            } else if (sectionName === 'rekap') { // <-- TAMBAHKAN BLOK INI
+                initializeRekapFilters();
+                // Kosongkan tabel saat pertama kali dibuka
+                document.getElementById('rekapTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Silakan atur filter dan klik "Tampilkan Rekap".</td></tr>';
+            }
+        }
+
+        const employeeModal = document.getElementById('employeeModal');
+        const employeeForm = document.getElementById('employeeForm');
+
+        async function openEmployeeModal() {
+            employeeModal.classList.remove('hidden');
+            document.getElementById('employeeModalTitle').textContent = 'Tambah Karyawan Baru';
+            employeeForm.reset(); // Kosongkan form
+            delete employeeForm.dataset.editingId; // Hapus mode edit
+            
+            document.getElementById('employeeEmail').disabled = false;
+            document.getElementById('employeePassword').required = true;
+            document.getElementById('employeePassword').previousElementSibling.textContent = "Password";
+            document.getElementById('saveEmployeeButton').textContent = "Simpan & Daftarkan";
+
+            // Logika untuk Dropdown Perusahaan
+            const companySelectContainer = document.getElementById('companySelectContainer');
+            const companySelect = document.getElementById('employeeCompany');
+            
+            if (globalProfile.role === 'super_admin') {
+                // Super Admin: Tampilkan dropdown dan isi dengan perusahaan
+                companySelectContainer.classList.remove('hidden');
+                companySelect.required = true;
+                companySelect.innerHTML = '<option value="">Memuat perusahaan...</option>';
+                
+                const { data, error } = await _supabase
+                    .from('companies')
+                    .select('id, name')
+                    .order('name', { ascending: true });
+                    
+                if (data) {
+                    companySelect.innerHTML = '<option value="">-- Pilih Perusahaan --</option>' + 
+                                            data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                }
+            } else {
+                // Company Admin: Sembunyikan dropdown
+                companySelectContainer.classList.add('hidden');
+                companySelect.required = false;
+            }
+        }
+
+        function closeEmployeeModal() {
+            employeeModal.classList.add('hidden');
+        }
+
+        employeeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Logika untuk 'Edit' vs 'Tambah Baru'
+            const currentEditId = employeeForm.dataset.editingId;
+
+            if (currentEditId) {
+                await handleEditEmployee(currentEditId);
+            } else {
+                await handleAddNewEmployee();
+            }
+        });
+        
+        async function handleAddNewEmployee() {
+            const email = document.getElementById('employeeEmail').value;
+            const password = document.getElementById('employeePassword').value;
+            const fullName = document.getElementById('employeeFullName').value;
+            const idNumber = document.getElementById('employeeIDNumber').value;
+            const role = document.getElementById('employeeRole').value;
+            const status = document.getElementById('employeeStatus').value;
+
+            document.getElementById('saveEmployeeButton').disabled = true;
+            showMessage("Mendaftarkan pengguna baru...", 'info');
+            
+            // 1. BUAT AKUN DI AUTH.USERS (Supabase Auth)
+            const { data: authData, error: authError } = await _supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: { 
+                        full_name: fullName // Simpan nama di metadata Auth
+                    }
+                }
+            });
+
+            if (authError) {
+                showMessage(`Gagal membuat akun: ${authError.message}`, 'error');
+                document.getElementById('saveEmployeeButton').disabled = false;
+                return;
+            }
+            
+            const newUser = authData.user;
+            
+            // 2. BUAT PROFIL DI TABEL 'profiles'
+            // Tentukan company_id:
+            // Jika Super Admin, ambil dari dropdown. Jika Company Admin, ambil dari profilnya.
+            let selectedCompanyId = (globalProfile.role === 'super_admin')
+                ? document.getElementById('employeeCompany').value
+                : globalProfile.company_id;
+
+            if (!selectedCompanyId) {
+                 showMessage('Gagal: Super Admin harus memilih perusahaan.', 'error');
+                 document.getElementById('saveEmployeeButton').disabled = false;
+                 return;
+            }
+
+            const newProfile = {
+                id: newUser.id,
+                company_id: selectedCompanyId, // Wajib diisi dari Admin yang login
+                full_name: fullName,
+                user_id_number: idNumber,
+                role: role,
+                user_status: status,
+                workhour_id: null, // Sementara NULL, karena belum ada data workhour
+            };
+            
+            const { error: profileError } = await _supabase
+                .from('profiles')
+                .insert([newProfile]);
+            
+            if (profileError) {
+                console.error("Gagal membuat profil, namun akun Auth sudah terbuat:", profileError.message);
+                showMessage(`Peringatan: Akun dibuat tapi gagal menyimpan detail profil: ${profileError.message}`, 'error');
+                document.getElementById('saveEmployeeButton').disabled = false;
+                return;
+            }
+            
+            // 3. SELESAI
+            showMessage(`Karyawan ${fullName} berhasil didaftarkan.`, 'success');
+            closeEmployeeModal();
+            loadEmployeeList(); // Muat ulang daftar karyawan
+            document.getElementById('saveEmployeeButton').disabled = false;
+        }
+        // (Fungsi handleEditEmployee akan ditambahkan di langkah selanjutnya)
+        async function handleEditEmployee(profileId) {
+            const fullName = document.getElementById('employeeFullName').value;
+            const idNumber = document.getElementById('employeeIDNumber').value;
+            const role = document.getElementById('employeeRole').value;
+            const status = document.getElementById('employeeStatus').value;
+            
+            // Tentukan company_id: Ambil dari dropdown jika Super Admin, dari globalProfile jika Company Admin
+            const companyId = (globalProfile.role === 'super_admin')
+                ? document.getElementById('employeeCompany').value // Nilai dari dropdown
+                : globalProfile.company_id; // Nilai dari profil Admin yang login
+
+            document.getElementById('saveEmployeeButton').disabled = true;
+            showMessage("Menyimpan perubahan...", 'info');
+
+            const profilePayload = {
+                full_name: fullName,
+                user_id_number: idNumber,
+                role: role,
+                user_status: status,
+                company_id: companyId,
+                // workhour_id akan ditambahkan di sini nanti
+            };
+
+            // 1. Update data di tabel 'profiles'
+            const { error: profileError } = await _supabase
+                .from('profiles')
+                .update(profilePayload)
+                .eq('id', profileId);
+
+            if (profileError) {
+                showMessage(`Gagal menyimpan profil: ${profileError.message}`, 'error');
+                document.getElementById('saveEmployeeButton').disabled = false;
+                return;
+            }
+
+            // 2. Update password (Tidak didukung di sini; harus menggunakan Supabase Admin SDK)
+            const password = document.getElementById('employeePassword').value;
+            if (password) {
+                showMessage(`Peringatan: Perubahan password harus dilakukan menggunakan Supabase Admin API.`, 'error');
+            }
+
+            showMessage('Perubahan berhasil disimpan.', 'success');
+            closeEmployeeModal();
+            loadEmployeeList(); // Muat ulang daftar karyawan
+            document.getElementById('saveEmployeeButton').disabled = false;
+        }
+
+        const companyModal = document.getElementById('companyModal');
+        const companyForm = document.getElementById('companyForm');
+        let currentCompanyId = null; // Untuk edit nanti
+
+        function openCompanyModal() {
+            companyModal.classList.remove('hidden');
+            companyForm.reset();
+            document.getElementById('companyModalTitle').textContent = 'Tambah Perusahaan Baru';
+            currentCompanyId = null; // Mode 'Tambah Baru'
+        }
+
+        function closeCompanyModal() {
+            companyModal.classList.add('hidden');
+        }
+
+        async function loadCompanyList() {
+            const tableBody = document.getElementById('companyListTableBody');
+            tableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Memuat daftar perusahaan...</td></tr>';
+            
+            // RLS sudah diatur agar hanya Super Admin yang bisa memanggil ini
+            const { data, error } = await _supabase
+                .from('companies')
+                .select('id, name, created_at')
+                .order('name', { ascending: true });
+
+            if (error) {
+                console.error("Gagal memuat perusahaan:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Belum ada perusahaan terdaftar.</td></tr>';
+                return;
+            }
+
+            let html = data.map(company => {
+                const createdDate = new Date(company.created_at).toLocaleDateString('id-ID');
+                return `
+                    <tr data-id="${company.id}">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${company.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${createdDate}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="editCompany('${company.id}', '${company.name}')" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // Event Listener untuk Rekap Kehadiran
+            document.getElementById('rekapFilterButton').addEventListener('click', loadRekapData);
+
+        companyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const companyName = document.getElementById('companyName').value;
+            
+            document.getElementById('saveCompanyButton').disabled = true;
+            showMessage("Menyimpan perusahaan...", 'info');
+
+            let query;
+            if (currentCompanyId) {
+                // Mode EDIT
+                query = _supabase.from('companies').update({ name: companyName }).eq('id', currentCompanyId);
+            } else {
+                // Mode TAMBAH BARU (RLS memastikan hanya Super Admin)
+                query = _supabase.from('companies').insert([{ name: companyName }]);
+            }
+
+            const { error } = await query;
+
+            if (error) {
+                showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                document.getElementById('saveCompanyButton').disabled = false;
+                return;
+            }
+
+            showMessage('Data perusahaan berhasil disimpan.', 'success');
+            closeCompanyModal();
+            loadCompanyList(); // Muat ulang daftar
+            document.getElementById('saveCompanyButton').disabled = false;
+        });
+
+        function editCompany(id, name) {
+            // Membuka modal dalam mode Edit
+            currentCompanyId = id;
+            document.getElementById('companyModalTitle').textContent = 'Edit Nama Perusahaan';
+            document.getElementById('companyName').value = name;
+            companyModal.classList.remove('hidden');
+        }
 
         function showMessage(message, type = 'success') {
             const box = document.createElement('div');
@@ -354,10 +1103,7 @@
             // Tampilkan tampilan yang diminta
             document.getElementById(viewId).style.display = 'flex';
 
-            // Jika pindah ke Admin, muat datanya
-            if (viewId === 'adminView') {
-                loadAdminAttendanceData(adminAttendanceDateFilter.value);
-            }
+            // Logika pemuatan data dipindahkan ke showAdminSection
         }
         
         function initializeClock(timeElement, dateElement) {
@@ -411,7 +1157,44 @@
         // ===============================================================
         // 2. LOGIKA KARYAWAN (karyawanView)
         // ===============================================================
+        
+        // --- FUNGSI HELPER LOKASI (BARU) ---
+        function getCurrentLocation() {
+            return new Promise((resolve, reject) => {
+                // Periksa apakah browser mendukung Geolocation
+                if (!navigator.geolocation) {
+                    reject(new Error("Geolocation tidak didukung oleh browser ini."));
+                    return;
+                }
 
+                // Opsi untuk akurasi dan timeout
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000, // 10 detik
+                    maximumAge: 0 // Tidak menggunakan cache
+                };
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        resolve({ latitude, longitude });
+                    },
+                    (error) => {
+                        // Tangani error izin (Permission Denied) atau timeout
+                        let errorMessage = "Gagal mengambil lokasi.";
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMessage = "Izin lokasi ditolak. Harap izinkan GPS untuk absen.";
+                        } else if (error.code === error.TIMEOUT) {
+                            errorMessage = "Timeout: Gagal mendapatkan lokasi akurat.";
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    options
+                );
+            });
+        }
+
+        // --- FUNGSI KARYAWAN (ABSENSI) ---
         async function loadKaryawanAttendanceStatus() {
             const todayDate = getTodayDateString();
             const startOfDay = new Date(todayDate).toISOString();
@@ -471,9 +1254,144 @@
             }
         }
 
+        // FUNGSI NAVIGASI KARYAWAN BARU (menggantikan showKaryawanSection)
+        function showKaryawanContent(sectionName) {
+            const sections = {
+                'Absensi': document.getElementById('karyawanSection_Absensi'),
+                'Requests': document.getElementById('karyawanSection_Requests'),
+                'Timeoff': document.getElementById('karyawanSection_Timeoff'),
+                'History': document.getElementById('karyawanSection_History'),
+                'Overtime': document.getElementById('karyawanSection_Overtime'),
+                'Salary': document.getElementById('karyawanSection_Salary')
+            };
+            const karyawanViewWrapper = document.querySelector('#karyawanView > div');
+            
+            // 1. Sembunyikan semua section dan atur lebar default
+            Object.values(sections).forEach(sec => {
+                if(sec) sec.style.display = 'none';
+            });
+            karyawanViewWrapper.classList.add('max-w-lg'); 
+            karyawanViewWrapper.classList.remove('max-w-full');
+
+            // 2. Tampilkan section yang dipilih
+            if (sections[sectionName]) {
+                sections[sectionName].style.display = 'block';
+
+                // Jika tabel (Requests) yang dibuka, buat lebar penuh
+                if (sectionName === 'Requests') {
+                    karyawanViewWrapper.classList.remove('max-w-lg');
+                    karyawanViewWrapper.classList.add('max-w-full'); 
+                    loadAttendanceRequests(); // Muat data
+                } else if (sectionName === 'Timeoff' || sectionName === 'Overtime' || sectionName === 'Salary') {
+                    // Muat data spesifik di sini nanti
+                    // loadTimeoffData();
+                }
+            }
+            
+            // 3. Atur tombol footer yang aktif
+            setActiveFooterTab(sectionName);
+        }
+
+        // FUNGSI UNTUK MENGATUR TOMBOL FOOTER AKTIF
+        function setActiveFooterTab(activeSection) {
+            const tabIds = ['tabRequestAttendance', 'tabRequestTimeoff', 'tabAttendanceHome', 'tabOvertime', 'tabSalary'];
+            let activeId;
+
+            // Tentukan ID tombol yang harus aktif berdasarkan nama section
+            if (activeSection === 'Absensi') activeId = 'tabAttendanceHome';
+            else if (activeSection === 'Requests') activeId = 'tabRequestAttendance';
+            else if (activeSection === 'Timeoff') activeId = 'tabRequestTimeoff';
+            else if (activeSection === 'Overtime') activeId = 'tabOvertime';
+            else if (activeSection === 'Salary') activeId = 'tabSalary';
+
+            tabIds.forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    const isActive = id === activeId;
+                    // Hapus kelas aktif dari semua
+                    button.classList.remove('text-blue-600');
+                    button.classList.add('text-gray-500');
+                    // Tambahkan kelas aktif pada yang dipilih
+                    if (isActive) {
+                        button.classList.remove('text-gray-500');
+                        button.classList.add('text-blue-600');
+                    }
+                }
+            });
+        }
+
+        // --- FUNGSI KARYAWAN (RIWAYAT KEHADIRAN) (BARU) ---
+        async function loadKaryawanHistory() {
+            const historyBody = document.getElementById('historyListTableBody');
+            historyBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat riwayat kehadiran...</td></tr>';
+            
+            // Tentukan rentang waktu (misal, 60 hari ke belakang)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 60);
+
+            const startISO = startDate.toISOString();
+            const endISO = endDate.toISOString();
+
+            const { data, error } = await _supabase
+                .from('attendance')
+                .select('*')
+                .eq('user_id', globalProfile.id)
+                .gte('created_at', startISO)
+                .lt('created_at', endISO)
+                .order('created_at', { ascending: false }); // Terbaru di atas
+
+            if (error) {
+                console.error("Gagal memuat riwayat:", error.message);
+                historyBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat riwayat: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                historyBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Tidak ada riwayat kehadiran dalam 60 hari terakhir.</td></tr>';
+                return;
+            }
+
+            let html = data.map(att => {
+                const dateDisplay = new Date(att.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+                const statusClass = getStatusClass(att.attendance_status); // Menggunakan helper Admin yang sudah ada
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${dateDisplay}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${formatTime(att.clock_in)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${formatTime(att.clock_out)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${att.attendance_status}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            historyBody.innerHTML = html;
+        }
+
         async function doClockIn() {
             karyawanClockInButton.disabled = true;
-            showMessage("Memproses Absen Masuk...", 'info');
+            showMessage("Meminta izin lokasi dan memproses Absen Masuk...", 'info');
+
+            let locationString = 'Lokasi gagal didapatkan';
+            let locationCoords = null;
+            const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
+            
+            try {
+                // Panggil fungsi pengambilan lokasi (akan memicu permintaan izin)
+                locationCoords = await getCurrentLocation();
+                locationString = `${locationCoords.latitude}, ${locationCoords.longitude}`;
+                locationDisplayElement.textContent = `Lokasi: ${locationString}`;
+                showMessage("Lokasi berhasil didapatkan. Melanjutkan presensi.", 'info');
+
+            } catch (e) {
+                // Jika pengambilan lokasi gagal (izin ditolak/timeout)
+                showMessage(`Gagal Absen: ${e.message}`, 'error');
+                karyawanClockInButton.disabled = false;
+                locationDisplayElement.textContent = `Lokasi: ${e.message.split('.')[0]}`; // Tampilkan pesan error
+                return;
+            }
 
             const now = new Date();
             const newAttendance = {
@@ -481,7 +1399,7 @@
                 company_id: globalProfile.company_id,
                 attendance_status: 'Hadir', 
                 clock_in: now.toISOString(),
-                location: 'Web App',
+                location: locationString, // <-- Menggunakan koordinat yang diambil
             };
             
             const { error } = await _supabase
@@ -497,6 +1415,8 @@
             
             showMessage('Absen Masuk Berhasil! Selamat bekerja.', 'success');
             loadKaryawanAttendanceStatus(); 
+            // Pastikan lokasi tetap terlihat setelah absen berhasil
+            locationDisplayElement.textContent = `Lokasi: ${locationString}`;
         }
 
         async function doClockOut() {
@@ -536,7 +1456,8 @@
         function getStatusClass(status) {
             if (status === 'Hadir' || status === 'Terlambat') return 'bg-green-100 text-green-800';
             if (status === 'Izin' || status === 'Sakit') return 'bg-yellow-100 text-yellow-800';
-            return 'bg-red-100 text-red-800';
+            if (status === 'Alpa' || !status) return 'bg-red-100 text-red-800';
+            return 'bg-gray-100 text-gray-800';
         }
 
         async function loadAdminAttendanceData(dateString) {
@@ -546,22 +1467,29 @@
             const endOfDay = new Date(new Date(dateString).getTime() + 24 * 60 * 60 * 1000).toISOString();
             
             // 1. Ambil semua karyawan di perusahaan admin
-            const { data: profiles, error: profilesError } = await _supabase
+            let profilesQuery = _supabase
                 .from('profiles')
-                .select('id, full_name')
-                .eq('company_id', globalProfile.company_id);
+                .select('id, full_name');
+            
+            // Tambahkan filter HANYA jika yang login BUKAN Super Admin
+            if (globalProfile.role !== 'super_admin') {
+                profilesQuery = profilesQuery.eq('company_id', globalProfile.company_id);
+            }
+            
+            // Jalankan query yang sudah dimodifikasi
+            const { data: profiles, error: profilesError } = await profilesQuery;
 
             if (profilesError) {
                 console.error("Gagal memuat daftar karyawan:", profilesError.message);
                 return;
             }
 
-            const profileMap = profiles.reduce((map, profile) => {
-                map[profile.id] = profile.full_name;
-                return map;
-            }, {});
-
             const employeeIds = profiles.map(p => p.id);
+            if (employeeIds.length === 0) {
+                 adminAttendanceTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada karyawan di perusahaan ini.</td></tr>';
+                 document.getElementById('adminNoDataMessage').classList.add('hidden');
+                 return;
+            }
 
             // 2. Ambil data absensi untuk tanggal dan user ID yang sesuai
             const { data: attendanceData, error: attendanceError } = await _supabase
@@ -589,7 +1517,6 @@
 
             profiles.forEach(profile => {
                 const att = attendanceMap[profile.id];
-                
                 let status = att ? att.attendance_status : 'Alpa';
                 
                 // Hitung statistik
@@ -619,6 +1546,242 @@
             document.getElementById('adminTotalAlpa').textContent = totalAlpa;
 
             document.getElementById('adminNoDataMessage').classList.toggle('hidden', employeeIds.length > 0);
+        }
+
+        async function loadEmployeeList() {
+            employeeListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Memuat daftar karyawan...</td></tr>';
+            
+            // 1. Mulai query dasar
+            let query = _supabase
+                .from('profiles')
+                .select('id, full_name, user_id_number, role, user_status, companies(name)'); // Ambil juga nama perusahaan
+
+            // 2. Tambahkan filter HANYA jika yang login BUKAN Super Admin
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            
+            // 3. Tambahkan pengurutan dan jalankan query
+            query = query.order('full_name', { ascending: true });
+            const { data: profiles, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat daftar karyawan:", error.message);
+                employeeListTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (profiles.length === 0) {
+                employeeListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada karyawan terdaftar di perusahaan ini.</td></tr>';
+                return;
+            }
+
+            // Sembunyikan kolom "Perusahaan" jika bukan Super Admin
+            const companyHeader = document.getElementById('companyColumnHeader');
+            if (companyHeader) {
+                 companyHeader.style.display = (globalProfile.role === 'super_admin') ? 'table-cell' : 'none';
+            }
+
+            let html = profiles.map(profile => {
+                const roleText = profile.role.replace('_', ' ');
+                const statusClass = (profile.user_status === 'Percobaan' || profile.user_status === 'Kontrak') ? 'bg-yellow-100 text-yellow-800' : 
+                                    (profile.user_status === 'Tetap' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800');
+
+                // Tampilkan nama perusahaan (jika ada)
+                const companyName = profile.companies ? profile.companies.name : 'N/A';
+                const companyCell = (globalProfile.role === 'super_admin') 
+                    ? `<td class="px-4 py-3 text-sm text-gray-500">${companyName}</td>` 
+                    : ''; // Sembunyikan sel jika Company Admin
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${profile.full_name || 'N/A'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${profile.user_id_number || 'N/A'}</td>
+                        ${companyCell} <!-- Sel Perusahaan -->
+                        <td class="px-4 py-3 text-sm text-blue-600">${roleText.toUpperCase()}</td>
+                        <td class="px-4 py-3 text-left">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${profile.user_status ? profile.user_status.toUpperCase() : 'N/A'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="editEmployee('${profile.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            employeeListTableBody.innerHTML = html;
+        }
+
+        // --- LOGIKA REKAP KEHADIRAN (BARU) ---
+
+        let allEmployees = []; // Digunakan untuk mengisi dropdown filter
+
+        async function initializeRekapFilters() {
+            const employeeFilter = document.getElementById('rekapEmployeeFilter');
+
+            // HANYA muat jika belum pernah dimuat
+            if (allEmployees.length === 0) {
+                 // 1. Ambil daftar karyawan (mirip loadEmployeeList)
+                let query = _supabase
+                    .from('profiles')
+                    .select('id, full_name')
+                    .order('full_name', { ascending: true });
+
+                if (globalProfile.role !== 'super_admin') {
+                    query = query.eq('company_id', globalProfile.company_id);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) {
+                    console.error("Gagal memuat karyawan untuk filter rekap:", error.message);
+                    return;
+                }
+                allEmployees = data;
+            }
+
+            // 2. Isi Dropdown Karyawan
+            let options = '<option value="">-- Semua Karyawan --</option>';
+            options += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
+            employeeFilter.innerHTML = options;
+
+            // 3. Atur tanggal default ke 30 hari ke belakang
+            const today = getTodayDateString();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            document.getElementById('rekapEndDate').value = today;
+            document.getElementById('rekapStartDate').value = getTodayDateString(thirtyDaysAgo);
+        }
+
+async function loadRekapData() {
+            const rekapTableBody = document.getElementById('rekapTableBody');
+            const startDate = document.getElementById('rekapStartDate').value;
+            const endDate = document.getElementById('rekapEndDate').value;
+            const employeeId = document.getElementById('rekapEmployeeFilter').value;
+            const statusFilter = document.getElementById('rekapStatusFilter').value;
+
+            if (!startDate || !endDate) {
+                showMessage("Harap isi rentang tanggal.", 'error');
+                return;
+            }
+
+            rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Mencari data...</td></tr>';
+
+            // Menyesuaikan rentang tanggal (Supabase menggunakan created_at)
+            const startISO = new Date(startDate).toISOString();
+            // Tambahkan 24 jam ke tanggal akhir agar inklusif
+            const endOfDay = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000);
+            const endISO = endOfDay.toISOString();
+
+            let query = _supabase
+                .from('attendance')
+                .select(`
+                    *,
+                    profiles(full_name)
+                `)
+                .gte('created_at', startISO)
+                .lt('created_at', endISO);
+
+            // Filter berdasarkan Perusahaan (Penting untuk RLS, tapi kita filter lagi di sini)
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            
+            // Filter berdasarkan Nama Karyawan
+            if (employeeId) {
+                query = query.eq('user_id', employeeId);
+            }
+
+            // Filter berdasarkan Status
+            if (statusFilter) {
+                query = query.eq('attendance_status', statusFilter);
+            }
+
+            // Urutkan berdasarkan tanggal terbaru
+            query = query.order('created_at', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat data rekap:", error.message);
+                rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data kehadiran yang cocok dengan filter yang Anda pilih.</td></tr>';
+                return;
+            }
+
+            // --- LOGIKA PENGUMPULAN KETERANGAN DARI TABEL REQUESTS ---
+            const employeeIdsInRekap = [...new Set(data.map(att => att.user_id))];
+            const uniqueAttendanceDates = [...new Set(data.map(att => getTodayDateString(new Date(att.created_at))))];
+            let requestsMap = {}; // Key: user_id|YYYY-MM-DD, Value: description
+
+            // Helper untuk memuat request yang SUDAH DISETUJUI
+            const loadRequests = async (tableName, dateColumn, statusColumn) => {
+                const { data: requests, error } = await _supabase
+                    .from(tableName)
+                    .select(`user_id, description, ${dateColumn}, ${statusColumn}`) 
+                    .in('user_id', employeeIdsInRekap)
+                    .eq(statusColumn, 'Disetujui') // HANYA ambil yang disetujui
+                    .in(dateColumn, uniqueAttendanceDates);
+                
+                if (error) {
+                    console.error(`Gagal memuat data ${tableName}:`, error.message);
+                    return;
+                }
+
+                if (requests) {
+                    requests.forEach(req => {
+                        const dateValue = req[dateColumn];
+                        const key = `${req.user_id}|${dateValue}`;
+                        // Simpan deskripsi pengajuan
+                        requestsMap[key] = req.description; 
+                    });
+                }
+            };
+            
+            if (employeeIdsInRekap.length > 0 && uniqueAttendanceDates.length > 0) {
+                // 1. Ambil dari attendance_requests (Koreksi Absensi)
+                await loadRequests('attendance_requests', 'attendance_date', 'requests_status');
+                
+                // 2. Ambil dari overtime_requests (Lembur)
+                await loadRequests('overtime_requests', 'overtime_date', 'overtime_status'); 
+                
+                // 3. (Tambahkan di sini jika ada timeoff_requests)
+                // await loadRequests('timeoff_requests', 'timeoff_date', 'timeoff_status'); 
+            }
+            // --- AKHIR LOGIKA KETERANGAN ---
+
+            let html = data.map(att => {
+                const date = new Date(att.created_at);
+                const dateDisplay = date.toLocaleDateString('id-ID'); 
+                const dateKey = getTodayDateString(date); 
+
+                const requestKey = `${att.user_id}|${dateKey}`;
+                
+                // Ambil keterangan: HANYA dari requestsMap. Defaultkan ke '-' jika tidak ada.
+                const keterangan = requestsMap[requestKey] || '-'; // <-- PERBAIKAN UTAMA
+
+                const name = att.profiles ? att.profiles.full_name : 'N/A';
+                const statusClass = getStatusClass(att.attendance_status);
+                
+                return `
+                    <tr>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${dateDisplay}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${name}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatTime(att.clock_in)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatTime(att.clock_out)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${att.attendance_status}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${keterangan}</td>
+                    </tr>
+                `;
+            }).join('');
+            rekapTableBody.innerHTML = html;
         }
         
         // Atur filter tanggal ke hari ini saat inisialisasi admin
@@ -677,7 +1840,11 @@
                 if (!time) return null;
                 const [hours, minutes] = time.split(':');
                 const date = new Date(dateString);
-                date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                // Penting: Set jam dalam WAKTU LOKAL
+                date.setHours(parseInt(hours, 10));
+                date.setMinutes(parseInt(minutes, 10));
+                date.setSeconds(0);
+                date.setMilliseconds(0);
                 return date.toISOString();
             };
             
@@ -685,12 +1852,10 @@
                 attendance_status: status,
                 clock_in: combineDateTime(clockInTime),
                 clock_out: combineDateTime(clockOutTime),
-                // Update created_at agar filter tanggal tetap valid
-                created_at: combineDateTime(clockInTime) || new Date(dateString).toISOString(), 
                 updated_at: new Date().toISOString()
             };
 
-            if (modalAttendanceData.id) {
+            if (modalAttendanceData.id && modalAttendanceData.id !== 'null') {
                 // KASUS 1: UPDATE ABSENSI YANG SUDAH ADA
                 const { error } = await _supabase
                     .from('attendance')
@@ -708,6 +1873,7 @@
                     ...payload,
                     user_id: modalAttendanceData.user_id,
                     company_id: globalProfile.company_id,
+                    created_at: combineDateTime(clockInTime) || new Date(dateString).toISOString(), 
                 };
                 
                 const { error } = await _supabase
@@ -748,7 +1914,7 @@
             
             if (!session) {
                 loadingView.style.display = 'none';
-                return changeView('loginView');
+                return changeView('loginView'); // BUG FIX: Arahkan ke login jika tidak ada sesi
             }
 
             // Ambil data profil untuk menentukan peran
@@ -770,37 +1936,90 @@
             const userRole = profile.role;
             
             // Inisialisasi Jam
-            initializeClock(document.getElementById('karyawanCurrentTime'), document.getElementById('karyawanCurrentDate'));
+            initializeClock(document.getElementById('currentTime'), document.getElementById('currentDateTime'));
             
             // Pengalihan berdasarkan Peran
             if (userRole === 'super_admin' || userRole === 'company_admin') {
                 // ADMIN: Konfigurasi & Arahkan ke Admin View
                 adminRoleDisplay.textContent = `(${userRole.replace('_', ' ').toUpperCase()})`;
                 karyawanAdminLink.classList.remove('hidden'); // Tampilkan tombol Admin di tampilan Karyawan
-                
+
+                // Tampilkan menu Perusahaan HANYA untuk Super Admin
+                if (userRole === 'super_admin') {
+                    document.getElementById('menuCompaniesContainer').classList.remove('hidden');
+                } else {
+                    document.getElementById('menuCompaniesContainer').classList.add('hidden');
+                }
+                              
                 // Muat status absensi Karyawan jika Admin melihat halaman Karyawan
-                karyawanUserName.textContent = profile.full_name;
+                karyawanUserName.textContent = `Halo, ${profile.full_name}`; // <-- Diperbaiki
                 loadKaryawanAttendanceStatus(); 
 
                 loadingView.style.display = 'none';
-                return changeView('adminView'); // Default ke tampilan Admin
+                changeView('karyawanView'); 
+                showKaryawanContent('Absensi'); // <-- GANTI showAdminSection ke showKaryawanContent
+                document.getElementById('karyawanFooterNav').classList.remove('hidden'); // <-- TAMBAH
+                return;
+
             } else if (userRole === 'karyawan') {
+                } else if (userRole === 'karyawan') {
                 // KARYAWAN: Konfigurasi & Arahkan ke Karyawan View
-                karyawanUserName.textContent = profile.full_name;
+                karyawanUserName.textContent = `Halo, ${profile.full_name}`; // <-- Diperbaiki
                 karyawanAdminLink.classList.add('hidden');
                 loadKaryawanAttendanceStatus();
 
-                loadingView.style.display = 'none';
+                l
+                oadingView.style.display = 'none';
                 return changeView('karyawanView'); // Default ke tampilan Karyawan
             }
-
             // Fallback (Peran tidak valid)
             showMessage("Peran pengguna tidak valid. Logout.", 'error');
             await doLogout();
         }
 
+        // FUNGSI EDIT EMPLOYEE (BARU DITAMBAHKAN)
+        async function editEmployee(profileId) {
+            // 1. Ambil data profil
+            showMessage("Memuat data karyawan...", 'info');
+            const { data: profile, error } = await _supabase
+                .from('profiles')
+                .select('id, full_name, user_id_number, role, user_status, company_id')
+                .eq('id', profileId)
+                .single();
+            
+            if (error) {
+                showMessage(`Gagal memuat data: ${error.message}`, 'error');
+                return;
+            }
+
+            // 2. Buka modal dan isi form
+            await openEmployeeModal(); // Panggil openEmployeeModal untuk mengisi dropdown perusahaan
+            
+            document.getElementById('employeeModalTitle').textContent = 'Edit Karyawan';
+            document.getElementById('employeeForm').dataset.editingId = profile.id; // Tandai mode edit
+
+            document.getElementById('employeeFullName').value = profile.full_name;
+            document.getElementById('employeeIDNumber').value = profile.user_id_number;
+            document.getElementById('employeeRole').value = profile.role;
+            document.getElementById('employeeStatus').value = profile.user_status;
+            
+            if(globalProfile.role === 'super_admin' && profile.company_id) {
+                document.getElementById('employeeCompany').value = profile.company_id;
+            }
+
+            // Nonaktifkan email dan password saat edit
+            // Kita tidak perlu menampilkan email/password untuk mencegah error RLS di Auth
+            document.getElementById('employeeEmail').value = "Tidak dapat diubah (gunakan Admin API)"; // Placeholder
+            document.getElementById('employeeEmail').disabled = true;
+            document.getElementById('employeePassword').required = false; 
+            document.getElementById('employeePassword').previousElementSibling.textContent = "Password (Kosongkan jika tidak berubah)";
+            
+            document.getElementById('saveEmployeeButton').textContent = "Simpan Perubahan";
+        }
+
         // Jalankan pemeriksaan saat aplikasi dimuat
         checkAuthAndRole();
+
     </script>
 </body>
 </html>
