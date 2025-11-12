@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kehadiran Karyawan (SPA)</title>
+    <!-- Memuat Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat icon (Ionicons) -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Menyembunyikan tampilan secara default */
+        .view {
+            display: none;
+        }
+        .spinner {
+            border-top-color: #3b82f6;
+            -webkit-animation: spin 1s ease-in-out infinite;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @-webkit-keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Kontainer Utama -->
+    <div id="appContainer" class="flex flex-col min-h-screen">
+        
+        <!-- Layar Loading Awal -->
+        <div id="loadingView" class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
+            <div class="spinner w-12 h-12 border-4 border-gray-200 rounded-full"></div>
+            <p class="mt-4 text-gray-600">Memverifikasi sesi...</p>
+        </div>
+
+        <!-- 1. Tampilan Login -->
+        <div id="loginView" class="view flex flex-grow items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 sm:p-10">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-blue-600">Hadirin.org</h1>
+                    <p class="text-gray-500 mt-2">Masuk ke Sistem</p>
+                </div>
+
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <div class="relative">
+                            <input type="email" id="login-email" required placeholder="Email Anda"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <ion-icon name="mail-outline" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></ion-icon>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <div class="relative">
+                            <input type="password" id="login-password" required placeholder="Password"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <ion-icon name="lock-closed-outline" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></ion-icon>
+                        </div>
+                    </div>
+
+                    <div id="loginMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert"></div>
+
+                    <button type="submit" id="loginButton"
+                        class="w-full flex items-center justify-center px-4 py-2.5 rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 disabled:opacity-50">
+                        <ion-icon name="log-in-outline" class="text-xl mr-2"></ion-icon>
+                        <span id="loginButtonText">Masuk</span>
+                        <div id="loginSpinner" class="hidden spinner w-4 h-4 border-2 border-t-transparent border-white ml-2" role="status"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 2. Tampilan Karyawan -->
+        <div id="karyawanView" class="view flex flex-grow max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="w-full">
+                <!-- Header Karyawan -->
+                <header class="flex justify-between items-center mb-8 border-b pb-4">
+                    <div class="flex flex-col">
+                        <h1 class="text-xl sm:text-2xl font-extrabold text-blue-700">Halo, <span id="karyawanUserName"></span>!</h1>
+                        <p class="text-sm text-gray-500" id="karyawanCurrentDate">Senin, 12 November 2025</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl sm:text-5xl font-mono font-bold text-gray-800" id="karyawanCurrentTime">00:00:00</div>
+                        <!-- Tombol ke Admin (Hanya untuk Admin/Super Admin) -->
+                        <button onclick="changeView('adminView')" id="karyawanAdminLink" class="hidden text-gray-500 hover:text-blue-600 transition">
+                            <ion-icon name="cog" class="text-3xl"></ion-icon>
+                        </button>
+                        <button onclick="doLogout()" class="text-red-500 hover:text-red-700 transition">
+                            <ion-icon name="log-out-outline" class="text-3xl"></ion-icon>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Status Presensi Hari Ini -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <ion-icon name="alarm-outline" class="mr-2 text-blue-500"></ion-icon>
+                        Presensi Hari Ini
+                    </h2>
+                    <div id="karyawanAttendanceStatus" class="text-center p-4 rounded-lg bg-gray-100 text-gray-700 font-medium">
+                        Memuat status...
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-lg text-center">
+                            <p class="text-xs text-gray-500">Jam Masuk</p>
+                            <p id="karyawanClockInTime" class="text-lg font-bold text-gray-700">-</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg text-center">
+                            <p class="text-xs text-gray-500">Jam Pulang</p>
+                            <p id="karyawanClockOutTime" class="text-lg font-bold text-gray-700">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Absensi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                    <button id="karyawanClockInButton" class="bg-green-600 text-white p-4 rounded-xl shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50">
+                        <ion-icon name="time-outline" class="text-2xl mr-2"></ion-icon>
+                        Absen Masuk
+                    </button>
+                    <button id="karyawanClockOutButton" class="bg-red-600 text-white p-4 rounded-xl shadow-md hover:bg-red-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50" disabled>
+                        <ion-icon name="log-out-outline" class="text-2xl mr-2"></ion-icon>
+                        Absen Pulang
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Tampilan Admin -->
+        <div id="adminView" class="view flex flex-grow max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="w-full">
+                <!-- Header Admin -->
+                <header class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b pb-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Admin <span id="adminRoleDisplay" class="text-sm font-medium text-blue-600"></span></h1>
+                        <p class="text-gray-500 mt-1">Ringkasan Kehadiran Harian</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0 flex items-center space-x-4">
+                        <button onclick="changeView('karyawanView')" class="flex items-center text-blue-600 hover:text-blue-800 transition text-sm font-medium">
+                            <ion-icon name="person-outline" class="mr-1"></ion-icon> Halaman Karyawan
+                        </button>
+                        <button onclick="doLogout()" class="flex items-center text-red-500 hover:text-red-700 transition text-sm font-medium">
+                            <ion-icon name="log-out-outline" class="mr-1"></ion-icon> Logout
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Kartu Statistik -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <p class="text-sm font-medium text-gray-500">Total Karyawan</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1" id="adminTotalEmployees">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <p class="text-sm font-medium text-gray-500">Hadir (Clock In)</p>
+                        <p class="text-3xl font-bold text-green-600 mt-1" id="adminTotalHadir">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <p class="text-sm font-medium text-gray-500">Izin / Sakit</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-1" id="adminTotalIzin">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <p class="text-sm font-medium text-gray-500">Alpa</p>
+                        <p class="text-3xl font-bold text-red-600 mt-1" id="adminTotalAlpa">0</p>
+                    </div>
+                </div>
+                
+                <!-- Filter dan Tabel -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-3 sm:space-y-0">
+                        <h2 class="text-xl font-semibold text-gray-800">Tabel Kehadiran Harian</h2>
+                        <input type="date" id="adminAttendanceDateFilter" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Tabel Responsif -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="adminAttendanceTableBody">
+                                <!-- Data akan dimasukkan di sini oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="adminNoDataMessage" class="hidden text-center text-gray-500 mt-4">Tidak ada data kehadiran untuk tanggal ini.</p>
+                </div>
+
+                <!-- Modal Ubah Status -->
+                <div id="statusModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <!-- Kode Modal (Sama seperti sebelumnya) -->
+                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Ubah Status Kehadiran
+                                </h3>
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-500 mb-4">Karyawan: <span id="modalEmployeeName" class="font-semibold text-gray-700"></span></p>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="modalStatus" class="block text-sm font-medium text-gray-700">Status</label>
+                                            <select id="modalStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                                <option value="Hadir">Hadir</option>
+                                                <option value="Terlambat">Terlambat</option>
+                                                <option value="Izin">Izin</option>
+                                                <option value="Sakit">Sakit</option>
+                                                <option value="Alpa">Alpa</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="modalClockIn" class="block text-sm font-medium text-gray-700">Jam Masuk (Jika Hadir)</label>
+                                            <input type="time" id="modalClockIn" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
+                                        </div>
+                                        <div>
+                                            <label for="modalClockOut" class="block text-sm font-medium text-gray-700">Jam Pulang (Jika Hadir)</label>
+                                            <input type="time" id="modalClockOut" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="button" id="modalSaveButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan
+                                </button>
+                                <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Kotak Pesan Global -->
+    <div id="messageBox" class="fixed top-5 right-5 z-50 w-full max-w-sm"></div>
+
+    <script>
+        // ===============================================================
+        // KONFIGURASI SUPABASE (WAJIB DIGANTI)
+        // ===============================================================
+        const SUPABASE_URL = 'https://fmknmegucccckdivoslm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZta25tZWd1Y2NjY2tkaXZvc2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NzAyMTUsImV4cCI6MjA3ODQ0NjIxNX0.usJdg1Pcl_UezylR09srX_-Z0W9Vo4Xxn1XAWWhCOhI';
+        // ===============================================================
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // GLOBAL STATE
+        let globalProfile = null; // Menyimpan data profil pengguna yang sedang login
+        let currentAttendanceId = null; // ID absensi hari ini yang sedang aktif (untuk Karyawan)
+        let modalAttendanceData = {}; // Data absensi yang sedang diedit di modal Admin
+
+        // DOM ELEMENTS
+        const loadingView = document.getElementById('loadingView');
+        const loginView = document.getElementById('loginView');
+        const karyawanView = document.getElementById('karyawanView');
+        const adminView = document.getElementById('adminView');
+        const messageBox = document.getElementById('messageBox');
+        
+        // --- KARYAWAN ELEMENTS ---
+        const karyawanUserName = document.getElementById('karyawanUserName');
+        const karyawanAttendanceStatus = document.getElementById('karyawanAttendanceStatus');
+        const karyawanClockInTime = document.getElementById('karyawanClockInTime');
+        const karyawanClockOutTime = document.getElementById('karyawanClockOutTime');
+        const karyawanClockInButton = document.getElementById('karyawanClockInButton');
+        const karyawanClockOutButton = document.getElementById('karyawanClockOutButton');
+        const karyawanAdminLink = document.getElementById('karyawanAdminLink');
+        
+        // --- ADMIN ELEMENTS ---
+        const adminRoleDisplay = document.getElementById('adminRoleDisplay');
+        const adminAttendanceTableBody = document.getElementById('adminAttendanceTableBody');
+        const adminAttendanceDateFilter = document.getElementById('adminAttendanceDateFilter');
+
+        // --- MODAL ELEMENTS ---
+        const statusModal = document.getElementById('statusModal');
+        const modalEmployeeName = document.getElementById('modalEmployeeName');
+        const modalStatus = document.getElementById('modalStatus');
+        const modalClockIn = document.getElementById('modalClockIn');
+        const modalClockOut = document.getElementById('modalClockOut');
+        const modalSaveButton = document.getElementById('modalSaveButton');
+        
+        // ===============================================================
+        // HELPER FUNCTIONS (UTILITY)
+        // ===============================================================
+
+        function showMessage(message, type = 'success') {
+            const box = document.createElement('div');
+            box.className = `p-4 mb-2 rounded-lg shadow-md transition-opacity duration-300 ${
+                type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+                type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+                'bg-blue-100 border border-blue-400 text-blue-700'
+            }`;
+            box.innerHTML = `<p class="font-medium">${message}</p>`;
+            messageBox.appendChild(box);
+
+            setTimeout(() => {
+                box.style.opacity = '0';
+                box.addEventListener('transitionend', () => box.remove());
+            }, 5000);
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '-';
+            // Ubah timestampz (UTC) ke waktu lokal (tanpa detik)
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        
+        function formatTimeForInput(timestamp) {
+             if (!timestamp) return '';
+             const date = new Date(timestamp);
+             const hours = String(date.getHours()).padStart(2, '0');
+             const minutes = String(date.getMinutes()).padStart(2, '0');
+             return `${hours}:${minutes}`;
+        }
+
+        function getTodayDateString(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function changeView(viewId) {
+            // Sembunyikan semua tampilan
+            [loginView, karyawanView, adminView].forEach(v => v.style.display = 'none');
+            // Tampilkan tampilan yang diminta
+            document.getElementById(viewId).style.display = 'flex';
+
+            // Jika pindah ke Admin, muat datanya
+            if (viewId === 'adminView') {
+                loadAdminAttendanceData(adminAttendanceDateFilter.value);
+            }
+        }
+        
+        function initializeClock(timeElement, dateElement) {
+            function updateTime() {
+                const now = new Date();
+                
+                // Format Waktu
+                const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                timeElement.textContent = now.toLocaleTimeString('id-ID', timeOptions);
+
+                // Format Tanggal
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dateElement.textContent = now.toLocaleDateString('id-ID', dateOptions);
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // ===============================================================
+        // 1. LOGIKA LOGIN (loginView)
+        // ===============================================================
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            setLoginLoading(true);
+            
+            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showMessage(`Gagal masuk: ${error.message}`, 'error');
+                setLoginLoading(false);
+                return;
+            }
+
+            // Jika berhasil, panggil checkAuthAndRole untuk memuat profil dan mengarahkan
+            await checkAuthAndRole();
+            setLoginLoading(false);
+        });
+
+        function setLoginLoading(isLoading) {
+            document.getElementById('loginButton').disabled = isLoading;
+            document.getElementById('loginButtonText').textContent = isLoading ? 'Memproses...' : 'Masuk';
+            document.getElementById('loginSpinner').classList.toggle('hidden', !isLoading);
+        }
+
+
+        // ===============================================================
+        // 2. LOGIKA KARYAWAN (karyawanView)
+        // ===============================================================
+
+        async function loadKaryawanAttendanceStatus() {
+            const todayDate = getTodayDateString();
+            const startOfDay = new Date(todayDate).toISOString();
+            const endOfDay = new Date(new Date(todayDate).getTime() + 24 * 60 * 60 * 1000).toISOString();
+            
+            karyawanAttendanceStatus.textContent = 'Memuat status...';
+
+            const { data, error } = await _supabase
+                .from('attendance')
+                .select('*')
+                .eq('user_id', globalProfile.id)
+                .gte('created_at', startOfDay)
+                .lt('created_at', endOfDay)
+                .limit(1);
+
+            if (error) {
+                console.error("Gagal memuat status absensi:", error.message);
+                karyawanAttendanceStatus.textContent = 'Gagal memuat status.';
+                return;
+            }
+
+            if (data && data.length > 0) {
+                const attendance = data[0];
+                currentAttendanceId = attendance.id; 
+
+                karyawanClockInTime.textContent = formatTime(attendance.clock_in);
+                karyawanClockOutTime.textContent = formatTime(attendance.clock_out);
+                
+                let statusText = attendance.attendance_status;
+                let statusClass = 'bg-green-100 text-green-700';
+                
+                if (statusText === 'Alpa' || statusText === 'Terlambat') {
+                    statusClass = 'bg-red-100 text-red-700';
+                } else if (statusText === 'Izin' || statusText === 'Sakit') {
+                    statusClass = 'bg-yellow-100 text-yellow-700';
+                }
+
+                karyawanAttendanceStatus.textContent = `Status hari ini: ${statusText}.`;
+                karyawanAttendanceStatus.className = `text-center p-4 rounded-lg ${statusClass} font-medium`;
+
+                // Atur status tombol
+                karyawanClockInButton.disabled = true;
+                if (!attendance.clock_out && (statusText === 'Hadir' || statusText === 'Terlambat')) {
+                    karyawanClockOutButton.disabled = false;
+                } else {
+                    karyawanClockOutButton.disabled = true;
+                }
+            } else {
+                // Belum ada absensi hari ini
+                karyawanAttendanceStatus.textContent = 'Anda belum melakukan Absen Masuk hari ini.';
+                karyawanAttendanceStatus.className = 'text-center p-4 rounded-lg bg-yellow-50 text-yellow-700 font-medium';
+                karyawanClockInTime.textContent = '-';
+                karyawanClockOutTime.textContent = '-';
+                karyawanClockInButton.disabled = false;
+                karyawanClockOutButton.disabled = true;
+                currentAttendanceId = null;
+            }
+        }
+
+        async function doClockIn() {
+            karyawanClockInButton.disabled = true;
+            showMessage("Memproses Absen Masuk...", 'info');
+
+            const now = new Date();
+            const newAttendance = {
+                user_id: globalProfile.id,
+                company_id: globalProfile.company_id,
+                attendance_status: 'Hadir', 
+                clock_in: now.toISOString(),
+                location: 'Web App',
+            };
+            
+            const { error } = await _supabase
+                .from('attendance')
+                .insert([newAttendance]);
+
+            if (error) {
+                console.error('Gagal Absen Masuk:', error.message);
+                showMessage(`Gagal Absen Masuk: ${error.message}.`, 'error');
+                karyawanClockInButton.disabled = false;
+                return;
+            }
+            
+            showMessage('Absen Masuk Berhasil! Selamat bekerja.', 'success');
+            loadKaryawanAttendanceStatus(); 
+        }
+
+        async function doClockOut() {
+            if (!currentAttendanceId) {
+                showMessage("Gagal Absen Pulang: Data Absen Masuk tidak ditemukan.", 'error');
+                return;
+            }
+            
+            karyawanClockOutButton.disabled = true;
+            showMessage("Memproses Absen Pulang...", 'info');
+            
+            const now = new Date().toISOString();
+
+            const { error } = await _supabase
+                .from('attendance')
+                .update({ clock_out: now })
+                .eq('id', currentAttendanceId);
+
+            if (error) {
+                console.error('Gagal Absen Pulang:', error.message);
+                showMessage(`Gagal Absen Pulang: ${error.message}.`, 'error');
+                karyawanClockOutButton.disabled = false;
+                return;
+            }
+
+            showMessage('Absen Pulang Berhasil! Terima kasih.', 'success');
+            loadKaryawanAttendanceStatus();
+        }
+
+        karyawanClockInButton.addEventListener('click', doClockIn);
+        karyawanClockOutButton.addEventListener('click', doClockOut);
+
+        // ===============================================================
+        // 3. LOGIKA ADMIN (adminView)
+        // ===============================================================
+        
+        function getStatusClass(status) {
+            if (status === 'Hadir' || status === 'Terlambat') return 'bg-green-100 text-green-800';
+            if (status === 'Izin' || status === 'Sakit') return 'bg-yellow-100 text-yellow-800';
+            return 'bg-red-100 text-red-800';
+        }
+
+        async function loadAdminAttendanceData(dateString) {
+            adminAttendanceTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Memuat data...</td></tr>';
+            
+            const startOfDay = new Date(dateString).toISOString();
+            const endOfDay = new Date(new Date(dateString).getTime() + 24 * 60 * 60 * 1000).toISOString();
+            
+            // 1. Ambil semua karyawan di perusahaan admin
+            const { data: profiles, error: profilesError } = await _supabase
+                .from('profiles')
+                .select('id, full_name')
+                .eq('company_id', globalProfile.company_id);
+
+            if (profilesError) {
+                console.error("Gagal memuat daftar karyawan:", profilesError.message);
+                return;
+            }
+
+            const profileMap = profiles.reduce((map, profile) => {
+                map[profile.id] = profile.full_name;
+                return map;
+            }, {});
+
+            const employeeIds = profiles.map(p => p.id);
+
+            // 2. Ambil data absensi untuk tanggal dan user ID yang sesuai
+            const { data: attendanceData, error: attendanceError } = await _supabase
+                .from('attendance')
+                .select('*')
+                .in('user_id', employeeIds)
+                .gte('created_at', startOfDay)
+                .lt('created_at', endOfDay);
+            
+            if (attendanceError) {
+                console.error("Gagal memuat data absensi:", attendanceError.message);
+                return;
+            }
+            
+            const attendanceMap = attendanceData.reduce((map, att) => {
+                map[att.user_id] = att;
+                return map;
+            }, {});
+
+            // 3. Gabungkan dan Render Data
+            adminAttendanceTableBody.innerHTML = ''; // Kosongkan tabel
+            
+            let html = '';
+            let totalHadir = 0, totalIzin = 0, totalAlpa = 0;
+
+            profiles.forEach(profile => {
+                const att = attendanceMap[profile.id];
+                
+                let status = att ? att.attendance_status : 'Alpa';
+                
+                // Hitung statistik
+                if (status === 'Hadir' || status === 'Terlambat') totalHadir++;
+                else if (status === 'Izin' || status === 'Sakit') totalIzin++;
+                else if (status === 'Alpa') totalAlpa++;
+
+                html += `
+                    <tr data-id="${att ? att.id : 'new'}" data-user-id="${profile.id}">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${profile.full_name}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${att ? formatTime(att.clock_in) : '-'}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${att ? formatTime(att.clock_out) : '-'}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(status)}">${status}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                            <button onclick="openModal('${att ? att.id : null}', '${profile.id}', '${profile.full_name}', '${status}', '${att ? formatTimeForInput(att.clock_in) : ''}', '${att ? formatTimeForInput(att.clock_out) : ''}')" class="text-blue-600 hover:text-blue-900">Ubah Status</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            adminAttendanceTableBody.innerHTML = html;
+            document.getElementById('adminTotalEmployees').textContent = employeeIds.length;
+            document.getElementById('adminTotalHadir').textContent = totalHadir;
+            document.getElementById('adminTotalIzin').textContent = totalIzin;
+            document.getElementById('adminTotalAlpa').textContent = totalAlpa;
+
+            document.getElementById('adminNoDataMessage').classList.toggle('hidden', employeeIds.length > 0);
+        }
+        
+        // Atur filter tanggal ke hari ini saat inisialisasi admin
+        adminAttendanceDateFilter.value = getTodayDateString();
+        adminAttendanceDateFilter.addEventListener('change', (e) => loadAdminAttendanceData(e.target.value));
+        
+        // --- LOGIKA MODAL ADMIN ---
+
+        function openModal(attendanceId, userId, name, status, clockIn, clockOut) {
+            modalAttendanceData = {
+                id: attendanceId,
+                user_id: userId,
+                name: name
+            };
+
+            modalEmployeeName.textContent = name;
+            
+            modalStatus.value = status;
+            modalClockIn.value = clockIn || '';
+            modalClockOut.value = clockOut || '';
+
+            const isHadir = status === 'Hadir' || status === 'Terlambat';
+            modalClockIn.disabled = !isHadir;
+            modalClockOut.disabled = !isHadir;
+
+            modalStatus.onchange = () => {
+                const newStatus = modalStatus.value;
+                const newIsHadir = newStatus === 'Hadir' || newStatus === 'Terlambat';
+                modalClockIn.disabled = !newIsHadir;
+                modalClockOut.disabled = !newIsHadir;
+
+                if (!newIsHadir) {
+                    modalClockIn.value = '';
+                    modalClockOut.value = '';
+                }
+            };
+
+            statusModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            statusModal.classList.add('hidden');
+            modalAttendanceData = {};
+        }
+
+        modalSaveButton.addEventListener('click', async () => {
+            const status = modalStatus.value;
+            const clockInTime = modalClockIn.value; // format HH:MM
+            const clockOutTime = modalClockOut.value; // format HH:MM
+            const dateString = adminAttendanceDateFilter.value;
+            
+            showMessage("Menyimpan perubahan...", 'info');
+            
+            // Konversi HH:MM menjadi ISO string pada tanggal yang difilter
+            const combineDateTime = (time) => {
+                if (!time) return null;
+                const [hours, minutes] = time.split(':');
+                const date = new Date(dateString);
+                date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                return date.toISOString();
+            };
+            
+            const payload = {
+                attendance_status: status,
+                clock_in: combineDateTime(clockInTime),
+                clock_out: combineDateTime(clockOutTime),
+                // Update created_at agar filter tanggal tetap valid
+                created_at: combineDateTime(clockInTime) || new Date(dateString).toISOString(), 
+                updated_at: new Date().toISOString()
+            };
+
+            if (modalAttendanceData.id) {
+                // KASUS 1: UPDATE ABSENSI YANG SUDAH ADA
+                const { error } = await _supabase
+                    .from('attendance')
+                    .update(payload)
+                    .eq('id', modalAttendanceData.id);
+
+                if (error) {
+                    showMessage(`Gagal update: ${error.message}`, 'error');
+                    return;
+                }
+                
+            } else {
+                // KASUS 2: BUAT ABSENSI BARU (Misal mengubah Alpa menjadi Hadir)
+                const newPayload = {
+                    ...payload,
+                    user_id: modalAttendanceData.user_id,
+                    company_id: globalProfile.company_id,
+                };
+                
+                const { error } = await _supabase
+                    .from('attendance')
+                    .insert([newPayload]);
+
+                if (error) {
+                    showMessage(`Gagal insert baru: ${error.message}`, 'error');
+                    return;
+                }
+            }
+            
+            showMessage('Perubahan berhasil disimpan.', 'success');
+            closeModal();
+            loadAdminAttendanceData(dateString); // Muat ulang tabel
+        });
+
+
+        // ===============================================================
+        // 4. LOGIKA AUTHENTIKASI UTAMA (GLOBAL)
+        // ===============================================================
+        
+        async function doLogout() {
+            const { error } = await _supabase.auth.signOut();
+            if (!error) {
+                globalProfile = null;
+                changeView('loginView');
+                showMessage('Anda telah logout.', 'info');
+            } else {
+                showMessage('Gagal logout: ' + error.message, 'error');
+            }
+        }
+
+        async function checkAuthAndRole() {
+            loadingView.style.display = 'flex'; // Tampilkan loading
+            
+            const { data: { session } } = await _supabase.auth.getSession();
+            
+            if (!session) {
+                loadingView.style.display = 'none';
+                return changeView('loginView');
+            }
+
+            // Ambil data profil untuk menentukan peran
+            const { data: profile, error: profileError } = await _supabase
+                .from('profiles')
+                .select('id, role, full_name, company_id')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profileError || !profile) {
+                console.error("Gagal memuat profil:", profileError?.message);
+                showMessage("Gagal memuat data profil. Silakan login ulang.", 'error');
+                await _supabase.auth.signOut();
+                loadingView.style.display = 'none';
+                return changeView('loginView');
+            }
+            
+            globalProfile = profile; // Simpan profil secara global
+            const userRole = profile.role;
+            
+            // Inisialisasi Jam
+            initializeClock(document.getElementById('karyawanCurrentTime'), document.getElementById('karyawanCurrentDate'));
+            
+            // Pengalihan berdasarkan Peran
+            if (userRole === 'super_admin' || userRole === 'company_admin') {
+                // ADMIN: Konfigurasi & Arahkan ke Admin View
+                adminRoleDisplay.textContent = `(${userRole.replace('_', ' ').toUpperCase()})`;
+                karyawanAdminLink.classList.remove('hidden'); // Tampilkan tombol Admin di tampilan Karyawan
+                
+                // Muat status absensi Karyawan jika Admin melihat halaman Karyawan
+                karyawanUserName.textContent = profile.full_name;
+                loadKaryawanAttendanceStatus(); 
+
+                loadingView.style.display = 'none';
+                return changeView('adminView'); // Default ke tampilan Admin
+            } else if (userRole === 'karyawan') {
+                // KARYAWAN: Konfigurasi & Arahkan ke Karyawan View
+                karyawanUserName.textContent = profile.full_name;
+                karyawanAdminLink.classList.add('hidden');
+                loadKaryawanAttendanceStatus();
+
+                loadingView.style.display = 'none';
+                return changeView('karyawanView'); // Default ke tampilan Karyawan
+            }
+
+            // Fallback (Peran tidak valid)
+            showMessage("Peran pengguna tidak valid. Logout.", 'error');
+            await doLogout();
+        }
+
+        // Jalankan pemeriksaan saat aplikasi dimuat
+        checkAuthAndRole();
+    </script>
+</body>
+</html>
