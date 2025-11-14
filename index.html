@@ -147,7 +147,6 @@
                         <!-- Tombol Aksi Absensi -->
                         <div class="grid grid-cols-2 gap-4 mb-6 mt-6">
                             <button id="karyawanClockInButton" class="bg-green-600 text-white p-4 rounded-xl shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50">
-                                <ion-icon name="time-outline" class="text-2xl mr-2"></ion-icon>
                                 Clock-In
                             </button>
                             <button id="karyawanClockOutButton" class="bg-red-600 text-white p-4 rounded-xl shadow-md hover:bg-red-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50" disabled>
@@ -262,6 +261,17 @@
                                 <ion-icon name="calendar-outline" class="text-lg mr-3"></ion-icon> Rekap Kehadiran
                             </button>
                         </li>
+                        <li>
+                            <button id="menuMasters" onclick="showAdminSection('masters')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="archive-outline" class="text-lg mr-3"></ion-icon> Master Data
+                            </button>
+                        </li>
+                        <!-- MANAJEMEN JAM KERJA (BARU) -->
+                        <li>
+                            <button id="menuWorkhours" onclick="showAdminSection('workhours')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="briefcase-outline" class="text-lg mr-3"></ion-icon> Manajemen Jam Kerja
+                            </button>
+                        </li>
                         <!-- Grup Menu PENGAJUAN (ACCORDION BARU) -->
                         <li>
                             <button id="menuRequests" onclick="toggleSubMenu('requestsSubMenu')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
@@ -291,6 +301,11 @@
                         </ul>
                         <!-- Akhir Sub Menu Requests -->
                         <!-- Akhir Grup Menu Pengajuan -->
+                        <li>
+                            <button id="menuTimeoffBalance" onclick="showAdminSection('timeoffbalance')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="today-outline" class="text-lg mr-3"></ion-icon> Saldo Cuti Karyawan
+                            </button>
+                        </li>
                         <!-- Tambahkan menu-menu baru di sini di masa depan -->
                     </ul>
                 </nav>
@@ -360,7 +375,7 @@
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
                                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200" id="adminAttendanceTableBody">
@@ -417,6 +432,7 @@
                                             <tr>
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Perusahaan</th>
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                             </tr>
                                         </thead>
@@ -475,6 +491,31 @@
                                 </button>
                                 
                                 <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Hasil Rekap</h3>
+
+                                <!-- KARTU STATISTIK REKAP (BARU) -->
+                                <!-- Container ini akan 'hidden' dan baru muncul setelah data dimuat -->
+                                <div id="rekapSummaryContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 hidden">
+                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
+                                        <p class="text-sm font-medium text-gray-500">Total Hadir</p>
+                                        <p class="text-2xl font-bold text-green-600 mt-1" id="rekapTotalHadir">0</p>
+                                    </div>
+                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
+                                        <p class="text-sm font-medium text-gray-500">Terlambat</p>
+                                        <p class="text-2xl font-bold text-yellow-600 mt-1" id="rekapTotalTerlambat">0</p>
+                                    </div>
+                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
+                                        <p class="text-sm font-medium text-gray-500">Sakit</p>
+                                        <p class="text-2xl font-bold text-yellow-600 mt-1" id="rekapTotalSakit">0</p>
+                                    </div>
+                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
+                                        <p class="text-sm font-medium text-gray-500">Izin/Cuti</p>
+                                        <p class="text-2xl font-medium text-gray-500" id="rekapTotalIzin">0</p>
+                                    </div>
+                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
+                                        <p class="text-sm font-medium text-gray-500">Alpa</p>
+                                        <p class="text-2xl font-bold text-red-600 mt-1" id="rekapTotalAlpa">0</p>
+                                    </div>
+                                </div>
 
                                 <!-- Tabel Hasil Rekap -->
                                 <div class="overflow-x-auto">
@@ -569,18 +610,317 @@
                         <!-- SECTION 6: PENGAJUAN IZIN / CUTI (BARU) -->
                         <div id="sectionReqtimeoff" style="display: none;">
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                                <h2 class="text-xl font-semibold text-gray-800">Pengajuan Izin / Cuti</h2>
-                                <p class="text-gray-500 mt-2">Daftar permintaan karyawan untuk izin atau cuti (Timeoff). Konten tabel akan diisi di langkah selanjutnya.</p>
+                                <h2 class="text-xl font-semibold text-gray-800 mb-6">Filter Pengajuan Izin / Cuti</h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    
+                                    <!-- Filter Rentang Tanggal (Gunakan ID unik) -->
+                                    <div class="md:col-span-2 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="reqTimeoffStartDate" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                            <input type="date" id="reqTimeoffStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="reqTimeoffEndDate" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                            <input type="date" id="reqTimeoffEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Karyawan (Gunakan ID unik) -->
+                                    <div>
+                                        <label for="reqTimeoffEmployeeFilter" class="block text-xs font-medium text-gray-700 mb-1">Nama Karyawan</label>
+                                        <select id="reqTimeoffEmployeeFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Karyawan --</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Filter Status (Gunakan ID unik) -->
+                                    <div>
+                                        <label for="reqTimeoffStatusFilter" class="block text-xs font-medium text-gray-700 mb-1">Status Pengajuan</label>
+                                        <select id="reqTimeoffStatusFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Status --</option>
+                                            <option value="Diajukan">Diajukan</option>
+                                            <option value="Disetujui">Disetujui</option>
+                                            <option value="Ditolak">Ditolak</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <button id="reqTimeoffFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium mb-8">
+                                    <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Pengajuan Izin/Cuti
+                                </button>
+                                
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Daftar Pengajuan</h3>
+
+                                <!-- Tabel Hasil Pengajuan (Gunakan ID unik) -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Pengajuan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Timeoff</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Mulai</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Akhir</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="reqTimeoffTableBody">
+                                            <tr><td colspan="9" class="text-center py-8 text-gray-500">Silakan atur filter dan klik 'Tampilkan Pengajuan'.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
                         <!-- SECTION 7: PENGAJUAN LEMBUR (BARU) -->
                         <div id="sectionReqovertime" style="display: none;">
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                                <h2 class="text-xl font-semibold text-gray-800">Pengajuan Lembur</h2>
-                                <p class="text-gray-500 mt-2">Daftar permintaan karyawan untuk kerja lembur (Overtime). Konten tabel akan diisi di langkah selanjutnya.</p>
+                                <h2 class="text-xl font-semibold text-gray-800 mb-6">Filter Pengajuan Lembur</h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    
+                                    <!-- Filter Rentang Tanggal Lembur -->
+                                    <div class="md:col-span-2 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="reqOvertimeStartDate" class="block text-xs font-medium text-gray-700 mb-1">Tgl Lembur Dari</label>
+                                            <input type="date" id="reqOvertimeStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label for="reqOvertimeEndDate" class="block text-xs font-medium text-gray-700 mb-1">Tgl Lembur Sampai</label>
+                                            <input type="date" id="reqOvertimeEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Karyawan -->
+                                    <div>
+                                        <label for="reqOvertimeEmployeeFilter" class="block text-xs font-medium text-gray-700 mb-1">Nama Karyawan</label>
+                                        <select id="reqOvertimeEmployeeFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Karyawan --</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Filter Status -->
+                                    <div>
+                                        <label for="reqOvertimeStatusFilter" class="block text-xs font-medium text-gray-700 mb-1">Status Pengajuan</label>
+                                        <select id="reqOvertimeStatusFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Semua Status --</option>
+                                            <option value="Diajukan">Diajukan</option>
+                                            <option value="Disetujui">Disetujui</option>
+                                            <option value="Ditolak">Ditolak</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <button id="reqOvertimeFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium mb-8">
+                                    <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Pengajuan Lembur
+                                </button>
+                                
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Daftar Pengajuan Lembur</h3>
+
+                                <!-- Tabel Hasil Pengajuan -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Diajukan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Lembur</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mulai - Akhir</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="reqOvertimeTableBody">
+                                            <tr><td colspan="8" class="text-center py-8 text-gray-500">Silakan atur filter dan klik 'Tampilkan Pengajuan Lembur'.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
+                        </div> <!-- End sectionReqovertime -->
+
+                        <!-- ============================================= -->
+                        <!-- SECTION 8: MASTER DATA (BARU)               -->
+                        <!-- ============================================= -->
+                        <div id="sectionMasters" style="display: none;">
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Manajemen Master Data</h2>
+
+                            <!-- Kontainer Tab -->
+                            <div class="mb-4 border-b border-gray-200">
+                                <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                                    <!-- Tab 1: Tipe Izin/Cuti (Aktif) -->
+                                    <button id="tabMasterTimeoff" onclick="showMasterTab('timeoff')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600">
+                                        Tipe Izin/Cuti
+                                    </button>
+                                    <!-- Tab 2: Tipe Gaji -->
+                                    <button id="tabMasterSalary" onclick="showMasterTab('salary')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                        Tipe Gaji
+                                    </button>
+                                    <!-- Tab 3: Tipe Potongan -->
+                                    <button id="tabMasterDeduction" onclick="showMasterTab('deduction')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                        Tipe Potongan
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Konten Tab -->
+                            <div>
+                                <!-- Konten 1: Tipe Izin/Cuti -->
+                                <div id="masterContentTimeoff">
+                                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <h3 class="text-xl font-semibold text-gray-800">Daftar Tipe Izin/Cuti</h3>
+                                            <button onclick="openMasterModal('add', 'timeoff')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                                <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Tipe Baru
+                                            </button>
+                                        </div>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tipe Izin/Cuti</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi (Opsional)</th>
+                                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200" id="timeoffTypesTableBody">
+                                                    <!-- Data diisi oleh JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Konten 2: Tipe Gaji (Aktif) -->
+                                <div id="masterContentSalary" class="hidden">
+                                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <h3 class="text-xl font-semibold text-gray-800">Daftar Tipe Gaji</h3>
+                                            <!-- (PENTING) 'salary' merujuk ke tipe di JS -->
+                                            <button onclick="openMasterModal('add', 'salary')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                                <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Tipe Gaji
+                                            </button>
+                                        </div>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tipe Gaji</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai (Rp/%)</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200" id="salaryTypesTableBody">
+                                                    <!-- Data diisi oleh JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Konten 3: Tipe Potongan (Aktif) -->
+                                <div id="masterContentDeduction" class="hidden">
+                                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <h3 class="text-xl font-semibold text-gray-800">Daftar Tipe Potongan</h3>
+                                            <!-- (PENTING) 'deduction' merujuk ke tipe di JS -->
+                                            <button onclick="openMasterModal('add', 'deduction')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                                <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Tipe Potongan
+                                            </button>
+                                        </div>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tipe Potongan</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai (Rp/%)</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200" id="deductionTypesTableBody">
+                                                    <!-- Data diisi oleh JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionMasters -->
+
+                        <!-- ============================================= -->
+                        <!-- SECTION 9: MANAJEMEN JAM KERJA (BARU)       -->
+                        <!-- ============================================= -->
+                        <div id="sectionWorkhours" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold text-gray-800">Manajemen Jam Kerja</h2>
+                                    <button onclick="openWorkhourModal('add')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                        <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Pola Jam Kerja
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-4">
+                                    Buat pola jam kerja (cth: "Shift Pagi", "Full-time") lalu tugaskan karyawan ke pola ini di menu "Manajemen Karyawan".
+                                </p>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pola Jam Kerja</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="workhoursTableBody">
+                                            <!-- Data diisi oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionWorkhours -->
+
+                        <!-- ============================================= -->
+                        <!-- SECTION 10: MANAJEMEN SALDO CUTI (BARU)     -->
+                        <!-- ============================================= -->
+                        <div id="sectionTimeoffbalance" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-semibold text-gray-800">Manajemen Saldo Cuti Tahunan</h2>
+                                    <button onclick="openTimeoffBalanceModal('add')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                        <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Saldo Baru
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-4">
+                                    Atur jatah hari cuti tahunan (atau cuti berbatas lainnya) untuk setiap karyawan.
+                                </p>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Cuti</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo Sisa (Hari)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="timeoffBalanceTableBody">
+                                            <!-- Data diisi oleh JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionTimeoffbalance -->
             
                         <!-- SECTION 8: TIMEOFF (KONTEN BARU) -->
                         <div id="karyawanSection_Timeoff" style="display: none;">
@@ -742,7 +1082,7 @@
                                     <!-- Pilih Perusahaan (Hanya untuk Super Admin) -->
                                     <div id="companySelectContainer" class="hidden">
                                         <label for="employeeCompany" class="block text-sm font-medium text-gray-700">Perusahaan</label>
-                                        <select id="employeeCompany" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                        <select id="employeeCompany" onchange="loadWorkhourDropdown('employeeWorkhour', this.value)" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
                                             <!-- Opsi perusahaan akan dimuat oleh JS -->
                                         </select>
                                     </div>
@@ -767,7 +1107,15 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Note: Kolom Workhour ID (workhour_id) perlu diisi, nanti bisa ditambahkan dropdown setelah Anda membuat data workhours di Supabase. Untuk sementara, kita biarkan kosong. -->
+                                    <!-- (BARU) PILIH POLA JAM KERJA -->
+                                    <div id="workhourSelectContainer">
+                                        <label for="employeeWorkhour" class="block text-sm font-medium text-gray-700">Pola Jam Kerja</label>
+                                        <select id="employeeWorkhour" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <option value="">-- Pilih Pola Jam Kerja --</option>
+                                            <!-- Opsi akan dimuat oleh JS dari tabel workhours -->
+                                        </select>
+                                    </div>
+
                                 </div>
                             </div>
                             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -869,6 +1217,424 @@
                 </div>
             </div>
 
+            <!-- Modal Konfirmasi Status Perusahaan (BARU) -->
+            <div id="companyStatusModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeConfirmStatusModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="companyStatusModalTitle">
+                                Konfirmasi Perubahan Status
+                                </h3>
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-600" id="companyStatusModalText">
+                                    Apakah Anda yakin ingin mengubah status perusahaan ini?
+                                    </p>
+                                </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" id="companyStatusConfirmButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Ya, Ubah Status
+                            </button>
+                            <button type="button" onclick="closeConfirmStatusModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Alasan Keterlambatan (BARU) -->
+            <div id="lateReasonModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    
+                    <!-- Konten Modal -->
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="lateReasonForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="lateReasonModalTitle">
+                                    Anda Terlambat
+                                </h3>
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Waktu clock-in Anda melewati batas toleransi. Silakan isi alasan keterlambatan Anda di bawah ini.
+                                    </p>
+                                    <div>
+                                        <label for="lateReasonDescription" class="block text-sm font-medium text-gray-700">Alasan Keterlambatan</label>
+                                        <textarea id="lateReasonDescription" rows="4" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Terjebak macet di jalan..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="lateReasonSubmitButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Kirim Alasan & Clock-In
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Add/Edit Master Data (BARU) -->
+            <div id="masterDataModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeMasterModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="masterDataForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="masterModalTitle">
+                                    Tambah Data Master
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="masterName" class="block text-sm font-medium text-gray-700">Nama</label>
+                                        <input type="text" id="masterName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <!-- DROPDOWN PERUSAHAAN (BARU) -->
+                                    <div id="masterCompanySelectContainer" class="hidden">
+                                        <label for="masterCompanySelect" class="block text-sm font-medium text-gray-700">Perusahaan</label>
+                                        <select id="masterCompanySelect" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <!-- Opsi diisi oleh JS -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="masterDescription" class="block text-sm font-medium text-gray-700">Deskripsi (Opsional)</label>
+                                        <textarea id="masterDescription" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm"></textarea>
+                                    </div>
+                                    <!-- (BARU) Field Khusus Tipe Potongan -->
+                                    <div id="masterDeductionFields" class="hidden space-y-4 pt-4 border-t">
+                                        <h4 class="text-sm font-medium text-gray-500">Aturan Potongan</h4>
+                                        <div>
+                                            <label for="masterDeductionMethod" class="block text-sm font-medium text-gray-700">Metode Perhitungan</label>
+                                            <select id="masterDeductionMethod" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <option value="Nominal Tetap">Nominal Tetap</option>
+                                                <option value="Persentase">Persentase</option>
+                                                <option value="Berdasarkan Absensi">Berdasarkan Absensi</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="masterDeductionValue" class="block text-sm font-medium text-gray-700">Nilai (Rp. atau %)</label>
+                                            <input type="number" id="masterDeductionValue" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Contoh: 10000 atau 5 (untuk 5%)">
+                                        </div>
+                                        <!-- (BARU) DROPDOWN KONDISI (PEMICU) -->
+                                        <div id="masterDeductionConditionContainer" class="hidden"> 
+                                            <label for="masterDeductionCondition" class="block text-sm font-medium text-gray-700">Terapkan Jika Status Absensi</label>
+                                            <select id="masterDeductionCondition" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <option value="">-- Pilih Pemicu --</option>
+                                                <option value="Terlambat">Terlambat</option>
+                                                <option value="Alpa">Alpa</option>
+                                                <option value="Sakit">Sakit</option>
+                                                <option value="Izin">Izin</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- (BARU) Field Khusus Tipe Gaji -->
+                                    <div id="masterSalaryFields" class="hidden space-y-4 pt-4 border-t">
+                                        <h4 class="text-sm font-medium text-gray-500">Aturan Tunjangan/Gaji</h4>
+                                        <div>
+                                            <label for="masterSalaryMethod" class="block text-sm font-medium text-gray-700">Metode Perhitungan</label>
+                                            <select id="masterSalaryMethod" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <!-- Opsi dari ENUM 'salary_method_enum' -->
+                                                <option value="Nominal Tetap">Nominal Tetap</option>
+                                                <option value="Berdasarkan Lembur">Berdasarkan Lembur</option>
+                                                <option value="Berdasarkan Absensi">Berdasarkan Absensi</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="masterSalaryValue" class="block text-sm font-medium text-gray-700">Nilai (Rp)</label>
+                                            <input type="number" id="masterSalaryValue" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: 25000 (untuk per jam lembur)">
+                                        </div>
+                                        
+                                        <!-- (BARU) DROPDOWN KONDISI (PEMICU) UNTUK GAJI -->
+                                        <div id="masterSalaryConditionContainer" class="hidden"> 
+                                            <label for="masterSalaryCondition" class="block text-sm font-medium text-gray-700">Pemicu Aturan</label>
+                                            <select id="masterSalaryCondition" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <option value="">-- Pilih Pemicu --</option>
+                                                <!-- Pemicu untuk 'Berdasarkan Lembur' -->
+                                                <option value="overtime_approved">Lembur Disetujui</option>
+                                                <!-- Pemicu untuk 'Berdasarkan Absensi' -->
+                                                <option value="Hadir">Bonus Kehadiran (Hadir)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="saveMasterButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan
+                                </button>
+                                <button type="button" onclick="closeMasterModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Konfirmasi Delete Master Data (BARU) -->
+            <div id="masterDeleteModal" class="fixed z-40 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeConfirmDeleteModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Konfirmasi Hapus
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600" id="masterDeleteText">
+                                    Apakah Anda yakin ingin menghapus data ini?
+                                </p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" id="masterDeleteConfirmButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Ya, Hapus
+                            </button>
+                            <button type="button" onclick="closeConfirmDeleteModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Add/Edit Jam Kerja (BARU) -->
+            <div id="workhourModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeWorkhourModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    
+                    <!-- Konten Modal (Dibuat lebih lebar: sm:max-w-3xl) -->
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                        <form id="workhourForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="workhourModalTitle">
+                                    Tambah Pola Jam Kerja
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <!-- Nama Pola dan Perusahaan (jika Super Admin) -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="workhourName" class="block text-sm font-medium text-gray-700">Nama Pola Jam Kerja</label>
+                                            <input type="text" id="workhourName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Full-time (08-17)">
+                                        </div>
+                                        <div id="workhourCompanyContainer" class="hidden">
+                                            <label for="workhourCompanySelect" class="block text-sm font-medium text-gray-700">Perusahaan</tabel>
+                                            <select id="workhourCompanySelect" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <!-- Opsi diisi oleh JS -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Pengaturan Jadwal 7 Hari -->
+                                    <div class="space-y-3 pt-4 border-t">
+                                        <h4 class="text-md font-medium text-gray-800">Atur Jadwal Mingguan</h4>
+                                        <!-- (JS akan digunakan untuk enable/disable time input) -->
+                                        <!-- Nama hari (cth: 'senin') HARUS lowercase untuk ID -->
+                                        
+                                        <!-- HARI (Dibuat sebagai Grid) -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                                            <!-- Contoh 1 Hari: Senin -->
+                                            <div id="wh_day_senin" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Senin</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_senin_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                        <label for="wh_senin_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_senin_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="08:00">
+                                                    <input type="time" id="wh_senin_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="17:00">
+                                                </div>
+                                            </div>
+                                            <!-- Selasa -->
+                                            <div id="wh_day_selasa" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Selasa</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_selasa_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                        <label for="wh_selasa_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_selasa_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="08:00">
+                                                    <input type="time" id="wh_selasa_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="17:00">
+                                                </div>
+                                            </div>
+                                            <!-- Rabu -->
+                                            <div id="wh_day_rabu" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Rabu</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_rabu_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                        <label for="wh_rabu_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_rabu_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="08:00">
+                                                    <input type="time" id="wh_rabu_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="17:00">
+                                                </div>
+                                            </div>
+                                            <!-- Kamis -->
+                                            <div id="wh_day_kamis" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Kamis</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_kamis_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                        <label for="wh_kamis_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_kamis_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="08:00">
+                                                    <input type="time" id="wh_kamis_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="17:00">
+                                                </div>
+                                            </div>
+                                            <!-- Jumat -->
+                                            <div id="wh_day_jumat" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Jumat</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_jumat_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                        <label for="wh_jumat_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_jumat_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="08:00">
+                                                    <input type="time" id="wh_jumat_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="17:00">
+                                                </div>
+                                            </div>
+                                            <!-- Sabtu -->
+                                            <div id="wh_day_sabtu" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Sabtu</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_sabtu_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
+                                                        <label for="wh_sabtu_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_sabtu_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="09:00" disabled>
+                                                    <input type="time" id="wh_sabtu_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="14:00" disabled>
+                                                </div>
+                                            </div>
+                                            <!-- Minggu -->
+                                            <div id="wh_day_minggu" class="p-3 bg-gray-50 rounded-lg border">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-sm font-medium text-gray-900">Minggu</label>
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="wh_minggu_is_off" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked>
+                                                        <label for="wh_minggu_is_off" class="ml-2 block text-xs text-gray-700">Hari Libur</label>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <input type="time" id="wh_minggu_start" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="09:00" disabled>
+                                                    <input type="time" id="wh_minggu_end" class="wh_time_input w-full border border-gray-300 rounded-md p-1.5 text-sm" value="14:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="saveWorkhourButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan Pola Jam Kerja
+                                </button>
+                                <button type="button" onclick="closeWorkhourModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Konfirmasi Delete Jam Kerja (BARU) -->
+            <div id="workhourDeleteModal" class="fixed z-40 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeConfirmWorkhourDelete()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Konfirmasi Hapus Jam Kerja
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600" id="workhourDeleteText">
+                                    Apakah Anda yakin ingin menghapus pola jam kerja ini?
+                                </p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" id="workhourDeleteConfirmButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Ya, Hapus
+                            </button>
+                            <button type="button" onclick="closeConfirmWorkhourDelete()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Add/Edit Saldo Cuti (BARU) -->
+            <div id="timeoffBalanceModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeTimeoffBalanceModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="timeoffBalanceForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="timeoffBalanceModalTitle">
+                                    Tetapkan Saldo Cuti Baru
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <!-- Pilih Karyawan (Hanya mode ADD) -->
+                                    <div id="balanceEmployeeSelectContainer">
+                                        <label for="balanceEmployeeSelect" class="block text-sm font-medium text-gray-700">Karyawan</label>
+                                        <select id="balanceEmployeeSelect" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <option value="">-- Pilih Karyawan --</option>
+                                            <!-- Opsi diisi oleh JS -->
+                                        </select>
+                                    </div>
+
+                                    <!-- Pilih Tipe Cuti (Hanya mode ADD) -->
+                                    <div id="balanceTimeoffTypeSelectContainer">
+                                        <label for="balanceTimeoffTypeSelect" class="block text-sm font-medium text-gray-700">Tipe Cuti (Berbatas)</label>
+                                        <select id="balanceTimeoffTypeSelect" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <option value="">-- Pilih Tipe Cuti --</option>
+                                            <!-- Opsi diisi oleh JS -->
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Jumlah Hari Saldo -->
+                                    <div>
+                                        <label for="balanceDays" class="block text-sm font-medium text-gray-700">Jumlah Saldo Hari (Cth: 12)</label>
+                                        <input type="number" id="balanceDays" step="0.5" required min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Masukkan jumlah hari cuti">
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="saveTimeoffBalanceButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan Saldo
+                                </button>
+                                <button type="button" onclick="closeTimeoffBalanceModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Kotak Pesan Global -->
             <div id="messageBox" class="fixed top-5 right-5 z-50 w-full max-w-sm"></div>
 
@@ -918,6 +1684,11 @@
         const modalClockIn = document.getElementById('modalClockIn');
         const modalClockOut = document.getElementById('modalClockOut');
         const modalSaveButton = document.getElementById('modalSaveButton');
+        const lateReasonModal = document.getElementById('lateReasonModal');
+        const lateReasonForm = document.getElementById('lateReasonForm');
+        const lateReasonDescription = document.getElementById('lateReasonDescription');
+
+        let tempClockInData = {};
         
         // ===============================================================
         // HELPER FUNCTIONS (UTILITY)
@@ -949,10 +1720,10 @@
         // FUNGSI NAVIGASI SIDEBAR ADMIN (DIPERBAIKI UNTUK ACCORDION)
         function showAdminSection(sectionName) {
             // Daftar semua section 
-            const sections = ['summary', 'employees', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime'];
+            const sections = ['summary', 'employees', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime', 'masters', 'workhours', 'timeoffbalance'];
             
             // Daftar semua tombol menu (termasuk sub-menu)
-            const menus = ['menuSummary', 'menuEmployees', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests'];
+            const menus = ['menuSummary', 'menuEmployees', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests', 'menuMasters', 'menuWorkhours', 'menuTimeoffBalance'];
             
             // Elemen Accordion
             const requestsMenu = document.getElementById('menuRequests');
@@ -1028,9 +1799,17 @@
             } else if (sectionName === 'reqattendance') { 
                 initializeReqAttFilters(); 
             } else if (sectionName === 'reqtimeoff') { 
-                // loadRequestTimeoffData(); 
+                initializeReqTimeoffFilters(); 
             } else if (sectionName === 'reqovertime') { 
-                // loadRequestOvertimeData(); 
+                initializeReqOvertimeFilters();
+            } else if (sectionName === 'masters') { // <-- TAMBAHKAN BLOK INI
+                // Tampilkan tab default (timeoff) dan muat datanya
+                showMasterTab('timeoff');
+                loadTimeoffTypes(); 
+            } else if (sectionName === 'workhours') { // <-- TAMBAHKAN BLOK INI
+                loadWorkhoursList();
+            } else if (sectionName === 'timeoffbalance') { // <-- TAMBAHKAN BLOK INI
+                loadTimeoffBalanceList();
             }
         }
 
@@ -1114,6 +1893,18 @@
                 companySelectContainer.classList.add('hidden');
                 companySelect.required = false;
             }
+            // Muat dropdown jam kerja berdasarkan peran
+            if (globalProfile.role === 'company_admin') {
+                // Company Admin: Langsung muat jam kerja untuk perusahaannya + Global
+                await loadWorkhourDropdown('employeeWorkhour', globalProfile.company_id);
+            } else {
+                // Super Admin: Muat jam kerja Global dulu (jika ada)
+                // Dropdown akan di-reload jika dia memilih perusahaan (lihat Langkah 4)
+                await loadWorkhourDropdown('employeeWorkhour', null); 
+            }
+            // (AKHIR BLOK BARU)
+
+            employeeModal.classList.remove('hidden');
         }
 
         function closeEmployeeModal() {
@@ -1195,7 +1986,7 @@
                 user_id_number: idNumber,
                 role: role,
                 user_status: status,
-                workhour_id: null, // Sementara NULL, karena belum ada data workhour
+                workhour_id: document.getElementById('employeeWorkhour').value || null,
             };
             
             const { error: profileError } = await _supabase
@@ -1236,7 +2027,7 @@
                 role: role,
                 user_status: status,
                 company_id: companyId,
-                // workhour_id akan ditambahkan di sini nanti
+                workhour_id: document.getElementById('employeeWorkhour').value || null,
             };
 
             // 1. Update data di tabel 'profiles'
@@ -1286,7 +2077,7 @@
             // RLS sudah diatur agar hanya Super Admin yang bisa memanggil ini
             const { data, error } = await _supabase
                 .from('companies')
-                .select('id, name, created_at')
+                .select('id, name, created_at, status')
                 .order('name', { ascending: true });
 
             if (error) {
@@ -1302,12 +2093,21 @@
 
             let html = data.map(company => {
                 const createdDate = new Date(company.created_at).toLocaleDateString('id-ID');
+                const status = company.status; // 'aktif' atau 'tidak aktif'
+                const statusClass = status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                // Tentukan status baru (kebalikannya) untuk dikirim ke fungsi
+                const newStatus = status === 'aktif' ? 'tidak aktif' : 'aktif'; 
+
                 return `
                     <tr data-id="${company.id}">
                         <td class="px-4 py-3 text-sm font-medium text-gray-900">${company.name}</td>
                         <td class="px-4 py-3 text-sm text-gray-500">${createdDate}</td>
+                        <td class="px-4 py-3 text-left">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                        </td>
                         <td class="px-4 py-3 text-center text-sm font-medium">
-                            <button onclick="editCompany('${company.id}', '${company.name}')" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                            <button onclick="editCompany('${company.id}', '${company.name}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit Nama</button>
+                            <button onclick="openConfirmStatusModal('${company.id}', '${company.name}', '${newStatus}')" class="text-yellow-600 hover:text-yellow-900">Ubah Status</button>
                         </td>
                     </tr>
                 `;
@@ -1352,6 +2152,60 @@
             document.getElementById('companyName').value = name;
             companyModal.classList.remove('hidden');
         }
+
+        // --- FUNGSI BARU: LOGIKA MODAL STATUS PERUSAHAAN ---
+        const companyStatusModal = document.getElementById('companyStatusModal');
+        const companyStatusConfirmButton = document.getElementById('companyStatusConfirmButton');
+        const companyStatusModalText = document.getElementById('companyStatusModalText');
+
+        let statusChangeData = {}; // Menyimpan data sementara
+
+        function openConfirmStatusModal(companyId, companyName, newStatus) {
+            statusChangeData = { id: companyId, status: newStatus };
+            
+            // Tampilkan pesan konfirmasi yang spesifik
+            companyStatusModalText.innerHTML = `Apakah Anda yakin ingin mengubah status perusahaan <strong>${companyName}</strong> menjadi <strong>${newStatus}</strong>?`;
+            
+            // Ubah warna tombol konfirmasi
+            companyStatusConfirmButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-green-600', 'hover:bg-green-700');
+            if (newStatus === 'tidak aktif') {
+                companyStatusConfirmButton.textContent = 'Ya, Nonaktifkan';
+                companyStatusConfirmButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                companyStatusConfirmButton.textContent = 'Ya, Aktifkan';
+                companyStatusConfirmButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+
+            companyStatusModal.classList.remove('hidden');
+        }
+
+        function closeConfirmStatusModal() {
+            companyStatusModal.classList.add('hidden');
+            statusChangeData = {};
+        }
+
+        // Logika saat tombol konfirmasi di modal diklik
+        companyStatusConfirmButton.addEventListener('click', async () => {
+            const { id, status } = statusChangeData;
+            if (!id || !status) return;
+
+            showMessage("Memperbarui status perusahaan...", 'info');
+            
+            // Hanya Super Admin yang bisa melakukan ini (RLS sudah diatur)
+            const { error } = await _supabase
+                .from('companies')
+                .update({ status: status }) // Menggunakan enum 'aktif' atau 'tidak aktif'
+                .eq('id', id);
+
+            if (error) {
+                showMessage(`Gagal memperbarui status: ${error.message}`, 'error');
+                return;
+            }
+
+            showMessage('Status perusahaan berhasil diperbarui.', 'success');
+            closeConfirmStatusModal();
+            loadCompanyList(); // Muat ulang daftar perusahaan untuk melihat perubahan
+        });
 
         function showMessage(message, type = 'success') {
             const box = document.createElement('div');
@@ -1736,51 +2590,82 @@
 
         async function doClockIn() {
             karyawanClockInButton.disabled = true;
-            showMessage("Meminta izin lokasi dan memproses Absen Masuk...", 'info');
+            showMessage("Meminta izin lokasi...", 'info');
+            const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
 
             let locationString = 'Lokasi gagal didapatkan';
             let locationCoords = null;
-            const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
             
             try {
-                // Panggil fungsi pengambilan lokasi (akan memicu permintaan izin)
                 locationCoords = await getCurrentLocation();
                 locationString = `${locationCoords.latitude}, ${locationCoords.longitude}`;
                 locationDisplayElement.textContent = `Lokasi: ${locationString}`;
-                showMessage("Lokasi berhasil didapatkan. Melanjutkan presensi.", 'info');
-
             } catch (e) {
-                // Jika pengambilan lokasi gagal (izin ditolak/timeout)
                 showMessage(`Gagal Absen: ${e.message}`, 'error');
                 karyawanClockInButton.disabled = false;
-                locationDisplayElement.textContent = `Lokasi: ${e.message.split('.')[0]}`; // Tampilkan pesan error
+                locationDisplayElement.textContent = `Lokasi: ${e.message.split('.')[0]}`;
                 return;
             }
 
             const now = new Date();
-            const newAttendance = {
-                user_id: globalProfile.id,
-                company_id: globalProfile.company_id,
-                attendance_status: 'Hadir', 
-                clock_in: now.toISOString(),
-                location: locationString, // <-- Menggunakan koordinat yang diambil
-            };
             
-            const { error } = await _supabase
-                .from('attendance')
-                .insert([newAttendance]);
+            // --- LOGIKA CEK KETERLAMBATAN (BARU - DINAMIS) ---
+            let isLate = false;
+            try {
+                // 1. Tentukan nama hari ini (Sesuai key JSON: "Senin", "Selasa", ...)
+                const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+                const todayName = dayNames[now.getDay()]; // cth: "Jumat"
 
-            if (error) {
-                console.error('Gagal Absen Masuk:', error.message);
-                showMessage(`Gagal Absen Masuk: ${error.message}.`, 'error');
-                karyawanClockInButton.disabled = false;
-                return;
+                // 2. Ambil jadwal kerja dari globalProfile (yang dimuat saat login)
+                const schedule = globalProfile.workhours?.schedule;
+
+                if (!globalProfile.workhours || !schedule || !schedule[todayName]) {
+                    // Karyawan tidak punya jam kerja / tidak ada aturan untuk hari ini
+                    console.warn(`Tidak ada jadwal kerja (workhour) ditemukan untuk ${globalProfile.full_name} pada hari ${todayName}. Keterlambatan tidak dihitung.`);
+                    // Anggap tidak terlambat agar tidak error
+                    isLate = false;
+                } else {
+                    const todayRule = schedule[todayName];
+
+                    // 3. Cek jika hari ini libur (is_off)
+                    if (todayRule.is_off) {
+                        // Tidak terlambat jika jadwalnya hari libur
+                        isLate = false;
+                    } else if (todayRule.start) {
+                        // 4. Bandingkan jam
+                        const [hours, minutes] = todayRule.start.split(':').map(Number);
+                        const deadline = new Date(now); // Salin objek 'now'
+                        deadline.setHours(hours, minutes, 0, 0); // Atur jam deadline (cth: 08:30:00.000)
+
+                        if (now > deadline) {
+                            isLate = true; // Karyawan terlambat!
+                        }
+                    } else {
+                        // Ada jadwal hari ini tapi tidak ada jam 'start'
+                        console.warn(`Jadwal hari ${todayName} tidak memiliki jam 'start'. Keterlambatan tidak dihitung.`);
+                        isLate = false;
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal memproses logika jam kerja (workhours):", e.message);
+                // Jika proses gagal = anggap tidak terlambat agar tidak error
+                isLate = false;
             }
-            
-            showMessage('Absen Masuk Berhasil! Selamat bekerja.', 'success');
-            loadKaryawanAttendanceStatus(); 
-            // Pastikan lokasi tetap terlihat setelah absen berhasil
-            locationDisplayElement.textContent = `Lokasi: ${locationString}`;
+            // --- AKHIR LOGIKA CEK KETERLAMBATAN ---
+
+            if (isLate) {
+                // JIKA TERLAMBAT: Buka modal
+                showMessage("Anda terlambat! Harap isi alasan.", 'info');
+                // Simpan data sementara untuk digunakan saat modal disubmit
+                tempClockInData = { now, locationString }; 
+                openLateReasonModal();
+                // Tombol clock-in akan tetap 'disabled' sampai modal disubmit
+            } else {
+                // JIKA TEPAT WAKTU: Langsung insert
+                showMessage("Lokasi didapatkan. Memproses Clock-In...", 'info');
+                await insertAttendance(now, locationString, 'Hadir', null);
+                // Tombol akan di-handle oleh loadKaryawanAttendanceStatus (menjadi disabled)
+            }
         }
 
         async function doClockOut() {
@@ -1858,7 +2743,7 @@
             // 2. Ambil data absensi untuk tanggal dan user ID yang sesuai
             const { data: attendanceData, error: attendanceError } = await _supabase
                 .from('attendance')
-                .select('*')
+                .select('id, user_id, clock_in, clock_out, attendance_status, location')
                 .in('user_id', employeeIds)
                 .gte('created_at', startOfDay)
                 .lt('created_at', endOfDay);
@@ -1896,8 +2781,8 @@
                         <td class="px-4 py-3 whitespace-nowrap text-center">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(status)}">${status}</span>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
-                            <button onclick="openModal('${att ? att.id : null}', '${profile.id}', '${profile.full_name}', '${status}', '${att ? formatTimeForInput(att.clock_in) : ''}', '${att ? formatTimeForInput(att.clock_out) : ''}')" class="text-blue-600 hover:text-blue-900">Ubah Status</button>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">
+                            ${att ? (att.location || '-') : '-'}
                         </td>
                     </tr>
                 `;
@@ -2064,17 +2949,61 @@
             query = query.order('created_at', { ascending: false });
 
             const { data, error } = await query;
+            const summaryContainer = document.getElementById('rekapSummaryContainer');
+
 
             if (error) {
                 console.error("Gagal memuat data rekap:", error.message);
                 rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+                summaryContainer.classList.add('hidden'); // Sembunyikan jika error
                 return;
             }
 
             if (data.length === 0) {
                 rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data kehadiran yang cocok dengan filter yang Anda pilih.</td></tr>';
                 return;
+                summaryContainer.classList.add('hidden'); // Sembunyikan jika tidak ada data
+                return;
             }
+
+            // --- TAMBAHKAN LOGIKA PENGHITUNGAN BARU INI (baris ~1677) ---
+            let countHadir = 0;
+            let countTerlambat = 0;
+            let countSakit = 0;
+            let countIzin = 0;
+            let countAlpa = 0;
+
+            // Hitung total dari data yang didapat
+            data.forEach(att => {
+                switch (att.attendance_status) {
+                    case 'Hadir':
+                        countHadir++;
+                        break;
+                    case 'Terlambat':
+                        countTerlambat++;
+                        break;
+                    case 'Sakit':
+                        countSakit++;
+                        break;
+                    case 'Izin':
+                        countIzin++;
+                        break;
+                    case 'Alpa':
+                        countAlpa++;
+                        break;
+                }
+            });
+
+            // Update kartu statistik di HTML
+            document.getElementById('rekapTotalHadir').textContent = countHadir;
+            document.getElementById('rekapTotalTerlambat').textContent = countTerlambat;
+            document.getElementById('rekapTotalSakit').textContent = countSakit;
+            document.getElementById('rekapTotalIzin').textContent = countIzin;
+            document.getElementById('rekapTotalAlpa').textContent = countAlpa;
+
+            // Tampilkan kontainer statistik
+            summaryContainer.classList.remove('hidden');
 
             // --- LOGIKA PENGUMPULAN KETERANGAN DARI TABEL REQUESTS ---
             const employeeIdsInRekap = [...new Set(data.map(att => att.user_id))];
@@ -2124,8 +3053,10 @@
 
                 const requestKey = `${att.user_id}|${dateKey}`;
                 
-                // Ambil keterangan: HANYA dari requestsMap. Defaultkan ke '-' jika tidak ada.
-                const keterangan = requestsMap[requestKey] || '-'; // <-- PERBAIKAN UTAMA
+                // Ambil keterangan: 
+                // Prioritas 1: Langsung dari data absensi (untuk alasan telat)
+                // Prioritas 2: Dari requestsMap (untuk koreksi yang disetujui)
+                const keterangan = att.description || requestsMap[requestKey] || '-';
 
                 const name = att.profiles ? att.profiles.full_name : 'N/A';
                 const statusClass = getStatusClass(att.attendance_status);
@@ -2225,6 +3156,7 @@
                     description, 
                     requests_status,
                     user_id,
+                    company_id,
                     profiles(full_name)
                 `)
                 // Filter Tanggal Kehadiran (attendance_date)
@@ -2272,7 +3204,7 @@
                 if (status === 'Diajukan') {
                     statusClass = 'bg-yellow-100 text-yellow-800';
                     actionButtons = `
-                        <button onclick="handleApproveRequest('${req.id}')" class="text-green-600 hover:text-green-800 mr-2">Setujui</button>
+                        <button onclick="handleApproveRequest('${req.id}', '${req.user_id}', '${req.company_id}', '${req.attendance_date}', '${req.clock_in}', '${req.clock_out}', '${req.description}')" class="text-green-600 hover:text-green-800 mr-2">Setujui</button>
                         <button onclick="handleRejectRequest('${req.id}')" class="text-red-600 hover:text-red-800">Tolak</button>
                     `;
                 } else if (status === 'Disetujui') {
@@ -2303,13 +3235,924 @@
             tableBody.innerHTML = html;
         }
 
-        // --- FUNGSI ADMIN: AKSI PENGAJUAN (PLACEHOLDER) ---
-        async function handleApproveRequest(requestId) {
-            showMessage(`Fitur Setujui untuk ID ${requestId} akan diimplementasikan.`, 'info');
+        // --- FUNGSI ADMIN: AKSI PENGAJUAN (IMPLEMENTASI BARU) ---
+        async function handleApproveRequest(requestId, userId, companyId, attendanceDate, clockIn, clockOut, description) {
+            showMessage("Memproses persetujuan...", 'info');
+            
+            // 1. Konversi string 'null' atau undefined ke null literal
+            const clockInISO = (clockIn === 'null' || !clockIn) ? null : clockIn;
+            const clockOutISO = (clockOut === 'null' || !clockOut) ? null : clockOut;
+            
+            // 2. Tentukan rentang tanggal (mulai dan akhir hari)
+            // Penting: Gunakan 'T00:00:00' untuk memastikan interpretasi tanggal lokal
+            const startOfDay = new Date(attendanceDate + 'T00:00:00').toISOString();
+            const endOfDay = new Date(new Date(attendanceDate + 'T00:00:00').getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+            // 3. Cek apakah sudah ada data absensi di 'attendance' pada tanggal itu
+            //    (Misalnya, jika statusnya 'Alpa' atau 'Izin')
+            const { data: existingAtt, error: findError } = await _supabase
+                .from('attendance')
+                .select('id')
+                .eq('user_id', userId)
+                .gte('created_at', startOfDay) // Gunakan created_at untuk mencocokkan tanggal
+                .lt('created_at', endOfDay)
+                .limit(1)
+                .single(); // Ambil satu saja
+
+            // Abaikan error 'PGRST116' (No rows found), karena itu yang kita harapkan jika 'Alpa'
+            if (findError && findError.code !== 'PGRST116') { 
+                showMessage(`Gagal mencari absensi: ${findError.message}`, 'error');
+                return;
+            }
+
+            // 4. Siapkan payload untuk tabel 'attendance'
+            // Kita asumsikan statusnya menjadi 'Hadir'.
+            const attendancePayload = {
+                user_id: userId,
+                company_id: companyId,
+                attendance_status: 'Hadir', 
+                clock_in: clockInISO,
+                clock_out: clockOutISO,
+                description: (description !== 'null' && description !== 'undefined' ? description : null),
+                updated_at: new Date().toISOString()
+            };
+
+            let attendanceError = null;
+
+            if (existingAtt) {
+                // 5a. JIKA ADA: UPDATE data absensi yang ada
+                const { error } = await _supabase
+                    .from('attendance')
+                    .update(attendancePayload)
+                    .eq('id', existingAtt.id);
+                attendanceError = error;
+            } else {
+                // 5b. JIKA TIDAK ADA: INSERT data absensi baru (kasus 'Alpa')
+                const insertPayload = {
+                    ...attendancePayload,
+                    // Set created_at ke jam clock_in, atau awal hari jika clock_in null
+                    created_at: clockInISO || startOfDay 
+                };
+                const { error } = await _supabase
+                    .from('attendance')
+                    .insert([insertPayload]);
+                attendanceError = error;
+            }
+
+            if (attendanceError) {
+                showMessage(`Gagal menyimpan ke absensi: ${attendanceError.message}`, 'error');
+                return;
+            }
+
+            // 6. Update status di 'attendance_requests' menjadi 'Disetujui'
+            const { error: requestError } = await _supabase
+                .from('attendance_requests')
+                .update({ requests_status: 'Disetujui' })
+                .eq('id', requestId);
+
+            if (requestError) {
+                showMessage(`Absensi diperbarui, tapi status request gagal diubah: ${requestError.message}`, 'error');
+            } else {
+                showMessage('Pengajuan koreksi berhasil disetujui dan data absensi telah diperbarui.', 'success');
+            }
+
+            loadRequestAttendanceData(); // Muat ulang tabel pengajuan
         }
 
         async function handleRejectRequest(requestId) {
-            showMessage(`Fitur Tolak untuk ID ${requestId} akan diimplementasikan.`, 'info');
+            showMessage("Memproses penolakan...", 'info');
+
+            // Cukup update status request menjadi 'Ditolak'
+            const { error } = await _supabase
+                .from('attendance_requests')
+                .update({ requests_status: 'Ditolak' })
+                .eq('id', requestId);
+
+            if (error) {
+                showMessage(`Gagal menolak pengajuan: ${error.message}`, 'error');
+                return;
+            }
+
+            showMessage('Pengajuan koreksi telah ditolak.', 'success');
+            loadRequestAttendanceData(); // Muat ulang tabel pengajuan
+        }
+
+        // --- FUNGSI BARU: INIT FILTER PENGAJUAN IZIN/CUTI ---
+        async function initializeReqTimeoffFilters() {
+            const employeeFilter = document.getElementById('reqTimeoffEmployeeFilter');
+            const tableBody = document.getElementById('reqTimeoffTableBody');
+
+            if (!employeeFilter || !tableBody) {
+                console.error("Elemen filter Izin/Cuti tidak ditemukan!");
+                return;
+            }
+
+            // (Gunakan data allEmployees yang sudah dimuat)
+            if (allEmployees.length === 0) { 
+                 let query = _supabase.from('profiles').select('id, full_name').order('full_name', { ascending: true });
+                if (globalProfile.role !== 'super_admin') {
+                    query = query.eq('company_id', globalProfile.company_id);
+                }
+                const { data, error } = await query;
+                if (error) {
+                    console.error("Gagal memuat karyawan untuk filter izin:", error.message);
+                    return;
+                }
+                allEmployees = data;
+            }
+
+            // Isi Dropdown Karyawan
+            let options = '<option value="">-- Semua Karyawan --</option>';
+            options += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
+            employeeFilter.innerHTML = options;
+
+            // Atur tanggal default
+            const today = getTodayDateString();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            document.getElementById('reqTimeoffEndDate').value = today;
+            document.getElementById('reqTimeoffStartDate').value = getTodayDateString(thirtyDaysAgo);
+            
+            // Muat data awal
+            loadRequestTimeoffData();
+        }
+
+        // --- FUNGSI BARU: MEMUAT DATA PENGAJUAN IZIN/CUTI ---
+        async function loadRequestTimeoffData() {
+            const tableBody = document.getElementById('reqTimeoffTableBody');
+            const startDate = document.getElementById('reqTimeoffStartDate').value;
+            const endDate = document.getElementById('reqTimeoffEndDate').value;
+            const employeeId = document.getElementById('reqTimeoffEmployeeFilter').value;
+            const statusFilter = document.getElementById('reqTimeoffStatusFilter').value;
+
+            if (!startDate || !endDate) return;
+
+            tableBody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">Mencari pengajuan izin/cuti...</td></tr>';
+
+            let query = _supabase
+                .from('timeoff_requests')
+                .select(`
+                    id, 
+                    created_at,
+                    user_id,
+                    timeoff_type_id, 
+                    timeoff_types ( name ), 
+                    start_date,
+                    end_date,
+                    description, 
+                    timeoff_status,
+                    profiles(full_name)
+                `)
+                // Filter Tanggal Mulai Izin (start_date)
+                .gte('start_date', startDate) 
+                .lte('start_date', endDate); 
+
+            if (employeeId) {
+                query = query.eq('user_id', employeeId);
+            }
+            if (statusFilter) {
+                query = query.eq('timeoff_status', statusFilter);
+            }
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+
+            query = query.order('created_at', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat data pengajuan izin:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">Tidak ada pengajuan izin/cuti yang cocok.</td></tr>';
+                return;
+            }
+
+            let html = data.map((req, index) => {
+                const tglPengajuan = new Date(req.created_at).toLocaleDateString('id-ID');
+                const tglMulai = new Date(req.start_date).toLocaleDateString('id-ID');
+                const tglAkhir = new Date(req.end_date).toLocaleDateString('id-ID');
+                const name = req.profiles ? req.profiles.full_name : 'N/A';
+                const timeoffName = (req.timeoff_types && req.timeoff_types.name) ? req.timeoff_types.name : 'N/A';
+                const description = req.description || '-';
+                const status = req.timeoff_status;
+                
+                let statusClass, actionButtons;
+
+                if (status === 'Diajukan') {
+                    statusClass = 'bg-yellow-100 text-yellow-800';
+                    actionButtons = `
+                        <button onclick="handleApproveTimeoff('${req.id}')" class="text-green-600 hover:text-green-800 mr-2">Setujui</button>
+                        <button onclick="handleRejectTimeoff('${req.id}')" class="text-red-600 hover:text-red-800">Tolak</button>
+                    `;
+                } else if (status === 'Disetujui') {
+                    statusClass = 'bg-green-100 text-green-800';
+                    actionButtons = `<span class="text-green-600">Selesai</span>`;
+                } else { // Ditolak
+                    statusClass = 'bg-red-100 text-red-800';
+                    actionButtons = `<span class="text-red-600">Selesai</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-500">${index + 1}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${tglPengajuan}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 font-medium">${timeoffName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${tglMulai}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${tglAkhir}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                            ${actionButtons}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // --- FUNGSI BARU: AKSI SETUJUI / TOLAK IZIN/CUTI ---
+        async function handleApproveTimeoff(requestId) {
+            // LOGIKA KOMPLEKS:
+            // 1. Ambil data timeoff_requests (untuk dapat tgl mulai, akhir, jenis, dan user_id)
+            // 2. Loop dari tgl mulai s/d tgl akhir
+            // 3. Untuk setiap tanggal, lakukan UPSERT ke tabel 'attendance'
+            //    dengan status = timeoff_type (cth: 'Izin' atau 'Sakit')
+            
+            // Untuk SAAT INI, kita hanya update statusnya saja
+            showMessage("Memproses persetujuan (Timeoff)...", 'info');
+            const { error } = await _supabase
+                .from('timeoff_requests')
+                .update({ timeoff_status: 'Disetujui' })
+                .eq('id', requestId);
+
+            if (error) {
+                showMessage(`Gagal menyetujui: ${error.message}`, 'error');
+                return;
+            }
+            showMessage('Pengajuan Izin/Cuti disetujui.', 'success');
+            loadRequestTimeoffData();
+            // TODO: Tambahkan logika untuk memasukkan data ke tabel 'attendance'
+        }
+
+        async function handleRejectTimeoff(requestId) {
+            showMessage("Memproses penolakan (Timeoff)...", 'info');
+            const { error } = await _supabase
+                .from('timeoff_requests')
+                .update({ timeoff_status: 'Ditolak' })
+                .eq('id', requestId);
+
+            if (error) {
+                showMessage(`Gagal menolak: ${error.message}`, 'error');
+                return;
+            }
+            showMessage('Pengajuan Izin/Cuti ditolak.', 'success');
+            loadRequestTimeoffData();
+        }
+
+        // --- FUNGSI BARU: INIT FILTER PENGAJUAN LEMBUR ---
+async function initializeReqOvertimeFilters() {
+            const employeeFilter = document.getElementById('reqOvertimeEmployeeFilter');
+            const tableBody = document.getElementById('reqOvertimeTableBody');
+
+            if (!employeeFilter || !tableBody) {
+                console.error("Elemen filter Lembur tidak ditemukan!");
+                return;
+            }
+
+            // (Gunakan data allEmployees yang sudah dimuat, atau muat jika kosong)
+            if (allEmployees.length === 0) { 
+                let query = _supabase.from('profiles').select('id, full_name').order('full_name', { ascending: true });
+                if (globalProfile.role !== 'super_admin') {
+                    query = query.eq('company_id', globalProfile.company_id);
+                }
+                const { data, error } = await query;
+                if (error) {
+                    console.error("Gagal memuat karyawan untuk filter lembur:", error.message);
+                    return;
+                }
+                allEmployees = data;
+            }
+
+            // Isi Dropdown Karyawan
+            let options = '<option value="">-- Semua Karyawan --</option>';
+            options += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
+            employeeFilter.innerHTML = options;
+
+            // Atur tanggal default
+            const today = getTodayDateString();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            document.getElementById('reqOvertimeEndDate').value = today;
+            document.getElementById('reqOvertimeStartDate').value = getTodayDateString(thirtyDaysAgo);
+            
+            // Muat data awal
+            loadRequestOvertimeData();
+        }
+
+        // --- FUNGSI BARU: MEMUAT DATA PENGAJUAN LEMBUR ---
+        async function loadRequestOvertimeData() {
+            const tableBody = document.getElementById('reqOvertimeTableBody');
+            const startDate = document.getElementById('reqOvertimeStartDate').value;
+            const endDate = document.getElementById('reqOvertimeEndDate').value;
+            const employeeId = document.getElementById('reqOvertimeEmployeeFilter').value;
+            const statusFilter = document.getElementById('reqOvertimeStatusFilter').value;
+
+            if (!startDate || !endDate) return;
+
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Mencari pengajuan lembur...</td></tr>';
+
+            let query = _supabase
+                .from('overtime_requests')
+                .select(`
+                    id, 
+                    created_at,
+                    user_id,
+                    overtime_date, 
+                    start_time,
+                    end_time,
+                    description, 
+                    overtime_status,
+                    profiles(full_name)
+                `)
+                // Filter Tanggal Lembur (overtime_date)
+                .gte('overtime_date', startDate) 
+                .lte('overtime_date', endDate); 
+
+            if (employeeId) {
+                query = query.eq('user_id', employeeId);
+            }
+            if (statusFilter) {
+                query = query.eq('overtime_status', statusFilter);
+            }
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+
+            query = query.order('created_at', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat data pengajuan lembur:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Tidak ada pengajuan lembur yang cocok.</td></tr>';
+                return;
+            }
+
+            let html = data.map((req, index) => {
+                const tglDiajukan = new Date(req.created_at).toLocaleDateString('id-ID');
+                const tglLembur = new Date(req.overtime_date).toLocaleDateString('id-ID');
+                
+                // Format waktu untuk start_time dan end_time (karena itu timestamp with time zone)
+                const waktuMulai = formatTime(req.start_time);
+                const waktuAkhir = formatTime(req.end_time);
+
+                const name = req.profiles ? req.profiles.full_name : 'N/A';
+                const description = req.description || '-';
+                const status = req.overtime_status;
+                
+                let statusClass, actionButtons;
+
+                if (status === 'Diajukan') {
+                    statusClass = 'bg-yellow-100 text-yellow-800';
+                    actionButtons = `
+                        <button onclick="handleApproveOvertime('${req.id}')" class="text-green-600 hover:text-green-800 mr-2">Setujui</button>
+                        <button onclick="handleRejectOvertime('${req.id}')" class="text-red-600 hover:text-red-800">Tolak</button>
+                    `;
+                } else if (status === 'Disetujui') {
+                    statusClass = 'bg-green-100 text-green-800';
+                    actionButtons = `<span class="text-green-600">Selesai</span>`;
+                } else { // Ditolak
+                    statusClass = 'bg-red-100 text-red-800';
+                    actionButtons = `<span class="text-red-600">Selesai</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-500">${index + 1}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${tglDiajukan}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 font-medium">${tglLembur}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${waktuMulai} - ${waktuAkhir}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                            ${actionButtons}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // --- FUNGSI BARU: AKSI SETUJUI / TOLAK LEMBUR ---
+
+        async function handleApproveOvertime(requestId) {
+            showMessage("Memproses persetujuan (Lembur)...", 'info');
+            
+            // Logika persetujuan lembur: hanya update status menjadi 'Disetujui'
+            // Data lembur yang disetujui akan dihitung oleh sistem Payroll di masa depan
+            const { error } = await _supabase
+                .from('overtime_requests')
+                .update({ overtime_status: 'Disetujui' })
+                .eq('id', requestId);
+
+            if (error) {
+                showMessage(`Gagal menyetujui lembur: ${error.message}`, 'error');
+                return;
+            }
+            showMessage('Pengajuan Lembur disetujui.', 'success');
+            loadRequestOvertimeData();
+        }
+
+        async function handleRejectOvertime(requestId) {
+            showMessage("Memproses penolakan (Lembur)...", 'info');
+            
+            const { error } = await _supabase
+                .from('overtime_requests')
+                .update({ overtime_status: 'Ditolak' })
+                .eq('id', requestId);
+
+            if (error) {
+                showMessage(`Gagal menolak lembur: ${error.message}`, 'error');
+                return;
+            }
+            showMessage('Pengajuan Lembur ditolak.', 'success');
+            loadRequestOvertimeData();
+        }
+
+        // --- FUNGSI BARU: MASTER DATA (TAB, MODAL, CRUD) ---
+
+        const masterDataModal = document.getElementById('masterDataModal');
+        const masterDataForm = document.getElementById('masterDataForm');
+        const masterModalTitle = document.getElementById('masterModalTitle');
+        const masterName = document.getElementById('masterName');
+        const masterDescription = document.getElementById('masterDescription');
+        
+        const masterDeleteModal = document.getElementById('masterDeleteModal');
+        const masterDeleteText = document.getElementById('masterDeleteText');
+        const masterDeleteConfirmButton = document.getElementById('masterDeleteConfirmButton');
+        
+        let currentMasterDelete = {}; // { type: 'timeoff', id: 123 }
+        let currentMasterType = 'timeoff'; // 'timeoff', 'salary', 'deduction'
+
+        // Mengatur Tab Aktif di Halaman Master Data
+        function showMasterTab(tabName) {
+            currentMasterType = tabName;
+            
+            // Definisikan tombol dan konten
+            const tabs = ['timeoff', 'salary', 'deduction'];
+            
+            tabs.forEach(tab => {
+                const tabButton = document.getElementById(`tabMaster${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+                const tabContent = document.getElementById(`masterContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+
+                if (tab === tabName) {
+                    // Aktifkan tab
+                    tabButton.classList.add('border-blue-500', 'text-blue-600');
+                    tabButton.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabContent.classList.remove('hidden');
+                } else {
+                    // Nonaktifkan tab
+                    tabButton.classList.remove('border-blue-500', 'text-blue-600');
+                    tabButton.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    tabContent.classList.add('hidden');
+                }
+            });
+
+            // Muat data untuk tab yang dipilih (jika diperlukan)
+            if (tabName === 'timeoff') {
+                loadTimeoffTypes();
+            } else if (tabName === 'salary') {
+                loadSalaryTypes();
+            } else if (tabName === 'deduction') {
+                loadDeductionTypes();
+            }
+        }
+
+        // Membuka Modal Add/Edit
+        async function openMasterModal(mode, type, id = null, name = '', description = '', companyId = null, method = 'Nominal Tetap', value = 0, conditionRuleString = '{}') {
+            masterDataForm.reset();
+            currentMasterType = type;
+            
+            let titlePrefix = (mode === 'add') ? 'Tambah' : 'Edit';
+            let tableName = '';
+            
+            if (type === 'timeoff') tableName = 'Tipe Izin/Cuti';
+            else if (type === 'salary') tableName = 'Tipe Gaji';
+            else if (type === 'deduction') tableName = 'Tipe Potongan';
+
+            masterModalTitle.textContent = `${titlePrefix} ${tableName}`;
+            masterName.value = name;
+            masterDescription.value = (description && description !== 'null') ? description : '';
+
+            // --- (LOGIKA DROPDOWN SUPER ADMIN - Tidak berubah) ---
+            const companySelectContainer = document.getElementById('masterCompanySelectContainer');
+            const companySelect = document.getElementById('masterCompanySelect');
+            if (globalProfile.role === 'super_admin') {
+                companySelectContainer.classList.remove('hidden');
+                companySelect.required = false; 
+                companySelect.innerHTML = '<option value="">Memuat perusahaan...</option>';
+                const { data } = await _supabase.from('companies').select('id, name').order('name', { ascending: true });
+                if (data) {
+                    let options = '<option value="">-- Global (Semua Perusahaan) --</option>';
+                    options += data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                    companySelect.innerHTML = options;
+                }
+                companySelect.value = companyId || ''; 
+            } else {
+                companySelectContainer.classList.add('hidden');
+                companySelect.required = false;
+            }
+            
+            // --- (LOGIKA BARU) SEMBUNYIKAN/TAMPILKAN FIELD KHUSUS ---
+            
+            // 1. Ambil semua elemen field khusus
+            const deductionFields = document.getElementById('masterDeductionFields');
+            const salaryFields = document.getElementById('masterSalaryFields');
+            const deductionConditionContainer = document.getElementById('masterDeductionConditionContainer');
+            const salaryConditionContainer = document.getElementById('masterSalaryConditionContainer');
+
+            // 2. Sembunyikan semua field khusus terlebih dahulu
+            deductionFields.classList.add('hidden');
+            salaryFields.classList.add('hidden');
+            deductionConditionContainer.classList.add('hidden');
+            salaryConditionContainer.classList.add('hidden');
+
+            // 3. Parse aturan kondisi
+            const conditionRule = JSON.parse(conditionRuleString.replace(/\\'/g, "'") || '{}');
+
+            if (type === 'deduction') {
+                // Tampilkan field POTONGAN
+                deductionFields.classList.remove('hidden');
+                document.getElementById('masterDeductionMethod').value = method;
+                document.getElementById('masterDeductionValue').value = value;
+                
+                // Tampilkan pemicu jika 'Berdasarkan Absensi'
+                if (method === 'Berdasarkan Absensi') {
+                    deductionConditionContainer.classList.remove('hidden');
+                    document.getElementById('masterDeductionCondition').value = conditionRule?.trigger_status || '';
+                }
+            
+            } else if (type === 'salary') {
+                // Tampilkan field GAJI
+                salaryFields.classList.remove('hidden');
+                document.getElementById('masterSalaryMethod').value = method;
+                document.getElementById('masterSalaryValue').value = value;
+
+                // Tampilkan pemicu jika 'Berdasarkan Lembur' atau 'Berdasarkan Absensi'
+                if (method === 'Berdasarkan Lembur') {
+                    salaryConditionContainer.classList.remove('hidden');
+                    // Tentukan nilai pemicu berdasarkan 'trigger_source'
+                    document.getElementById('masterSalaryCondition').value = (conditionRule?.trigger_source === 'overtime_requests') ? 'overtime_approved' : '';
+                } else if (method === 'Berdasarkan Absensi') {
+                    salaryConditionContainer.classList.remove('hidden');
+                    // Tentukan nilai pemicu berdasarkan 'trigger_status'
+                    document.getElementById('masterSalaryCondition').value = conditionRule?.trigger_status || '';
+                }
+            }
+            // --- (AKHIR LOGIKA BARU) ---
+
+            // Simpan data di form dataset
+            masterDataForm.dataset.mode = mode;
+            masterDataForm.dataset.id = id; 
+            
+            masterDataModal.classList.remove('hidden');
+        }
+
+        function closeMasterModal() {
+            masterDataModal.classList.add('hidden');
+        }
+
+        // Membuka Modal Konfirmasi Hapus
+        function openConfirmDeleteModal(type, id, name) {
+            currentMasterDelete = { type, id };
+            masterDeleteText.innerHTML = `Apakah Anda yakin ingin menghapus <strong>${name}</strong>? Data ini mungkin tidak bisa dipulihkan.`;
+            masterDeleteModal.classList.remove('hidden');
+        }
+
+        function closeConfirmDeleteModal() {
+            masterDeleteModal.classList.add('hidden');
+            currentMasterDelete = {};
+        }
+
+        // CRUD: Memuat data Tipe Izin/Cuti
+        async function loadTimeoffTypes() {
+            const tableBody = document.getElementById('timeoffTypesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat data...</td></tr>'; // <-- Colspan diubah jadi 4
+
+            // (PERBAIKAN 1) Ambil nama perusahaan
+            let query = _supabase.from('timeoff_types').select('id, name, description, company_id, companies(name)');
+            
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('name', { ascending: true });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat timeoff_types:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`; // <-- Colspan diubah jadi 4
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada data Tipe Izin/Cuti.</td></tr>'; // <-- Colspan diubah jadi 4
+                return;
+            }
+
+            const html = data.map(item => {
+                const description = item.description || '-';
+                // Gunakan backslash untuk escape kutipan di dalam string
+                const safeName = item.name.replace(/'/g, "\\'");
+                const safeDesc = (item.description || '').replace(/'/g, "\\'");
+
+                // (PERBAIKAN 2) Tentukan nama perusahaan
+                // Jika Super Admin, tampilkan nama. Jika tidak ada, tampilkan 'Global'.
+                const companyName = (globalProfile.role === 'super_admin') 
+                    ? (item.companies ? item.companies.name : '<span class="italic text-gray-500">Global (Semua)</span>') 
+                    : (item.companies ? item.companies.name : '-'); // Company admin tidak seharusnya melihat 'Global'
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${companyName}</td> <!-- (BARU) Kolom Perusahaan -->
+                        <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <!-- (PERBAIKAN 3) Kirim item.company_id ke modal -->
+                            <button onclick="openMasterModal('edit', 'timeoff', '${item.id}', '${safeName}', '${safeDesc}', '${item.company_id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmDeleteModal('timeoff', '${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // CRUD: Memuat data Tipe Gaji (BARU)
+        async function loadSalaryTypes() {
+            const tableBody = document.getElementById('salaryTypesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Memuat data...</td></tr>'; // Colspan jadi 6
+
+            // (PERBAIKAN 1) Ambil 'method', 'value', 'condition_rule'
+            let query = _supabase.from('salary_types').select('id, name, description, company_id, method, value, condition_rule, companies(name)');
+            
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('name', { ascending: true });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat salary_types:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`; // Colspan 6
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Belum ada data Tipe Gaji.</td></tr>'; // Colspan 6
+                return;
+            }
+
+            const html = data.map(item => {
+                const description = item.description || '-';
+                const safeName = item.name.replace(/'/g, "\\'");
+                const safeDesc = (item.description || '').replace(/'/g, "\\'");
+                // (PERBAIKAN 2) Siapkan method, value, companyId, dan condition
+                const safeMethod = (item.method || 'Nominal Tetap').replace(/'/g, "\\'");
+                const safeValue = item.value || 0;
+                const safeCompanyId = item.company_id || '';
+                const safeCondition = JSON.stringify(item.condition_rule || {}).replace(/'/g, "\\'");
+
+                // Tentukan nama perusahaan
+                const companyName = (globalProfile.role === 'super_admin') 
+                    ? (item.companies ? item.companies.name : '<span class="italic text-gray-500">Global (Semua)</span>') 
+                    : (item.companies ? item.companies.name : '-');
+                
+                // Format nilai
+                const valueDisplay = (item.method === 'Berdasarkan Lembur') ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)} /jam` : 
+                                     (item.method === 'Berdasarkan Absensi') ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)}` : 
+                                     '-'; // Nominal Tetap tidak tampil nilai di sini
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${companyName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${item.method}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${valueDisplay}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <!-- (PERBAIKAN 3) Kirim data baru (method, value, condition) ke modal -->
+                            <button onclick="openMasterModal('edit', 'salary', '${item.id}', '${safeName}', '${safeDesc}', '${safeCompanyId}', '${safeMethod}', ${safeValue}, '${safeCondition}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmDeleteModal('salary', '${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // CRUD: Memuat data Tipe Potongan (BARU)
+        async function loadDeductionTypes() {
+            const tableBody = document.getElementById('deductionTypesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Memuat data...</td></tr>'; // Colspan jadi 6
+
+            // (PERBAIKAN 1) Ambil 'method' dan 'value'
+            let query = _supabase.from('deduction_types').select('id, name, description, company_id, method, value, companies(name)');
+            
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('name', { ascending: true });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat deduction_types:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`; // Colspan 6
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Belum ada data Tipe Potongan.</td></tr>'; // Colspan 6
+                return;
+            }
+
+            const html = data.map(item => {
+                const description = item.description || '-';
+                const safeName = item.name.replace(/'/g, "\\'");
+                const safeDesc = (item.description || '').replace(/'/g, "\\'");
+                // (PERBAIKAN 2) Siapkan method, value, dan companyId
+                const safeMethod = (item.method || 'Nominal Tetap').replace(/'/g, "\\'");
+                const safeValue = item.value || 0;
+                const safeCompanyId = item.company_id || '';
+                const safeCondition = JSON.stringify(item.condition_rule || {}).replace(/'/g, "\\'");
+
+                // Tentukan nama perusahaan
+                const companyName = (globalProfile.role === 'super_admin') 
+                    ? (item.companies ? item.companies.name : '<span class="italic text-gray-500">Global (Semua)</span>') 
+                    : (item.companies ? item.companies.name : '-');
+                
+                // Format nilai
+                const valueDisplay = (item.method === 'Persentase') ? `${item.value}%` : `Rp ${new Intl.NumberFormat('id-ID').format(item.value)}`;
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${companyName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${item.method}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${valueDisplay}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <!-- (PERBAIKAN 3) Kirim data baru ke modal -->
+                            <button onclick="openMasterModal('edit', 'deduction', '${item.id}', '${safeName}', '${safeDesc}', '${safeCompanyId}', '${safeMethod}', ${safeValue})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmDeleteModal('deduction', '${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // CRUD: Simpan data (Add/Edit)
+        async function handleSaveMasterData(e) {
+            e.preventDefault();
+            
+            const { mode, id } = masterDataForm.dataset;
+            const tableName = (currentMasterType === 'timeoff') ? 'timeoff_types' : 
+                              (currentMasterType === 'salary') ? 'salary_types' : 'deduction_types';
+
+            // (Payload dasar)
+            const payload = {
+                name: masterName.value,
+                description: masterDescription.value || null
+            };
+
+            // (Tentukan company_id - Tidak berubah)
+            if (globalProfile.role === 'super_admin') {
+                const selectedCompanyId = document.getElementById('masterCompanySelect').value;
+                payload.company_id = selectedCompanyId ? selectedCompanyId : null; 
+            } else {
+                if (mode === 'add') {
+                    payload.company_id = globalProfile.company_id;
+                }
+            }
+
+            // (LOGIKA BARU) Tambahkan data khusus berdasarkan TIPE
+            payload.condition_rule = null; // Reset dulu
+
+            if (currentMasterType === 'deduction') {
+                // Ambil data dari field Potongan
+                payload.method = document.getElementById('masterDeductionMethod').value;
+                payload.value = parseFloat(document.getElementById('masterDeductionValue').value) || 0;
+                
+                if (payload.method === 'Berdasarkan Absensi') {
+                    const triggerStatus = document.getElementById('masterDeductionCondition').value;
+                    if (triggerStatus) {
+                        payload.condition_rule = { trigger_status: triggerStatus };
+                    }
+                }
+            
+            } else if (currentMasterType === 'salary') {
+                // Ambil data dari field Gaji
+                payload.method = document.getElementById('masterSalaryMethod').value;
+                payload.value = parseFloat(document.getElementById('masterSalaryValue').value) || 0;
+
+                const trigger = document.getElementById('masterSalaryCondition').value;
+                
+                if (payload.method === 'Berdasarkan Lembur' && trigger === 'overtime_approved') {
+                    // Simpan aturan untuk lembur
+                    payload.condition_rule = { 
+                        trigger_source: 'overtime_requests', 
+                        trigger_status: 'Disetujui' 
+                    };
+                } else if (payload.method === 'Berdasarkan Absensi' && trigger) {
+                    // Simpan aturan untuk absensi (cth: bonus 'Hadir')
+                    payload.condition_rule = { 
+                        trigger_status: trigger 
+                    };
+                }
+            }
+
+            let query;
+            if (mode === 'add') {
+                query = _supabase.from(tableName).insert([payload]);
+            } else {
+                // Mode Edit
+                query = _supabase.from(tableName).update(payload).eq('id', id);
+            }
+
+            showMessage("Menyimpan data...", 'info');
+            const { error } = await query;
+
+            if (error) {
+                showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                return;
+            }
+
+            showMessage('Data master berhasil disimpan.', 'success');
+            closeMasterModal();
+            
+            // Muat ulang data tabel yang sesuai
+            if (currentMasterType === 'timeoff') loadTimeoffTypes();
+            else if (currentMasterType === 'salary') loadSalaryTypes();
+            else if (currentMasterType === 'deduction') loadDeductionTypes();
+        }
+
+        function openLateReasonModal() {
+            lateReasonDescription.value = ''; // Kosongkan textarea
+            lateReasonModal.classList.remove('hidden');
+        }
+
+        function closeLateReasonModal() {
+            lateReasonModal.classList.add('hidden');
+            tempClockInData = {}; // Hapus data sementara
+        }
+
+        // Fungsi baru untuk menangani INSERT (dipanggil oleh doClockIn atau submit modal)
+        async function insertAttendance(clockInTime, location, status, description) {
+            const newAttendance = {
+                user_id: globalProfile.id,
+                company_id: globalProfile.company_id,
+                attendance_status: status, 
+                clock_in: clockInTime.toISOString(),
+                location: location,
+                description: description // (BARU) Akan berisi alasan jika terlambat
+            };
+            
+            const { error } = await _supabase
+                .from('attendance')
+                .insert([newAttendance]);
+
+            if (error) {
+                console.error(`Gagal Absen Masuk (${status}):`, error.message);
+                showMessage(`Gagal Absen Masuk: ${error.message}.`, 'error');
+                karyawanClockInButton.disabled = false; // Aktifkan lagi jika gagal
+                return false;
+            }
+            
+            const successMessage = (status === 'Terlambat') 
+                ? 'Clock-In (Terlambat) Berhasil! Alasan Anda tersimpan.' 
+                : 'Absen Masuk Berhasil! Selamat bekerja.';
+                
+            showMessage(successMessage, 'success');
+            loadKaryawanAttendanceStatus(); // Muat ulang status (penting!)
+            return true;
         }
 
         // Atur filter tanggal ke hari ini saat inisialisasi admin
@@ -2518,7 +4361,15 @@
             // Ambil data profil untuk menentukan peran
             const { data: profile, error: profileError } = await _supabase
                 .from('profiles')
-                .select('id, role, full_name, company_id')
+                .select(`
+                    id, 
+                    role, 
+                    full_name, 
+                    company_id,
+                    workhour_id, 
+                    workhours ( * ), 
+                    companies ( status) 
+                `)
                 .eq('id', session.user.id)
                 .single();
 
@@ -2528,6 +4379,15 @@
                 await _supabase.auth.signOut();
                 loadingView.style.display = 'none';
                 return changeView('loginView');
+            }
+
+            // --- LOGIKA BARU: Cek Status Perusahaan ---
+            if (profile.companies && profile.companies.status === 'tidak aktif') {
+                // Jika perusahaan tidak aktif, tolak login
+                showMessage("Login gagal: Perusahaan Anda saat ini tidak aktif. Hubungi administrator.", 'error');
+                await doLogout(); // Paksa logout
+                loadingView.style.display = 'none';
+                return changeView('loginView'); // Arahkan kembali ke login
             }
             
             globalProfile = profile; // Simpan profil secara global
@@ -2600,7 +4460,7 @@
             showMessage("Memuat data karyawan...", 'info');
             const { data: profile, error } = await _supabase
                 .from('profiles')
-                .select('id, full_name, user_id_number, role, user_status, company_id,email')
+                .select('id, full_name, user_id_number, role, user_status, company_id,email, workhour_id')
                 .eq('id', profileId)
                 .single();
             
@@ -2611,6 +4471,7 @@
 
             // 2. Buka modal dan isi form
             await openEmployeeModal(); // Panggil openEmployeeModal untuk mengisi dropdown perusahaan
+            await loadWorkhourDropdown('employeeWorkhour', profile.company_id, profile.workhour_id);
             
             document.getElementById('employeeModalTitle').textContent = 'Edit Karyawan';
             document.getElementById('employeeForm').dataset.editingId = profile.id; // Tandai mode edit
@@ -2641,7 +4502,592 @@
             const requestAttendanceForm = document.getElementById('requestAttendanceForm');
         
         // --- 6. EVENT LISTENER BARU ---
-            requestAttendanceForm.addEventListener('submit', handleNewAttendanceRequest);   
+            requestAttendanceForm.addEventListener('submit', handleNewAttendanceRequest);
+
+        // Event listener untuk Modal Alasan Keterlambatan (BARU)
+        lateReasonForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const saveButton = document.getElementById('lateReasonSubmitButton');
+            saveButton.disabled = true;
+            
+            const description = lateReasonDescription.value;
+            const { now, locationString } = tempClockInData;
+
+            if (!now || !locationString) {
+                showMessage("Data absensi tidak ditemukan. Silakan coba lagi.", 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            // Panggil fungsi insert terpusat dengan status 'Terlambat'
+            const success = await insertAttendance(now, locationString, 'Terlambat', description);
+
+            if (success) {
+                closeLateReasonModal();
+            }
+            // Tombol clock-in akan tetap disabled (karena sudah absen)
+            // Tombol submit modal akan di-enable lagi saat modal dibuka (di openLateReasonModal)
+            saveButton.disabled = false; 
+        });       
+
+        // Event listener untuk Filter Pengajuan Izin/Cuti (BARU)
+        try {
+            document.getElementById('reqTimeoffFilterButton').onclick = loadRequestTimeoffData;
+        } catch (e) {
+            console.warn("Tombol filter Izin/Cuti (reqTimeoffFilterButton) tidak ditemukan.");
+        }
+
+        // Event listener untuk Filter Pengajuan Izin/Cuti (BARU)
+        try {
+            document.getElementById('reqTimeoffFilterButton').onclick = loadRequestTimeoffData;
+        } catch (e) {
+            console.warn("Tombol filter Izin/Cuti (reqTimeoffFilterButton) tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk Filter Pengajuan Lembur
+        try {
+            document.getElementById('reqOvertimeFilterButton').onclick = loadRequestOvertimeData;
+        } catch (e) {
+            console.warn("Tombol filter Lembur (reqOvertimeFilterButton) tidak ditemukan.");
+        }
+
+        // Event listener untuk Master Data (BARU)
+        try {
+            masterDataForm.addEventListener('submit', handleSaveMasterData);
+            masterDeleteConfirmButton.addEventListener('click', handleDeleteMasterData);
+        } catch (e) {
+            console.warn("Elemen Master Data (form/modal) tidak ditemukan.");
+        }
+
+        // --- FUNGSI BARU: CRUD MANAJEMEN JAM KERJA ---
+
+        const workhourModal = document.getElementById('workhourModal');
+        const workhourForm = document.getElementById('workhourForm');
+        const workhourDeleteModal = document.getElementById('workhourDeleteModal');
+        const workhourDeleteText = document.getElementById('workhourDeleteText');
+        const workhourDeleteConfirmButton = document.getElementById('workhourDeleteConfirmButton');
+        let currentWorkhourDeleteId = null;
+        const workhourDays = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+        const workhourDayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+        // 1. Memuat Daftar Jam Kerja
+        async function loadWorkhoursList() {
+            const tableBody = document.getElementById('workhoursTableBody');
+            tableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Memuat data pola jam kerja...</td></tr>';
+
+            let query = _supabase.from('workhours').select('id, name, company_id, companies(name)');
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('name', { ascending: true });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat workhours:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Belum ada pola jam kerja.</td></tr>';
+                return;
+            }
+
+            const html = data.map(item => {
+                const safeName = item.name.replace(/'/g, "\\'");
+                const companyName = (globalProfile.role === 'super_admin') 
+                    ? (item.companies ? item.companies.name : '<span class="italic text-gray-500">Global (Semua)</span>') 
+                    : (item.companies ? item.companies.name : '-');
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${companyName}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="openWorkhourModal('edit', '${item.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmWorkhourDelete('${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // 2. Membuka Modal (Add/Edit)
+        async function openWorkhourModal(mode, id = null) {
+            workhourForm.reset(); // Reset form
+            document.getElementById('workhourModalTitle').textContent = (mode === 'add') ? 'Tambah Pola Jam Kerja' : 'Edit Pola Jam Kerja';
+            workhourForm.dataset.mode = mode;
+            workhourForm.dataset.id = id;
+
+            // Atur Dropdown Perusahaan untuk Super Admin
+            const companyContainer = document.getElementById('workhourCompanyContainer');
+            const companySelect = document.getElementById('workhourCompanySelect');
+            if (globalProfile.role === 'super_admin') {
+                companyContainer.classList.remove('hidden');
+                companySelect.required = false; // Boleh global (null)
+                companySelect.innerHTML = '<option value="">Memuat perusahaan...</option>';
+                
+                const { data } = await _supabase.from('companies').select('id, name').order('name', { ascending: true });
+                if (data) {
+                    let options = '<option value="">-- Global (Semua Perusahaan) --</option>';
+                    options += data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                    companySelect.innerHTML = options;
+                }
+            } else {
+                companyContainer.classList.add('hidden');
+            }
+
+            // Atur ulang field jadwal (default)
+            workhourDays.forEach(day => {
+                document.getElementById(`wh_${day}_start`).value = "08:00";
+                document.getElementById(`wh_${day}_end`).value = "17:00";
+                document.getElementById(`wh_${day}_is_off`).checked = (day === 'sabtu' || day === 'minggu');
+                // Trigger event change untuk disable/enable input
+                document.getElementById(`wh_${day}_is_off`).dispatchEvent(new Event('change'));
+            });
+
+            if (mode === 'edit') {
+                showMessage("Memuat detail jam kerja...", 'info');
+                const { data, error } = await _supabase.from('workhours').select('*').eq('id', id).single();
+                if (error) {
+                    showMessage(`Gagal memuat data: ${error.message}`, 'error');
+                    return;
+                }
+                
+                // Isi form dengan data
+                document.getElementById('workhourName').value = data.name;
+                if (globalProfile.role === 'super_admin') {
+                    companySelect.value = data.company_id || '';
+                }
+
+                // Isi jadwal 7 hari dari JSON
+                const schedule = data.schedule;
+                workhourDayNames.forEach((dayName, index) => {
+                    const dayKey = dayName; // Sesuai skema: "Senin", "Selasa", ...
+                    const dayId = workhourDays[index]; // ID: 'senin', 'selasa', ...
+                    
+                    if (schedule[dayKey]) {
+                        const dayData = schedule[dayKey];
+                        const isOff = dayData.is_off || false;
+                        document.getElementById(`wh_${dayId}_is_off`).checked = isOff;
+                        if (!isOff) {
+                            document.getElementById(`wh_${dayId}_start`).value = dayData.start;
+                            document.getElementById(`wh_${dayId}_end`).value = dayData.end;
+                        }
+                        // Trigger event change untuk disable/enable input
+                        document.getElementById(`wh_${dayId}_is_off`).dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            workhourModal.classList.remove('hidden');
+        }
+
+        // 3. Menutup Modal
+        function closeWorkhourModal() {
+            workhourModal.classList.add('hidden');
+        }
+
+        // 4. Menyimpan (Add/Edit)
+        async function handleSaveWorkhour(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveWorkhourButton');
+            saveButton.disabled = true;
+
+            const { mode, id } = workhourForm.dataset;
+            const name = document.getElementById('workhourName').value;
+
+            // Bangun Objek JSON 'schedule'
+            let schedule = {};
+            workhourDayNames.forEach((dayName, index) => {
+                const dayId = workhourDays[index]; // 'senin', 'selasa', ...
+                const isOff = document.getElementById(`wh_${dayId}_is_off`).checked;
+                
+                if (isOff) {
+                    schedule[dayName] = { is_off: true }; // dayName = "Senin", "Selasa", ...
+                } else {
+                    schedule[dayName] = {
+                        is_off: false,
+                        start: document.getElementById(`wh_${dayId}_start`).value,
+                        end: document.getElementById(`wh_${dayId}_end`).value
+                    };
+                }
+            });
+
+            // Siapkan payload
+            const payload = {
+                name: name,
+                schedule: schedule
+            };
+
+            // Tentukan company_id
+            if (globalProfile.role === 'super_admin') {
+                const selectedCompanyId = document.getElementById('workhourCompanySelect').value;
+                payload.company_id = selectedCompanyId ? selectedCompanyId : null; // NULL untuk Global
+            } else {
+                if (mode === 'add') {
+                    payload.company_id = globalProfile.company_id;
+                }
+            }
+            
+            // Lakukan Insert atau Update
+            showMessage("Menyimpan pola jam kerja...", 'info');
+            let query;
+            if (mode === 'add') {
+                query = _supabase.from('workhours').insert([payload]);
+            } else {
+                query = _supabase.from('workhours').update(payload).eq('id', id);
+            }
+
+            const { error } = await query;
+            if (error) {
+                showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Pola jam kerja berhasil disimpan.', 'success');
+            closeWorkhourModal();
+            loadWorkhoursList();
+            saveButton.disabled = false;
+        }
+
+        // 5. Logika Hapus
+        function openConfirmWorkhourDelete(id, name) {
+            currentWorkhourDeleteId = id;
+            workhourDeleteText.innerHTML = `Apakah Anda yakin ingin menghapus <strong>${name}</strong>? Karyawan yang terhubung dengan pola ini mungkin akan kehilangan jam kerjanya.`;
+            workhourDeleteModal.classList.remove('hidden');
+        }
+
+        function closeConfirmWorkhourDelete() {
+            workhourDeleteModal.classList.add('hidden');
+            currentWorkhourDeleteId = null;
+        }
+
+        async function handleConfirmWorkhourDelete() {
+            if (!currentWorkhourDeleteId) return;
+
+            showMessage("Menghapus pola jam kerja...", 'info');
+            
+            const { error } = await _supabase.from('workhours').delete().eq('id', currentWorkhourDeleteId);
+            
+            if (error) {
+                // Cek jika error karena Foreign Key (masih dipakai karyawan)
+                if (error.code === '23503') { 
+                    showMessage('Gagal hapus: Pola jam kerja ini masih digunakan oleh karyawan.', 'error');
+                } else {
+                    showMessage(`Gagal menghapus: ${error.message}`, 'error');
+                }
+                return;
+            }
+
+            showMessage('Pola jam kerja berhasil dihapus.', 'success');
+            closeConfirmWorkhourDelete();
+            loadWorkhoursList();
+        }
+
+        // --- FUNGSI BARU: CRUD MANAJEMEN SALDO CUTI ---
+
+        const timeoffBalanceModal = document.getElementById('timeoffBalanceModal');
+        const timeoffBalanceForm = document.getElementById('timeoffBalanceForm');
+        
+        // 1. Memuat Daftar Saldo Cuti
+        async function loadTimeoffBalanceList() {
+            const tableBody = document.getElementById('timeoffBalanceTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat saldo cuti...</td></tr>';
+
+            // Ambil saldo cuti + nama karyawan + nama tipe cuti
+            let query = _supabase.from('employee_timeoff_balances').select(`
+                id, 
+                balance_days, 
+                user_id,
+                profiles(full_name),
+                timeoff_types(name)
+            `);
+            
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('balance_days', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat saldo cuti:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada saldo cuti yang ditetapkan.</td></tr>';
+                return;
+            }
+
+            const html = data.map(item => {
+                const safeName = item.profiles ? item.profiles.full_name : 'N/A';
+                const timeoffName = item.timeoff_types ? item.timeoff_types.name : 'N/A';
+                const safeTimeoffName = timeoffName.replace(/'/g, "\\'");
+                const balanceDisplay = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(item.balance_days);
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${safeName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${timeoffName}</td>
+                        <td class="px-4 py-3 text-center text-lg font-bold text-blue-600">${balanceDisplay}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="openTimeoffBalanceModal('edit', '${item.id}', '${item.user_id}', '${item.timeoff_type_id}', ${item.balance_days}, '${safeName}', '${safeTimeoffName}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit Saldo</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // 2. Membuka Modal (Add/Edit)
+        async function openTimeoffBalanceModal(mode, id = null, userId = null, timeoffTypeId = null, balanceDays = 0, employeeName = '', timeoffTypeName = '') {
+            document.getElementById('timeoffBalanceForm').reset();
+            document.getElementById('timeoffBalanceModalTitle').textContent = (mode === 'add') ? 'Tetapkan Saldo Cuti Baru' : `Edit Saldo ${employeeName} (${timeoffTypeName})`;
+            timeoffBalanceForm.dataset.mode = mode;
+            timeoffBalanceForm.dataset.id = id;
+            
+            // Muat Dropdown Karyawan
+            const employeeSelect = document.getElementById('balanceEmployeeSelect');
+            if (allEmployees.length === 0) {
+                let query = _supabase.from('profiles').select('id, full_name').order('full_name', { ascending: true });
+                if (globalProfile.role !== 'super_admin') {
+                    query = query.eq('company_id', globalProfile.company_id);
+                }
+                const { data } = await query;
+                allEmployees = data || [];
+            }
+            let employeeOptions = '<option value="">-- Pilih Karyawan --</option>';
+            employeeOptions += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
+            employeeSelect.innerHTML = employeeOptions;
+
+            // Muat Dropdown Tipe Cuti
+            const timeoffSelect = document.getElementById('balanceTimeoffTypeSelect');
+            timeoffSelect.innerHTML = '<option value="">Memuat Tipe Cuti...</option>';
+            // HANYA ambil tipe cuti di perusahaan yang sama atau global (company_id IS NULL)
+            let typeQuery = _supabase.from('timeoff_types').select('id, name');
+            if (globalProfile.company_id) {
+                typeQuery = typeQuery.or(`company_id.eq.${globalProfile.company_id},company_id.is.null`);
+            } else {
+                typeQuery = typeQuery.is('company_id', null);
+            }
+            const { data: timeoffTypes, error } = await typeQuery;
+            if (error || timeoffTypes.length === 0) {
+                timeoffSelect.innerHTML = '<option value="">Gagal/Tidak Ada Tipe Cuti</option>';
+            } else {
+                let typeOptions = '<option value="">-- Pilih Tipe Cuti --</option>';
+                typeOptions += timeoffTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                timeoffSelect.innerHTML = typeOptions;
+            }
+
+
+            if (mode === 'edit') {
+                document.getElementById('balanceEmployeeSelectContainer').classList.add('hidden'); // Sembunyikan karyawan saat edit
+                document.getElementById('balanceTimeoffTypeSelectContainer').classList.add('hidden'); // Sembunyikan tipe cuti saat edit
+
+                document.getElementById('balanceEmployeeSelect').value = userId;
+                document.getElementById('balanceTimeoffTypeSelect').value = timeoffTypeId;
+                document.getElementById('balanceDays').value = balanceDays;
+            } else {
+                document.getElementById('balanceEmployeeSelectContainer').classList.remove('hidden'); // Tampilkan karyawan saat add
+                document.getElementById('balanceTimeoffTypeSelectContainer').classList.remove('hidden'); // Tampilkan tipe cuti saat add
+                document.getElementById('balanceDays').value = 0;
+            }
+
+            timeoffBalanceModal.classList.remove('hidden');
+        }
+
+        // 3. Menutup Modal
+        function closeTimeoffBalanceModal() {
+            document.getElementById('timeoffBalanceModal').classList.add('hidden');
+        }
+
+        // 4. Menyimpan (Add/Edit)
+        async function handleSaveTimeoffBalance(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveTimeoffBalanceButton');
+            saveButton.disabled = true;
+
+            const { mode, id } = timeoffBalanceForm.dataset;
+            const userId = document.getElementById('balanceEmployeeSelect').value;
+            const timeoffTypeId = document.getElementById('balanceTimeoffTypeSelect').value;
+            const balanceDays = parseFloat(document.getElementById('balanceDays').value);
+
+            if (mode === 'add' && (!userId || !timeoffTypeId)) {
+                showMessage('Harap pilih Karyawan dan Tipe Cuti.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            if (isNaN(balanceDays) || balanceDays < 0) {
+                showMessage('Saldo harus angka non-negatif.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            
+            const payload = {
+                balance_days: balanceDays,
+            };
+
+            // Tambahkan FKs HANYA saat mode 'add'
+            if (mode === 'add') {
+                payload.user_id = userId;
+                payload.timeoff_type_id = timeoffTypeId;
+                payload.company_id = globalProfile.company_id; // Ambil dari admin yang login
+            }
+            
+            showMessage("Menyimpan saldo cuti...", 'info');
+            let query;
+            if (mode === 'add') {
+                query = _supabase.from('employee_timeoff_balances').insert([payload]);
+            } else {
+                query = _supabase.from('employee_timeoff_balances').update(payload).eq('id', id);
+            }
+
+            const { error } = await query;
+            if (error) {
+                // Error 23505 adalah constraint unik
+                if (error.code === '23505') {
+                    showMessage('Gagal: Saldo untuk Karyawan dan Tipe Cuti ini sudah ada.', 'error');
+                } else {
+                    showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                }
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Saldo cuti berhasil disimpan.', 'success');
+            closeTimeoffBalanceModal();
+            loadTimeoffBalanceList();
+            saveButton.disabled = false;
+        }
+
+        // (BARU) Fungsi Helper untuk memuat Dropdown Jam Kerja
+        // 'companyId' = ID perusahaan yang dipilih
+        // 'selectedWorkhourId' = (Opsional) ID jam kerja yang harus aktif (untuk mode edit)
+        async function loadWorkhourDropdown(selectElementId, companyId, selectedWorkhourId = null) {
+            const selectElement = document.getElementById(selectElementId);
+            if (!selectElement) return;
+            
+            selectElement.innerHTML = '<option value="">Memuat...</option>';
+            selectElement.disabled = true;
+
+            // Query: Ambil jam kerja Global (company_id IS NULL) 
+            // ATAU jam kerja milik perusahaan spesifik (company_id.eq(companyId))
+            let whQuery = _supabase.from('workhours').select('id, name');
+            
+            if (companyId) {
+                // Ambil Global DAN milik perusahaan
+                whQuery = whQuery.or(`company_id.eq.${companyId},company_id.is.null`);
+            } else {
+                // Ambil HANYA Global (jika companyId null, cth: Super Admin belum pilih)
+                whQuery = whQuery.is('company_id', null);
+            }
+            
+            const { data, error } = await whQuery.order('name', { ascending: true });
+
+            if (error) {
+                console.error("Gagal memuat workhours untuk dropdown:", error.message);
+                selectElement.innerHTML = '<option value="">Gagal memuat</option>';
+                return;
+            }
+            
+            if (data.length === 0 && !companyId) {
+                 selectElement.innerHTML = '<option value="">-- Pilih Perusahaan Dulu --</option>';
+                 return;
+            }
+            if (data.length === 0 && companyId) {
+                 selectElement.innerHTML = '<option value="">-- Belum ada Pola Jam Kerja --</option>';
+                 return;
+            }
+
+            let options = '<option value="">-- Pilih Pola Jam Kerja --</option>';
+            options += data.map(wh => {
+                // Cek apakah ini adalah opsi yang harus dipilih
+                const isSelected = (wh.id == selectedWorkhourId) ? 'selected' : '';
+                return `<option value="${wh.id}" ${isSelected}>${wh.name}</option>`;
+            }).join('');
+            
+            selectElement.innerHTML = options;
+            selectElement.disabled = false;
+        }
+
+        // (BARU) Event listener untuk modal master,
+        // Tampilkan/sembunyikan field 'Trigger Status' berdasarkan 'Metode'
+        try {
+            const deductionMethodSelect = document.getElementById('masterDeductionMethod');
+            const deductionConditionContainer = document.getElementById('masterDeductionConditionContainer');
+            
+            deductionMethodSelect.addEventListener('change', () => {
+                if (deductionMethodSelect.value === 'Berdasarkan Absensi') {
+                    deductionConditionContainer.classList.remove('hidden');
+                } else {
+                    deductionConditionContainer.classList.add('hidden');
+                }
+            });
+        } catch (e) {
+             console.warn("Elemen listener untuk Deductions tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk modal master,
+        // Tampilkan/sembunyikan field 'Trigger Status' untuk GAJI
+        try {
+            const salaryMethodSelect = document.getElementById('masterSalaryMethod');
+            const salaryConditionContainer = document.getElementById('masterSalaryConditionContainer');
+            
+            salaryMethodSelect.addEventListener('change', () => {
+                const method = salaryMethodSelect.value;
+                // Tampilkan pemicu jika 'Berdasarkan Lembur' ATAU 'Berdasarkan Absensi'
+                if (method === 'Berdasarkan Lembur' || method === 'Berdasarkan Absensi') {
+                    salaryConditionContainer.classList.remove('hidden');
+                } else {
+                    salaryConditionContainer.classList.add('hidden');
+                }
+            });
+        } catch (e) {
+             console.warn("Elemen listener untuk Salary tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk Form & Delete Modal Jam Kerja
+        try {
+            workhourForm.addEventListener('submit', handleSaveWorkhour);
+            workhourDeleteConfirmButton.addEventListener('click', handleConfirmWorkhourDelete);
+        } catch (e) {
+            console.warn("Elemen Form Jam Kerja (workhourForm) tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk 7 checkbox "Hari Libur" di modal jam kerja
+        try {
+            workhourDays.forEach(day => {
+                const checkbox = document.getElementById(`wh_${day}_is_off`);
+                const startInput = document.getElementById(`wh_${day}_start`);
+                const endInput = document.getElementById(`wh_${day}_end`);
+
+                checkbox.addEventListener('change', () => {
+                    const isChecked = checkbox.checked;
+                    startInput.disabled = isChecked;
+                    endInput.disabled = isChecked;
+                    if (isChecked) {
+                        startInput.classList.add('bg-gray-200');
+                        endInput.classList.add('bg-gray-200');
+                    } else {
+                        startInput.classList.remove('bg-gray-200');
+                        endInput.classList.remove('bg-gray-200');
+                    }
+                });
+            });
+        } catch (e) {
+            console.warn("Elemen checkbox jam kerja tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk Form Saldo Cuti
+        try {
+            document.getElementById('timeoffBalanceForm').addEventListener('submit', handleSaveTimeoffBalance);
+        } catch (e) {
+            console.warn("Elemen Form Saldo Cuti (timeoffBalanceForm) tidak ditemukan.");
+        }
 
     </script>
 </body>
