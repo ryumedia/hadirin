@@ -45,6 +45,46 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        /* Gaya Kalender Khusus */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            font-size: 0.75rem; /* text-xs */
+        }
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 4px 0;
+            background-color: #e5e7eb; /* bg-gray-200 */
+        }
+        .day-cell {
+            aspect-ratio: 1 / 1; /* Membuat sel menjadi persegi */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px; /* rounded-md */
+            text-align: center;
+            padding: 4px;
+            cursor: default;
+            transition: background-color 0.1s;
+            line-height: 1; /* Rapi saat font kecil */
+        }
+        .day-number {
+            font-weight: 600;
+        }
+        /* Status Colors - Sesuai dengan Legenda */
+        .status-Hadir { background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; } /* Green */
+        .status-Terlambat, .status-Izin { background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; } /* Yellow */
+        .status-Alpa { background-color: #fee2e2; border: 1px solid #ef4444; color: #991b1b; } /* Red */
+        .status-Weekend { background-color: #e0e7ff; border: 1px solid #6366f1; color: #3730a3; } /* Indigo (Hari Libur/Weekend) */
+        .status-Future, .status-Empty { background-color: #f9fafb; color: #9ca3af; } /* Gray (Tanggal masa depan atau sel kosong) */
+        /* Gaya untuk tab bulan yang aktif (Background Menyala) */
+        .tab-active-bg {
+             background-color: #eff6ff; /* bg-blue-50 */
+             border-radius: 6px 6px 0 0;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -134,7 +174,7 @@
                     </header>
 
                     <!-- Karyawan Absensi Section -->
-                    <div id="karyawanSection_Absensi" class="mt-4 p-6 bg-white rounded-xl shadow-lg transition-all duration-300" style="display: block;">
+                    <div id="karyawanSection_Absensi" class="mt-2 p-6 bg-white rounded-xl shadow-lg transition-all duration-300" style="display: block;">
                         
                         <!-- JAM (DIPUSATKAN) -->
                         <!-- Gunakan div dengan w-full dan text-center untuk memusatkan jam -->
@@ -188,10 +228,14 @@
                         </div>
                     </div>
                     <!-- ============================================== -->
-                    <!-- SECTION 2: PENGAJUAN (REQUESTS) KARYAWAN (BARU) -->
+                    <!-- SECTION 1 KARYAWAN: PENGAJUAN (REQUESTS) KARYAWAN (BARU) -->
                     <!-- ============================================== -->
-                    <div id="karyawanSection_Requests" class="mt-4" style="display: none;">
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <div id="karyawanSection_Requests" class="mt-2" style="display: none;">
+                        <div class="bg-white p-2 rounded-xl shadow-lg border border-gray-200">
+                            <!-- Tombol Kembali (BARU) -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mt-2 mb-2 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
                                 <h2 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Riwayat Pengajuan Koreksi</h2>
                                 <!-- Tombol untuk membuka Modal -->
@@ -218,19 +262,216 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
-                            <!-- Tombol Kembali (BARU) -->
-                            <button onclick="showKaryawanContent('Absensi')" class="mt-6 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
-                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
-                            </button>
                         </div>
                     </div>
+                    <!-- ============================================== -->
+                    <!-- SECTION 2 KARYWAN: PENGAJUAN IZIN / CUTI (TIMEOFF) -->
+                    <!-- ============================================== -->
+                    <div id="karyawanSection_Timeoff" style="display: none;">
+                        <div class="mt-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
+                                
+                            <h2 class="text-xl font-semibold text-gray-800 mb-6">Pengajuan Izin / Cuti (Timeoff)</h2>
+
+                            <!-- Form Pengajuan Baru -->
+                            <form id="timeoffRequestForm" class="space-y-4 border-b pb-6 mb-6">
+                                <div>
+                                    <label for="timeoffTypeSelect" class="block text-sm font-medium text-gray-700">Jenis Pengajuan</label>
+                                    <select id="timeoffTypeSelect" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Memuat jenis izin/cuti...</option>
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="timeoffStartDate" class="block text-sm font-medium text-gray-700">Tanggal Mulai</label>
+                                        <input type="date" id="timeoffStartDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="timeoffEndDate" class="block text-sm font-medium text-gray-700">Tanggal Akhir</label>
+                                        <input type="date" id="timeoffEndDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                </div>
+                                    
+                                <div>
+                                    <label for="timeoffDescription" class="block text-sm font-medium text-gray-700">Keterangan / Alasan</label>
+                                    <textarea id="timeoffDescription" rows="3" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Keperluan keluarga mendadak..."></textarea>
+                                </div>
+                                    
+                                <button type="submit" id="saveTimeoffRequestButton" class="w-full flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                    Kirim Pengajuan Izin/Cuti
+                                </button>
+                            </form>
+                                
+                            <!-- Riwayat Pengajuan Timeoff -->
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Pengajuan Izin / Cuti</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Diajukan</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rentang Tanggal</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="timeoffHistoryTableBody">
+                                        <!-- Data riwayat pengajuan timeoff akan dimuat di sini oleh JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: OVERTIME (KONTEN BARU) -->
+                    <div id="karyawanSection_Overtime" style="display: none;">
+                        <div class="mt-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
+                                
+                            <h2 class="text-xl font-semibold text-gray-800 mb-6">Pengajuan Lembur (Overtime)</h2>
+
+                            <!-- Form Pengajuan Lembur Baru -->
+                            <form id="overtimeRequestForm" class="space-y-4 border-b pb-6 mb-6">
+                                <div>
+                                    <label for="overtimeDate" class="block text-sm font-medium text-gray-700">Tanggal Lembur</label>
+                                    <input type="date" id="overtimeDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="overtimeStartTime" class="block text-sm font-medium text-gray-700">Waktu Mulai</label>
+                                        <input type="time" id="overtimeStartTime" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="overtimeEndTime" class="block text-sm font-medium text-gray-700">Waktu Akhir</label>
+                                        <input type="time" id="overtimeEndTime" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                </div>
+                                    
+                                <div>
+                                    <label for="overtimeDescription" class="block text-sm font-medium text-gray-700">Tujuan / Deskripsi Lembur</label>
+                                    <textarea id="overtimeDescription" rows="3" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Menyelesaikan laporan akhir Q3..."></textarea>
+                                </div>
+                                    
+                                <button type="submit" id="saveOvertimeRequestButton" class="w-full flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                    Kirim Pengajuan Lembur
+                                </button>
+                            </form>
+                                
+                            <!-- Riwayat Pengajuan Lembur -->
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Pengajuan Lembur</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Diajukan</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Lembur</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="overtimeHistoryTableBody">
+                                        <!-- Data riwayat pengajuan lembur akan dimuat di sini oleh JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: SALARY (KONTEN BARU) -->
+                    <div id="karyawanSection_Salary" style="display: none;">
+                        <div class="mt-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
+
+                            <h2 class="text-xl font-semibold text-gray-800 mb-6">Riwayat Payslip Anda</h2>
+
+                            <!-- Tabel Riwayat Gaji -->
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode Gaji</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gaji Bersih (Rp)</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="karyawanPayslipTableBody">
+                                        <!-- Data riwayat payslip akan dimuat di sini oleh JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ============================================== -->
+                    <!-- SECTION 5 KARYAWAN: RIWAYAT PRESENSI (HISTORY) -->
+                    <!-- ============================================== -->
+                    <div id="karyawanSection_History" style="display: none;">
+                        <div class="mt-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
+                                
+                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Riwayat Presensi Bulanan</h2>
+
+                            <!-- Tab Navigasi Bulan -->
+                            <div class="flex border-b mb-4 justify-between" id="monthTabs">
+                                <button id="tabPreviousMonth" onclick="switchHistoryTab('previous')" class="py-2 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-blue-600">
+                                    Memuat Bulan...
+                                </button>
+                                <button id="tabCurrentMonth" onclick="switchHistoryTab('current')" class="py-2 px-4 text-sm font-medium border-b-2 border-blue-600 text-blue-600">
+                                    Memuat Bulan...
+                                </button>
+                                <button id="tabNextMonth" onclick="switchHistoryTab('next')" class="py-2 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-blue-600 transition duration-150">
+                                    Memuat Bulan...
+                                </button>
+                            </div>
+
+                            <!-- Kontainer Kalender -->
+                            <div id="calendarContainer">
+                                <div id="calendarCurrentMonth" class="tab-content" style="display: block;">
+                                    <!-- Kalender Bulan Ini akan dirender di sini -->
+                                </div>
+                                <div id="calendarPreviousMonth" class="tab-content" style="display: none;">
+                                    <!-- Kalender Bulan Lalu akan dirender di sini -->
+                                </div>
+                                <!-- BARU: Kontainer Bulan Depan -->
+                                <div id="calendarNextMonth" class="tab-content" style="display: none;">
+                                    <!-- Kalender Bulan Depan akan dirender di sini -->
+                                </div>
+                            </div>
+
+                            <!-- Legenda -->
+                            <div class="mt-6 p-3 bg-gray-50 rounded-lg flex flex-wrap gap-x-4 gap-y-2 text-xs">
+                                <p class="font-semibold text-gray-700">Legenda:</p>
+                                <span class="flex items-center"><span class="w-3 h-3 rounded-full mr-1 bg-green-500"></span> Hadir</span>
+                                <span class="flex items-center"><span class="w-3 h-3 rounded-full mr-1 bg-yellow-500"></span> Terlambat / Izin</span>
+                                <span class="flex items-center"><span class="w-3 h-3 rounded-full mr-1 bg-red-500"></span> Alpa / Tidak Hadir</span>
+                                <span class="flex items-center"><span class="w-3 h-3 rounded-full mr-1 bg-gray-300 border border-gray-400"></span> Belum Absen</span>
+                                <span class="flex items-center"><span class="w-3 h-3 rounded-full mr-1 bg-indigo-100 border border-indigo-500"></span> Hari Libur / Weekend</span>
+                            </div>
+                        </div>
+                    </div>
+    
 
             </div>
         </div>
 
         <!-- =============================================================== -->
-        <!-- 3. TAMPILAN ADMIN (STRUKTUR DIPERBAIKI)                     -->
+        <!-- TAMPILAN ADMIN (STRUKTUR DIPERBAIKI)                     -->
         <!-- =============================================================== -->
         <div id="adminView" class="view flex flex-grow w-full p-0 sm:p-0 lg:p-0">
             <!-- Kontainer Flexbox untuk Sidebar + Konten Utama -->
@@ -249,6 +490,12 @@
                         <li>
                             <button id="menuEmployees" onclick="showAdminSection('employees')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="people-outline" class="text-lg mr-3"></ion-icon> Manajemen Karyawan
+                            </button>
+                        </li>
+                        <!-- MANAJEMEN GAJI KARYAWAN (BARU) -->
+                        <li>
+                            <button id="menuEmployeeSalaries" onclick="showAdminSection('employeesalaries')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="wallet-outline" class="text-lg mr-3"></ion-icon> Gaji Karyawan
                             </button>
                         </li>
                         <li id="menuCompaniesContainer" class="hidden"> <!-- Kontainer untuk menu Super Admin -->
@@ -304,6 +551,11 @@
                         <li>
                             <button id="menuTimeoffBalance" onclick="showAdminSection('timeoffbalance')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="today-outline" class="text-lg mr-3"></ion-icon> Saldo Cuti Karyawan
+                            </button>
+                        </li>
+                        <li>
+                            <button id="menuPayroll" onclick="showAdminSection('payroll')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="cash-outline" class="text-lg mr-3"></ion-icon> Payroll & Gaji
                             </button>
                         </li>
                         <!-- Tambahkan menu-menu baru di sini di masa depan -->
@@ -417,6 +669,52 @@
                             </div>
                         </div> <!-- End sectionEmployees -->
 
+                        <!-- ============================================= -->
+                        <!-- SECTION 2.1: MANAJEMEN GAJI KARYAWAN (BARU) -->
+                        <!-- ============================================= -->
+                        <div id="sectionEmployeesalaries" style="display: none;">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-6">Pengaturan Komponen Gaji Karyawan</h2>
+
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    <!-- Filter Karyawan -->
+                                    <div class="md:col-span-2">
+                                        <label for="salaryEmployeeFilter" class="block text-xs font-medium text-gray-700 mb-1">Pilih Karyawan</label>
+                                        <!-- ID ini akan diisi dengan semua karyawan -->
+                                        <select id="salaryEmployeeFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Pilih Karyawan untuk Mulai --</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Tombol Tambah Komponen -->
+                                    <div class="md:col-span-2 flex items-end">
+                                        <button onclick="openEmployeeSalaryModal('add')" id="addSalaryComponentButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm disabled:opacity-50" disabled>
+                                            <ion-icon name="add-outline" class="text-lg mr-1"></ion-icon> Tambah Komponen Gaji
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <h3 id="salaryComponentName" class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4 hidden">Komponen Gaji untuk [Nama Karyawan]</h3>
+
+                                <!-- Tabel Hasil Pengaturan Gaji -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Gaji</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal (Rp)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="employeeSalariesTableBody">
+                                            <tr><td colspan="4" class="text-center py-8 text-gray-500">Silakan pilih karyawan dari daftar di atas.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- End sectionEmployeeSalaries -->
+
                         <!-- SECTION 3: MANAJEMEN PERUSAHAAN (BARU) -->
                         <div id="sectionCompanies" style="display: none;">
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
@@ -494,7 +792,7 @@
 
                                 <!-- KARTU STATISTIK REKAP (BARU) -->
                                 <!-- Container ini akan 'hidden' dan baru muncul setelah data dimuat -->
-                                <div id="rekapSummaryContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 hidden">
+                                <div id="rekapSummaryContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 hidden">
                                     <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
                                         <p class="text-sm font-medium text-gray-500">Total Hadir</p>
                                         <p class="text-2xl font-bold text-green-600 mt-1" id="rekapTotalHadir">0</p>
@@ -504,11 +802,7 @@
                                         <p class="text-2xl font-bold text-yellow-600 mt-1" id="rekapTotalTerlambat">0</p>
                                     </div>
                                     <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
-                                        <p class="text-sm font-medium text-gray-500">Sakit</p>
-                                        <p class="text-2xl font-bold text-yellow-600 mt-1" id="rekapTotalSakit">0</p>
-                                    </div>
-                                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
-                                        <p class="text-sm font-medium text-gray-500">Izin/Cuti</p>
+                                        <p class="text-sm font-medium text-gray-500">Izin / Cuti</p>
                                         <p class="text-2xl font-medium text-gray-500" id="rekapTotalIzin">0</p>
                                     </div>
                                     <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 text-center">
@@ -765,6 +1059,10 @@
                                     <button id="tabMasterDeduction" onclick="showMasterTab('deduction')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
                                         Tipe Potongan
                                     </button>
+                                    <!-- BARU: Tab 4: Hari Libur Nasional -->
+                                    <button id="tabMasterHoliday" onclick="showMasterTab('holiday')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                        Hari Libur
+                                    </button>
                                 </nav>
                             </div>
 
@@ -856,6 +1154,35 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Konten 4: Hari Libur Nasional (BARU) -->
+                                <div id="masterContentHoliday" class="hidden">
+                                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <h3 class="text-xl font-semibold text-gray-800">Daftar Hari Libur Nasional/Khusus</h3>
+                                            <button onclick="openHolidayModal('add')" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                                <ion-icon name="add-outline" class="mr-1"></ion-icon> Tambah Hari Libur
+                                            </button>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-4">
+                                            Hari libur yang ditetapkan di sini akan membebaskan karyawan dari kewajiban clock-in.
+                                        </p>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hari Libur</th>
+                                                        <th id="holidayCompanyHeader" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perusahaan</th>
+                                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200" id="holidayListTableBody">
+                                                    <!-- Data diisi oleh JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div> <!-- End sectionMasters -->
 
@@ -921,31 +1248,59 @@
                                 </div>
                             </div>
                         </div> <!-- End sectionTimeoffbalance -->
-            
-                        <!-- SECTION 8: TIMEOFF (KONTEN BARU) -->
-                        <div id="karyawanSection_Timeoff" style="display: none;">
+
+                        <!-- SECTION 11: PAYROLL & GAJI (BARU) -->
+                        <div id="sectionPayroll" style="display: none;">
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                                <h2 class="text-xl font-semibold text-gray-800">Manajemen Cuti & Izin</h2>
-                                <p class="text-gray-500 mt-2">Fitur setting cuti akan ditambahkan di sini.</p>
+                                <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                                    <ion-icon name="cash-outline" class="text-2xl mr-2 text-blue-600"></ion-icon>
+                                    Perhitungan & Riwayat Payroll
+                                </h2>
+
+                                <!-- KARTU PERHITUNGAN BARU -->
+                                <div class="p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-xl mb-8">
+                                    <h3 class="text-lg font-bold text-blue-700 mb-4">Proses Gaji Bulanan</h3>
+                                    <p class="text-sm text-gray-600 mb-4">Pilih periode, hitung data kehadiran dan komponen gaji, lalu simpan hasil payroll.</p>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Filter Bulan -->
+                                        <div>
+                                            <label for="payrollMonthFilter" class="block text-xs font-medium text-gray-700 mb-1">Periode Gaji (Bulan)</label>
+                                            <!-- Input month format: YYYY-MM -->
+                                            <input type="month" id="payrollMonthFilter" required class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        
+                                        <!-- Tombol Proses -->
+                                        <div class="md:col-span-2 flex items-end">
+                                            <button id="calculatePayrollButton" onclick="calculateAndSavePayroll()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium text-sm disabled:opacity-50 flex items-center justify-center">
+                                                <ion-icon name="calculator-outline" class="text-lg mr-2"></ion-icon> Hitung & Proses Payroll
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- RIWAYAT PAYROLL -->
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Riwayat Payroll Tersimpan</h3>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gaji Bersih (Rp)</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Proses</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="payrollHistoryTableBody">
+                                            <tr><td colspan="6" class="text-center py-8 text-gray-500">Memuat riwayat penggajian...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- SECTION 9: OVERTIME (KONTEN BARU) -->
-                        <div id="karyawanSection_Overtime" style="display: none;">
-                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                                <h2 class="text-xl font-semibold text-gray-800">Manajemen Lembur</h2>
-                                <p class="text-gray-500 mt-2">Fitur setting lembur akan ditambahkan di sini.</p>
-                            </div>
-                        </div>
-
-                        <!-- SECTION 10: SALARY (KONTEN BARU) -->
-                        <div id="karyawanSection_Salary" style="display: none;">
-                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                                <h2 class="text-xl font-semibold text-gray-800">Informasi Gaji</h2>
-                                <p class="text-gray-500 mt-2">setting gaji dan rincian akan ditampilkan di sini.</p>
-                            </div>
-                        </div>
-
                     </div> <!-- End adminContentContainer -->
                 </main> <!-- End main -->
             </div> <!-- End flex container -->
@@ -1015,8 +1370,7 @@
                                         <select id="modalStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                                             <option value="Hadir">Hadir</option>
                                             <option value="Terlambat">Terlambat</option>
-                                            <option value="Izin">Izin</option>
-                                            <option value="Sakit">Sakit</option>
+                                            <option value="Izin / Cuti">Izin / Cuti</option>
                                             <option value="Alpa">Alpa</option>
                                         </select>
                                     </div>
@@ -1129,6 +1483,59 @@
                         </form>
                     </div>
                 </div>
+            </div>
+
+            <!-- Modal Tambah/Edit Gaji Karyawan (BARU) -->
+            <div id="employeeSalaryModal" class="fixed z-20 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEmployeeSalaryModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="employeeSalaryForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="employeeSalaryModalTitle">
+                                    Tambahkan Komponen Gaji
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    
+                                    <!-- Display Nama Karyawan yang sedang diedit -->
+                                    <p class="text-sm text-gray-600 mb-2">Untuk Karyawan: <strong id="modalSalaryEmployeeName"></strong></p>
+
+                                    <!-- Pilih Tipe Gaji (Hanya mode ADD) -->
+                                    <div id="salaryTypeSelectContainer">
+                                        <label for="modalSalaryTypeSelect" class="block text-sm font-medium text-gray-700">Tipe Komponen Gaji</label>
+                                        <select id="modalSalaryTypeSelect" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <option value="">-- Pilih Tipe Gaji --</option>
+                                            <!-- Opsi diisi oleh JS dari salary_types -->
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Display Metode Perhitungan -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Metode Perhitungan</label>
+                                        <p id="modalSalaryMethod" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm bg-gray-100 text-gray-700">Nominal Tetap</p>
+                                    </div>
+
+                                    <!-- Jumlah Nominal -->
+                                    <div>
+                                        <label for="modalSalaryAmount" class="block text-sm font-medium text-gray-700">Nominal (Rp.)</label>
+                                        <input type="number" id="modalSalaryAmount" step="1" required min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Masukkan jumlah nominal (cth: 5000000)">
+                                        <p id="modalSalaryInfo" class="text-xs text-gray-500 mt-1 hidden">Informasi: Tipe gaji ini akan menggunakan nominal di atas sebagai patokan per jam lembur/per hari absensi, bukan nominal tetap bulanan.</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="saveEmployeeSalaryButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan Komponen Gaji
+                                </button>
+                                <button type="button" onclick="closeEmployeeSalaryModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>    
 
             <!-- Modal Tambah/Edit Perusahaan -->
@@ -1147,6 +1554,12 @@
                                         <label for="companyName" class="block text-sm font-medium text-gray-700">Nama Perusahaan</label>
                                         <input type="text" id="companyName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
                                     </div>
+                                </div>
+                                <!-- (BARU) Tanggal Mulai Penggajian -->
+                                <div>
+                                    <label for="companyPayrollStartDay" class="block text-sm font-medium text-gray-700">Tgl Mulai Penggajian Bulanan</label>
+                                    <input type="number" id="companyPayrollStartDay" min="1" max="28" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Contoh: 1 atau 21" value="1">
+                                    <p class="text-xs text-gray-500 mt-1">Gaji dihitung dari tanggal ini hingga H-1 di bulan pembayaran.</p>
                                 </div>
                             </div>
                             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -1327,8 +1740,7 @@
                                                 <option value="">-- Pilih Pemicu --</option>
                                                 <option value="Terlambat">Terlambat</option>
                                                 <option value="Alpa">Alpa</option>
-                                                <option value="Sakit">Sakit</option>
-                                                <option value="Izin">Izin</option>
+                                                <option value="Izin / Cuti">Izin / Cuti</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1359,6 +1771,14 @@
                                                 <!-- Pemicu untuk 'Berdasarkan Absensi' -->
                                                 <option value="Hadir">Bonus Kehadiran (Hadir)</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                    <!-- (BARU) Field Khusus Tipe Izin/Cuti -->
+                                    <div id="masterTimeoffFields" class="hidden space-y-4 pt-4 border-t">
+                                        <h4 class="text-sm font-medium text-gray-500">Aturan Cuti</h4>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="masterTimeoffDeductible" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                            <label for="masterTimeoffDeductible" class="ml-2 block text-sm text-gray-700">Kurangi Saldo Cuti Karyawan</label>
                                         </div>
                                     </div>
                                 </div>
@@ -1635,6 +2055,139 @@
                 </div>
             </div>
 
+            <!-- Modal Tambah/Edit Hari Libur (BARU) -->
+            <div id="holidayModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeHolidayModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="holidayForm">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="holidayModalTitle">
+                                    Tambah Hari Libur
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="holidayNameInput" class="block text-sm font-medium text-gray-700">Nama Hari Libur</label>
+                                        <input type="text" id="holidayNameInput" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Hari Raya Natal">
+                                    </div>
+                                    <div>
+                                        <label for="holidayDateInput" class="block text-sm font-medium text-gray-700">Tanggal Libur</label>
+                                        <input type="date" id="holidayDateInput" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <!-- DROPDOWN PERUSAHAAN (Hanya untuk Super Admin) -->
+                                    <div id="holidayCompanySelectContainer" class="hidden">
+                                        <label for="holidayCompanySelect" class="block text-sm font-medium text-gray-700">Perusahaan</label>
+                                        <select id="holidayCompanySelect" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <!-- Opsi diisi oleh JS -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" id="saveHolidayButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Simpan Hari Libur
+                                </button>
+                                <button type="button" onclick="closeHolidayModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Konfirmasi Delete Payroll -->
+            <div id="payrollDeleteModal" class="fixed z-40 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeConfirmPayrollDelete()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Konfirmasi Hapus Payroll
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600" id="payrollDeleteText">
+                                    Apakah Anda yakin ingin menghapus hasil payroll periode ini? Tindakan ini tidak bisa dibatalkan.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" id="payrollDeleteConfirmButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Ya, Hapus Permanen
+                            </button>
+                            <button type="button" onclick="closeConfirmPayrollDelete()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Lihat Payslip (Lihat Payslip) -->
+            <div id="payslipModal" class="fixed z-40 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closePayslipModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                        <div class="bg-white px-6 pt-5 pb-4 sm:p-8 sm:pb-6">
+                            <h3 class="text-2xl font-bold text-blue-600 mb-2">Slip Gaji <span id="payslipPeriod"></span></h3>
+                            <p class="text-sm text-gray-600 mb-4">Karyawan: <strong id="payslipEmployeeName"></strong></p>
+
+                            <div class="space-y-6">
+                                
+                                <!-- RINGKASAN GAJI -->
+                                <div class="border rounded-xl p-4 bg-green-50">
+                                    <h4 class="text-lg font-semibold text-green-700 mb-2">Ringkasan Pembayaran</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Penghasilan Kotor</p>
+                                            <p id="payslipGross" class="text-lg font-bold text-gray-800">Rp 0</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Potongan</p>
+                                            <p id="payslipDeduction" class="text-lg font-bold text-red-600">Rp 0</p>
+                                        </div>
+                                        <div class="col-span-2 border-t pt-2">
+                                            <p class="text-sm text-gray-500">Gaji Bersih (Take Home Pay)</p>
+                                            <p id="payslipNet" class="text-2xl font-extrabold text-blue-700">Rp 0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- RINCIAN PENGHASILAN -->
+                                <div class="border rounded-xl p-4">
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Rincian Penghasilan</h4>
+                                    <table class="w-full text-left text-sm">
+                                        <tbody id="payslipSalaryDetailBody">
+                                            <tr><td colspan="2" class="py-2 text-gray-500">Memuat rincian...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- RINCIAN POTONGAN -->
+                                <div class="border rounded-xl p-4">
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Rincian Potongan</h4>
+                                    <table class="w-full text-left text-sm">
+                                        <tbody id="payslipDeductionDetailBody">
+                                            <tr><td colspan="2" class="py-2 text-gray-500">Belum ada rincian potongan.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <p id="payslipProcessedAt" class="mt-6 text-xs text-right text-gray-500">Diproses oleh [Admin Name] pada [Tanggal]</p>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" onclick="closePayslipModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Kotak Pesan Global -->
             <div id="messageBox" class="fixed top-5 right-5 z-50 w-full max-w-sm"></div>
 
@@ -1654,6 +2207,7 @@
         let currentAttendanceId = null; // ID absensi hari ini yang sedang aktif (untuk Karyawan)
         let modalAttendanceData = {}; // Data absensi yang sedang diedit di modal Admin
         let allEmployees = []; // Digunakan untuk mengisi dropdown filter
+        let timeoffBalancesCache = {}; // (BARU) Cache untuk saldo cuti karyawan
         
         // DOM ELEMENTS
         const loadingView = document.getElementById('loadingView');
@@ -1694,6 +2248,146 @@
         // HELPER FUNCTIONS (UTILITY)
         // ===============================================================
 
+        // --- FUNGSI BARU: CRUD HARI LIBUR NASIONAL/KHUSUS ---
+
+        const holidayModal = document.getElementById('holidayModal');
+        const holidayForm = document.getElementById('holidayForm');
+        const holidayListTableBody = document.getElementById('holidayListTableBody');
+
+        // 1. Memuat Daftar Hari Libur
+        async function loadHolidays() {
+            const tableBody = holidayListTableBody;
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat data hari libur...</td></tr>';
+            document.getElementById('holidayCompanyHeader').style.display = (globalProfile.role === 'super_admin') ? 'table-cell' : 'none';
+
+            let query = _supabase.from('holidays').select('id, holiday_name, holiday_date, company_id, companies(name)');
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            query = query.order('holiday_date', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat holidays:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada hari libur yang ditetapkan.</td></tr>';
+                return;
+            }
+
+            const html = data.map(item => {
+                const dateDisplay = new Date(item.holiday_date + 'T00:00:00').toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: '2-digit' });
+                const safeName = item.holiday_name.replace(/'/g, "\\'");
+
+                const companyName = (globalProfile.role === 'super_admin') 
+                    ? (item.companies ? item.companies.name : '<span class="italic text-gray-500">Global</span>') 
+                    : (item.companies ? item.companies.name : '-');
+                    
+                const companyCell = (globalProfile.role === 'super_admin') 
+                    ? `<td class="px-4 py-3 text-sm text-gray-600">${companyName}</td>` 
+                    : '';
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${dateDisplay}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${item.holiday_name}</td>
+                        ${companyCell}
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="openHolidayModal('edit', '${item.id}', '${item.holiday_date}', '${safeName}', '${item.company_id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmDeleteModal('holiday', '${item.id}', '${safeName} (${dateDisplay})')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // 2. Membuka Modal (Add/Edit)
+        async function openHolidayModal(mode, id = null, date = '', name = '', companyId = null) {
+            holidayForm.reset();
+            document.getElementById('holidayModalTitle').textContent = (mode === 'add') ? 'Tambah Hari Libur Baru' : `Edit Hari Libur: ${name}`;
+            holidayForm.dataset.mode = mode;
+            holidayForm.dataset.id = id;
+            
+            document.getElementById('holidayNameInput').value = name;
+            document.getElementById('holidayDateInput').value = date;
+
+            // Atur Dropdown Perusahaan untuk Super Admin
+            const companySelectContainer = document.getElementById('holidayCompanySelectContainer');
+            const companySelect = document.getElementById('holidayCompanySelect');
+
+            if (globalProfile.role === 'super_admin') {
+                companySelectContainer.classList.remove('hidden');
+                companySelect.required = false; 
+                
+                const { data } = await _supabase.from('companies').select('id, name').order('name', { ascending: true });
+                if (data) {
+                    let options = '<option value="">-- Global (Semua Perusahaan) --</option>';
+                    options += data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                    companySelect.innerHTML = options;
+                }
+                companySelect.value = companyId || ''; 
+            } else {
+                companySelectContainer.classList.add('hidden');
+                companySelect.required = false;
+            }
+
+            holidayModal.classList.remove('hidden');
+        }
+
+        // 3. Menutup Modal
+        function closeHolidayModal() {
+            holidayModal.classList.add('hidden');
+        }
+
+        // 4. Menyimpan (Add/Edit)
+        holidayForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveHolidayButton');
+            saveButton.disabled = true;
+
+            const { mode, id } = holidayForm.dataset;
+            const name = document.getElementById('holidayNameInput').value;
+            const date = document.getElementById('holidayDateInput').value;
+            
+            let companyId = null;
+            if (globalProfile.role === 'super_admin') {
+                companyId = document.getElementById('holidayCompanySelect').value || null;
+            } else {
+                companyId = globalProfile.company_id;
+            }
+
+            const payload = {
+                holiday_name: name,
+                holiday_date: date,
+                company_id: companyId
+            };
+
+            showMessage("Menyimpan hari libur...", 'info');
+            
+            let query;
+            if (mode === 'add') {
+                query = _supabase.from('holidays').insert([payload]);
+            } else {
+                query = _supabase.from('holidays').update(payload).eq('id', id);
+            }
+
+            const { error } = await query;
+            if (error) {
+                showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Hari libur berhasil disimpan.', 'success');
+            closeHolidayModal();
+            loadHolidays();
+            saveButton.disabled = false;
+        });
+
         // --- FUNGSI BARU: MEMUAT NAMA PERUSAHAAN ---
         async function loadCompanyDetails() {
             if (!globalProfile || !globalProfile.company_id) {
@@ -1720,10 +2414,10 @@
         // FUNGSI NAVIGASI SIDEBAR ADMIN (DIPERBAIKI UNTUK ACCORDION)
         function showAdminSection(sectionName) {
             // Daftar semua section 
-            const sections = ['summary', 'employees', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime', 'masters', 'workhours', 'timeoffbalance'];
+            const sections = ['summary', 'employees', 'employeesalaries', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime', 'masters', 'workhours', 'timeoffbalance', 'payroll'];
             
             // Daftar semua tombol menu (termasuk sub-menu)
-            const menus = ['menuSummary', 'menuEmployees', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests', 'menuMasters', 'menuWorkhours', 'menuTimeoffBalance'];
+            const menus = ['menuSummary', 'menuEmployees', 'menuEmployeeSalaries', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests', 'menuMasters', 'menuWorkhours', 'menuTimeoffBalance', 'menuPayroll'];
             
             // Elemen Accordion
             const requestsMenu = document.getElementById('menuRequests');
@@ -1790,7 +2484,9 @@
             if (sectionName === 'summary') {
                 loadAdminAttendanceData(adminAttendanceDateFilter.value);
             } else if (sectionName === 'employees') {
-                loadEmployeeList(); 
+                loadEmployeeList();
+            } else if (sectionName === 'employeesalaries') { // <--- TAMBAHKAN BLOK INI
+                initializeEmployeeSalary();     
             } else if (sectionName === 'companies') { 
                 loadCompanyList();
             } else if (sectionName === 'rekap') { 
@@ -1810,7 +2506,275 @@
                 loadWorkhoursList();
             } else if (sectionName === 'timeoffbalance') { // <-- TAMBAHKAN BLOK INI
                 loadTimeoffBalanceList();
+            } else if (sectionName === 'payroll') { // <-- BLOK BARU
+                initializePayroll();
+                loadPayrollHistory();
             }
+        }
+
+        // --- FUNGSI BARU: CRUD MANAJEMEN GAJI KARYAWAN (EMPLOYEE SALARIES) ---
+        
+        const employeeSalaryModal = document.getElementById('employeeSalaryModal');
+        const employeeSalaryForm = document.getElementById('employeeSalaryForm');
+        let selectedEmployeeIdForSalary = null; // ID karyawan yang sedang dilihat gajinya
+        let salaryTypesCache = []; // Cache untuk dropdown Tipe Gaji
+
+        // 1. Inisialisasi Halaman & Filter Karyawan
+        async function initializeEmployeeSalary() {
+            const employeeFilter = document.getElementById('salaryEmployeeFilter');
+
+            // Muat karyawan jika belum ada
+            if (allEmployees.length === 0) { 
+                 let query = _supabase.from('profiles').select('id, full_name').order('full_name', { ascending: true });
+                if (globalProfile.role !== 'super_admin') {
+                    query = query.eq('company_id', globalProfile.company_id);
+                }
+                const { data } = await query;
+                allEmployees = data || [];
+            }
+
+            // Isi Dropdown Karyawan
+            let options = '<option value="">-- Pilih Karyawan untuk Mulai --</option>';
+            options += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
+            employeeFilter.innerHTML = options;
+
+            // Jika ada karyawan yang sedang dipilih, muat gajinya
+            if (selectedEmployeeIdForSalary) {
+                loadEmployeeSalaries(selectedEmployeeIdForSalary);
+            }
+        }
+        
+        // 2. Memuat Daftar Komponen Gaji Karyawan
+        async function loadEmployeeSalaries(userId) {
+            selectedEmployeeIdForSalary = userId;
+            const tableBody = document.getElementById('employeeSalariesTableBody');
+            const addButton = document.getElementById('addSalaryComponentButton');
+            const nameHeader = document.getElementById('salaryComponentName');
+            
+            // Tampilkan nama karyawan yang dipilih
+            const employee = allEmployees.find(e => e.id === userId);
+            nameHeader.innerHTML = `Komponen Gaji untuk <strong>${employee ? employee.full_name : 'N/A'}</strong>`;
+            nameHeader.classList.remove('hidden');
+
+            if (!userId) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Silakan pilih karyawan dari daftar di atas.</td></tr>';
+                addButton.disabled = true;
+                return;
+            }
+
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat komponen gaji...</td></tr>';
+            addButton.disabled = false; // Aktifkan tombol tambah
+
+            // Ambil data gaji karyawan + detail dari tipe gaji
+            const { data, error } = await _supabase.from('employee_salaries').select(`
+                id, 
+                salary_amount, 
+                salary_type_id,
+                salary_types(name, method, description)
+            `).eq('user_id', userId).order('salary_amount', { ascending: false });
+
+            if (error) {
+                console.error("Gagal memuat gaji karyawan:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Karyawan ini belum memiliki komponen gaji yang ditetapkan.</td></tr>';
+                return;
+            }
+
+            const html = data.map(item => {
+                const typeName = item.salary_types ? item.salary_types.name : 'N/A';
+                const method = item.salary_types ? item.salary_types.method : 'Nominal Tetap';
+                const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.salary_amount);
+                
+                // Siapkan data untuk edit
+                const safeName = typeName.replace(/'/g, "\\'");
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${typeName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${method}</td>
+                        <td class="px-4 py-3 text-right text-lg font-bold text-green-600">${nominal}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="openEmployeeSalaryModal('edit', '${item.id}', ${item.salary_type_id}, ${item.salary_amount}, '${safeName}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openConfirmDeleteModal('employee_salary', '${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // 3. Membuka Modal (Add/Edit)
+        async function openEmployeeSalaryModal(mode, id = null, salaryTypeId = null, amount = 0, salaryTypeName = '') {
+            if (!selectedEmployeeIdForSalary) {
+                showMessage("Harap pilih karyawan terlebih dahulu.", 'error');
+                return;
+            }
+            
+            const employee = allEmployees.find(e => e.id === selectedEmployeeIdForSalary);
+            document.getElementById('modalSalaryEmployeeName').textContent = employee ? employee.full_name : 'N/A';
+            employeeSalaryForm.reset(); 
+            
+            document.getElementById('employeeSalaryModalTitle').textContent = (mode === 'add') ? 'Tambahkan Komponen Gaji Baru' : `Edit Nominal ${salaryTypeName}`;
+            employeeSalaryForm.dataset.mode = mode;
+            employeeSalaryForm.dataset.id = id;
+            
+            const typeSelectContainer = document.getElementById('salaryTypeSelectContainer');
+            const typeSelect = document.getElementById('modalSalaryTypeSelect');
+            const salaryMethodDisplay = document.getElementById('modalSalaryMethod');
+            const salaryInfo = document.getElementById('modalSalaryInfo');
+
+            // Muat Tipe Gaji (jika belum di-cache)
+            if (salaryTypesCache.length === 0) {
+                let typeQuery = _supabase.from('salary_types').select('id, name, method, value');
+                if (globalProfile.company_id) {
+                    typeQuery = typeQuery.or(`company_id.eq.${globalProfile.company_id},company_id.is.null`);
+                } else {
+                    typeQuery = typeQuery.is('company_id', null);
+                }
+                const { data } = await typeQuery;
+                salaryTypesCache = data || [];
+            }
+            
+            // Helper untuk mengupdate tampilan metode/info
+            const updateMethodDisplay = (selectedTypeId) => {
+                const selectedType = salaryTypesCache.find(t => t.id == selectedTypeId);
+                const method = selectedType ? selectedType.method : 'Nominal Tetap';
+                salaryMethodDisplay.textContent = method;
+                salaryInfo.classList.toggle('hidden', method === 'Nominal Tetap');
+                
+                // Atur placeholder input nominal
+                const nominalInput = document.getElementById('modalSalaryAmount');
+                if (method !== 'Nominal Tetap') {
+                     nominalInput.placeholder = `Masukkan nilai per ${method === 'Berdasarkan Lembur' ? 'jam' : 'hari'} (cth: ${selectedType.value || 0})`;
+                } else {
+                    nominalInput.placeholder = "Masukkan jumlah nominal (cth: 5000000)";
+                }
+            };
+
+            // Logika mode ADD vs EDIT
+            if (mode === 'add') {
+                typeSelectContainer.classList.remove('hidden');
+                
+                let options = '<option value="">-- Pilih Tipe Gaji --</option>';
+                options += salaryTypesCache.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                typeSelect.innerHTML = options;
+                
+                // Tambahkan listener untuk perubahan tipe gaji di mode ADD
+                typeSelect.onchange = (e) => updateMethodDisplay(e.target.value);
+                updateMethodDisplay(null); // Reset tampilan awal
+
+            } else { // mode EDIT
+                typeSelectContainer.classList.add('hidden');
+                // Isi input nominal dan display metode
+                document.getElementById('modalSalaryAmount').value = amount;
+                updateMethodDisplay(salaryTypeId); // Muat metode dari ID tipe yang sudah ada
+            }
+
+            employeeSalaryModal.classList.remove('hidden');
+        }
+
+        // 4. Menutup Modal
+        function closeEmployeeSalaryModal() {
+            employeeSalaryModal.classList.add('hidden');
+            // Hapus listener onchange agar tidak menumpuk saat modal dibuka lagi
+            document.getElementById('modalSalaryTypeSelect').onchange = null;
+        }
+
+        // 5. Menyimpan (Add/Edit)
+        async function handleSaveEmployeeSalary(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveEmployeeSalaryButton');
+            saveButton.disabled = true;
+
+            const { mode, id } = employeeSalaryForm.dataset;
+            const amount = parseFloat(document.getElementById('modalSalaryAmount').value);
+            
+            let typeId = null;
+            if (mode === 'add') {
+                typeId = document.getElementById('modalSalaryTypeSelect').value;
+                if (!typeId) {
+                    showMessage('Harap pilih Tipe Gaji.', 'error');
+                    saveButton.disabled = false;
+                    return;
+                }
+            } else {
+                // Di mode EDIT, kita harus mencari ID Tipe Gaji yang sedang diedit
+                // Kita ambil dari data gaji karyawan yang sudah dimuat. Ini lebih rumit
+                // Sebagai solusi sementara, kita akan mengambil ID dari item di table body
+                // (Ini perlu perbaikan, tapi untuk prototype cepat, kita bisa mengambil dari data yang dikirim ke openEmployeeSalaryModal)
+                
+                // Untuk EDIT, kita harus mengambil ID Tipe Gaji dari elemen yang ada di tabel, 
+                // karena kita hanya mengirim ID employee_salaries. Karena data aslinya tidak ada di form, 
+                // kita harus melakukan query balik.
+                
+                // NOTE: Untuk penyederhanaan prototype, kita akan rely pada ID dari item yang diklik (yang tidak tersimpan di form)
+                // Solusi prototype: Buat input hidden untuk typeId di modal edit
+                const typeSelect = document.getElementById('modalSalaryTypeSelect');
+                if (typeSelect.classList.contains('hidden') && id) {
+                    // Jika mode edit, ambil typeId dari cache jika mode edit
+                    const currentSalary = await _supabase.from('employee_salaries').select('salary_type_id').eq('id', id).single();
+                    typeId = currentSalary?.data?.salary_type_id;
+                }
+            }
+
+
+            if (isNaN(amount) || amount < 0) {
+                showMessage('Nominal harus angka non-negatif.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            
+            const payload = {
+                salary_amount: amount,
+            };
+
+            if (mode === 'add') {
+                payload.user_id = selectedEmployeeIdForSalary;
+                payload.salary_type_id = typeId;
+                payload.company_id = globalProfile.company_id; 
+            }
+            
+            showMessage("Menyimpan komponen gaji...", 'info');
+            let query;
+            if (mode === 'add') {
+                query = _supabase.from('employee_salaries').insert([payload]);
+            } else {
+                query = _supabase.from('employee_salaries').update(payload).eq('id', id);
+            }
+
+            const { error } = await query;
+            if (error) {
+                // Error 23505 adalah constraint unik
+                if (error.code === '23505') {
+                    showMessage('Gagal: Komponen gaji ini sudah ada untuk karyawan ini.', 'error');
+                } else {
+                    showMessage(`Gagal menyimpan: ${error.message}`, 'error');
+                }
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Komponen gaji berhasil disimpan.', 'success');
+            closeEmployeeSalaryModal();
+            loadEmployeeSalaries(selectedEmployeeIdForSalary);
+            saveButton.disabled = false;
+        }
+        
+        // --- EVENT LISTENERS (BARU) ---
+
+        try {
+            document.getElementById('salaryEmployeeFilter').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    loadEmployeeSalaries(e.target.value);
+                } else {
+                    loadEmployeeSalaries(null); // Muat tampilan kosong jika filter direset
+                }
+            });
+            employeeSalaryForm.addEventListener('submit', handleSaveEmployeeSalary);
+        } catch (e) {
+            console.warn("Elemen Filter Gaji Karyawan tidak ditemukan.");
         }
 
         // --- FUNGSI TOGGLE SUB-MENU (ACCORDION) (BARU) ---
@@ -2118,17 +3082,30 @@
         companyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const companyName = document.getElementById('companyName').value;
+            const payrollStartDay = parseInt(document.getElementById('companyPayrollStartDay').value);
             
+            // Validasi nilai baru (wajib 1-28)
+            if (isNaN(payrollStartDay) || payrollStartDay < 1 || payrollStartDay > 28) {
+                showMessage('Tanggal mulai penggajian harus antara 1 sampai 28.', 'error');
+                document.getElementById('saveCompanyButton').disabled = false;
+                return;
+            }
+
             document.getElementById('saveCompanyButton').disabled = true;
             showMessage("Menyimpan perusahaan...", 'info');
 
+            const payload = { 
+                name: companyName,
+                payroll_start_day: payrollStartDay // <--- Tambahkan kolom ini
+            };
+
             let query;
             if (currentCompanyId) {
-                // Mode EDIT
-                query = _supabase.from('companies').update({ name: companyName }).eq('id', currentCompanyId);
+                // Mode EDIT: Update kedua kolom
+                query = _supabase.from('companies').update(payload).eq('id', currentCompanyId);
             } else {
-                // Mode TAMBAH BARU (RLS memastikan hanya Super Admin)
-                query = _supabase.from('companies').insert([{ name: companyName }]);
+                // Mode TAMBAH BARU: Insert kedua kolom
+                 query = _supabase.from('companies').insert([payload]);
             }
 
             const { error } = await query;
@@ -2145,11 +3122,32 @@
             document.getElementById('saveCompanyButton').disabled = false;
         });
 
-        function editCompany(id, name) {
-            // Membuka modal dalam mode Edit
+        async function editCompany(id, name) {
+            showMessage("Memuat data perusahaan...", 'info');
+
+            // 1. Ambil data lengkap perusahaan
+            const { data, error } = await _supabase
+                .from('companies')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                showMessage(`Gagal memuat detail perusahaan: ${error?.message || 'Data tidak ditemukan.'}`, 'error');
+                return;
+            }
+
+            // 2. Tetapkan ID global untuk mode edit
             currentCompanyId = id;
-            document.getElementById('companyModalTitle').textContent = 'Edit Nama Perusahaan';
-            document.getElementById('companyName').value = name;
+
+            // 3. Isi field di Modal
+            document.getElementById('companyModalTitle').textContent = `Edit Perusahaan: ${data.name}`;
+            document.getElementById('companyName').value = data.name;
+            
+            // --> INI YANG PALING PENTING: Isi kolom baru
+            document.getElementById('companyPayrollStartDay').value = data.payroll_start_day || 1; 
+
+            // 4. Tampilkan modal
             companyModal.classList.remove('hidden');
         }
 
@@ -2351,9 +3349,139 @@
             });
         }
 
+        // --- FUNGSI BARU: MUAT DAN RENDER KALENDER BULANAN ---
+
+        // Helper: Mendapatkan hari terakhir bulan
+        function getDaysInMonth(date) {
+            return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        }
+
+        // 1. Ambil data dari Supabase dan siapkan untuk kalender
+        async function loadMonthlyHistory(targetDate, targetElementId) {
+            const container = document.getElementById(targetElementId);
+            container.innerHTML = '<p class="text-center py-4 text-gray-500">Memuat data...</p>';
+
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth();
+            const daysInMonth = getDaysInMonth(targetDate);
+            
+            // Tentukan rentang ISO untuk query Supabase (dari tgl 1 s/d tgl akhir bulan)
+            const startDate = new Date(year, month, 1).toISOString();
+            const endDate = new Date(year, month, daysInMonth, 23, 59, 59).toISOString();
+            
+            // 1. Ambil data kehadiran karyawan untuk bulan ini
+            const { data, error } = await _supabase
+                .from('attendance')
+                .select('created_at, attendance_status')
+                .eq('user_id', globalProfile.id)
+                .gte('created_at', startDate)
+                .lte('created_at', endDate);
+
+            if (error) {
+                container.innerHTML = `<p class="text-center py-4 text-red-500">Gagal memuat riwayat: ${error.message}</p>`;
+                return;
+            }
+
+            // 2. Peta data absensi berdasarkan tanggal (YYYY-MM-DD)
+            const attendanceMap = {};
+            if (data) {
+                data.forEach(att => {
+                    // Ambil tanggal dalam format YYYY-MM-DD (tanpa waktu)
+                    const dateKey = att.created_at.substring(0, 10); 
+                    attendanceMap[dateKey] = att.attendance_status;
+                });
+            }
+
+            // 3. Render Kalender
+            renderCalendarGrid(targetDate, attendanceMap, container);
+        }
+
+        // 2. Merender grid kalender ke dalam kontainer
+        function renderCalendarGrid(date, attendanceMap, container) {
+            const today = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1);
+            const daysInMonth = getDaysInMonth(date);
+            
+            // Hari mulai (0=Minggu, 1=Senin, ..., 6=Sabtu)
+            const startDayIndex = firstDayOfMonth.getDay(); 
+            
+            const calendarDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+            let html = '<div class="calendar-grid">';
+
+            // HEADER HARI
+            calendarDays.forEach(day => {
+                html += `<div class="day-header">${day}</div>`;
+            });
+
+            // SEL KOSONG (PADDING)
+            // PostgreSQL day index (1=Mon, ..., 7=Sun). JS day index (0=Sun, ..., 6=Sat).
+            // Kita perlu offset dari hari Minggu (0)
+            const offset = (startDayIndex === 0) ? 6 : startDayIndex - 1; // Jika Minggu (0), offset 6; lainnya offset hari-1
+
+            for (let i = 0; i < offset; i++) {
+                html += '<div class="day-cell status-Empty"></div>';
+            }
+            
+            // Tanggal
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                const dayOfWeek = currentDate.getDay(); // 0 (Sun) to 6 (Sat)
+                const dateKey = currentDate.toISOString().substring(0, 10); // YYYY-MM-DD
+                const status = attendanceMap[dateKey];
+                
+                // Cek apakah tanggal hari ini atau masa depan
+                const isFuture = currentDate > today; 
+                
+                let statusClass = '';
+                let statusInfo = '';
+                
+                if (dayOfWeek === 0 || dayOfWeek === 6) { // Sabtu (6) atau Minggu (0)
+                    statusClass = 'status-Weekend';
+                    statusInfo = 'Libur';
+                }
+
+                if (isFuture) {
+                    statusClass = 'status-Future';
+                    statusInfo = 'Masa Depan';
+                } else if (status) {
+                    // Ada data absensi
+                    if (status === 'Hadir') {
+                        statusClass = 'status-Hadir';
+                        statusInfo = 'Hadir';
+                    } else if (status === 'Terlambat' || status === 'Izin / Cuti' || status === 'Sakit') {
+                        statusClass = 'status-Terlambat'; // Menggunakan kelas yellow
+                        statusInfo = status;
+                    } else { // Alpa (atau status tidak dikenal lainnya)
+                        statusClass = 'status-Alpa';
+                        statusInfo = 'Alpa';
+                    }
+                } else if (!isFuture && dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    // Jika bukan masa depan, bukan weekend, dan tidak ada data
+                    statusClass = 'status-Alpa';
+                    statusInfo = 'Belum Absen';
+                }
+                
+                // Tambahkan kelas untuk menandai hari ini
+                const isTodayClass = (currentDate.toDateString() === today.toDateString()) ? 'border-4 border-blue-500' : '';
+
+                html += `
+                    <div class="day-cell ${statusClass} ${isTodayClass}" title="${statusInfo}">
+                        <span class="day-number">${day}</span>
+                        <span class="text-xxs uppercase opacity-75">${statusInfo.replace(' / Cuti', '')}</span>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
         // --- FUNGSI KARYAWAN (ABSENSI) ---
         async function loadKaryawanAttendanceStatus() {
             const todayDate = getTodayDateString();
+            const isMasterHoliday = await isTodayHoliday(todayDate); // Gunakan tanggal hari ini
             const startOfDay = new Date(todayDate).toISOString();
             const endOfDay = new Date(new Date(todayDate).getTime() + 24 * 60 * 60 * 1000).toISOString();
             
@@ -2400,7 +3528,19 @@
                     karyawanClockOutButton.disabled = true;
                 }
             } else {
-                // Belum ada absensi hari ini
+                // BARU: Cek Hari Libur
+                if (isMasterHoliday) {
+                    karyawanAttendanceStatus.textContent = 'Hari Libur Nasional/Khusus. Clock-in tidak diperlukan.';
+                    karyawanAttendanceStatus.className = 'text-center p-4 rounded-lg bg-indigo-100 text-indigo-700 font-medium';
+                    karyawanClockInTime.textContent = '-';
+                    karyawanClockOutTime.textContent = '-';
+                    karyawanClockInButton.disabled = true; // Nonaktifkan Clock-In
+                    karyawanClockOutButton.disabled = true;
+                    currentAttendanceId = null;
+                    return; // Hentikan proses jika hari libur
+                }
+
+                // (existing logic for setting initial status)
                 karyawanAttendanceStatus.textContent = 'Anda belum melakukan Clock-in hari ini.';
                 karyawanAttendanceStatus.className = 'text-center p-4 rounded-lg bg-yellow-50 text-yellow-700 font-medium';
                 karyawanClockInTime.textContent = '-';
@@ -2409,6 +3549,373 @@
                 karyawanClockOutButton.disabled = true;
                 currentAttendanceId = null;
             }
+        }
+
+        // --- (BARU) FUNGSI UNTUK HALAMAN TIMEOFF KARYAWAN ---
+        
+        // Memuat Tipe Izin/Cuti dan Saldo ke Form
+        async function loadTimeoffForm() {
+            const select = document.getElementById('timeoffTypeSelect');
+            select.innerHTML = '<option value="">Memuat...</option>';
+            select.disabled = true;
+            timeoffBalancesCache = {}; // Reset cache
+
+            // 1. Ambil Tipe Cuti (Global atau Perusahaan)
+            let typeQuery = _supabase.from('timeoff_types').select('id, name, is_deductible');
+            if (globalProfile.company_id) {
+                typeQuery = typeQuery.or(`company_id.eq.${globalProfile.company_id},company_id.is.null`);
+            } else {
+                typeQuery = typeQuery.is('company_id', null);
+            }
+            const { data: types, error: typeError } = await typeQuery;
+            
+            if (typeError) {
+                select.innerHTML = '<option value="">Gagal memuat tipe</option>';
+                return;
+            }
+            
+            // 2. Ambil Saldo Cuti Karyawan (HANYA untuk yang login)
+            const { data: balances, error: balanceError } = await _supabase
+                .from('employee_timeoff_balances')
+                .select('timeoff_type_id, balance_days')
+                .eq('user_id', globalProfile.id);
+
+            if (balanceError) {
+                console.warn("Gagal memuat saldo cuti:", balanceError.message);
+            }
+            
+            // 3. Masukkan saldo ke cache
+            if (balances) {
+                balances.forEach(b => {
+                    timeoffBalancesCache[b.timeoff_type_id] = b.balance_days;
+                });
+            }
+
+            // 4. Bangun Opsi Dropdown
+            let options = '<option value="">-- Pilih Jenis Pengajuan --</option>';
+            types.forEach(type => {
+                let displayName = type.name;
+                if (type.is_deductible) {
+                    const sisa = timeoffBalancesCache[type.id] || 0;
+                    displayName += ` (Sisa: ${sisa} hari)`;
+                }
+                // Simpan data di dataset untuk validasi
+                options += `<option value="${type.id}" data-deductible="${type.is_deductible}">${displayName}</option>`;
+            });
+            
+            select.innerHTML = options;
+            select.disabled = false;
+        }
+
+        // Memuat Riwayat Pengajuan Izin/Cuti Karyawan
+        async function loadTimeoffHistory() {
+            const tableBody = document.getElementById('timeoffHistoryTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat riwayat...</td></tr>';
+
+            const { data, error } = await _supabase
+                .from('timeoff_requests')
+                .select(`
+                    created_at, 
+                    start_date, 
+                    end_date, 
+                    timeoff_status,
+                    timeoff_types ( name )
+                `)
+                .eq('user_id', globalProfile.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada riwayat pengajuan.</td></tr>';
+                return;
+            }
+
+            const html = data.map(req => {
+                const submittedDate = new Date(req.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                const typeName = req.timeoff_types ? req.timeoff_types.name : 'N/A';
+                const dateRange = `${new Date(req.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} - ${new Date(req.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}`;
+                const status = req.timeoff_status;
+
+                let statusClass;
+                if (status === 'Diajukan') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (status === 'Disetujui') statusClass = 'bg-green-100 text-green-800';
+                else statusClass = 'bg-red-100 text-red-800'; // Ditolak
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-500">${submittedDate}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${typeName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${dateRange}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // Helper untuk menghitung hari kerja (skip Sabtu/Minggu)
+        function getWorkingDays(startDate, endDate) {
+            let count = 0;
+            const curDate = new Date(startDate.getTime());
+            while (curDate <= endDate) {
+                const dayOfWeek = curDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Bukan Minggu (0) atau Sabtu (6)
+                    count++;
+                }
+                curDate.setDate(curDate.getDate() + 1);
+            }
+            return count;
+        }
+
+        // Menangani Submit Form Pengajuan Izin/Cuti
+        async function handleNewTimeoffRequest(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveTimeoffRequestButton');
+            saveButton.disabled = true;
+
+            const typeSelect = document.getElementById('timeoffTypeSelect');
+            const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+            
+            const timeoffTypeId = selectedOption.value;
+            const isDeductible = selectedOption.dataset.deductible === 'true';
+            const startDateStr = document.getElementById('timeoffStartDate').value;
+            const endDateStr = document.getElementById('timeoffEndDate').value;
+            const description = document.getElementById('timeoffDescription').value;
+
+            if (!timeoffTypeId || !startDateStr || !endDateStr) {
+                showMessage('Harap lengkapi Jenis, Tgl Mulai, dan Tgl Akhir.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            
+            const startDate = new Date(startDateStr + 'T00:00:00');
+            const endDate = new Date(endDateStr + 'T00:00:00');
+
+            if (endDate < startDate) {
+                showMessage('Tanggal Akhir tidak boleh sebelum Tanggal Mulai.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            // Validasi Saldo Cuti
+            if (isDeductible) {
+                const sisa = timeoffBalancesCache[timeoffTypeId] || 0;
+                // Hitung hari kerja
+                const totalDays = getWorkingDays(startDate, endDate); 
+
+                if (totalDays <= 0) {
+                    showMessage('Jumlah hari pengajuan (hari kerja) adalah 0. Silakan cek tanggal Anda.', 'error');
+                    saveButton.disabled = false;
+                    return;
+                }
+                
+                if (sisa < totalDays) {
+                    showMessage(`Gagal: Saldo cuti tidak mencukupi. Sisa: ${sisa} hari, Dibutuhkan: ${totalDays} hari.`, 'error');
+                    saveButton.disabled = false;
+                    return;
+                }
+            }
+
+            // Kirim ke Supabase
+            showMessage("Mengirim pengajuan Izin/Cuti...", 'info');
+            
+            const { error } = await _supabase
+                .from('timeoff_requests')
+                .insert([{
+                    user_id: globalProfile.id,
+                    company_id: globalProfile.company_id,
+                    timeoff_type_id: timeoffTypeId,
+                    start_date: startDateStr,
+                    end_date: endDateStr,
+                    description: description,
+                    timeoff_status: 'Diajukan'
+                }]);
+
+            if (error) {
+                showMessage(`Gagal mengirim pengajuan: ${error.message}`, 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Pengajuan Izin/Cuti berhasil dikirim.', 'success');
+            document.getElementById('timeoffRequestForm').reset();
+            loadTimeoffForm(); // Muat ulang form untuk update saldo
+            loadTimeoffHistory(); // Muat ulang riwayat
+            saveButton.disabled = false;
+        }
+        // --- AKHIR FUNGSI HALAMAN TIMEOFF ---
+
+        // --- FUNGSI BARU: MEMUAT FORM & RIWAYAT LEMBUR KARYAWAN ---
+        // Memuat Riwayat Pengajuan Lembur Karyawan
+        async function loadOvertimeHistory() {
+            const tableBody = document.getElementById('overtimeHistoryTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat riwayat...</td></tr>';
+
+            const { data, error } = await _supabase
+                .from('overtime_requests')
+                .select(`
+                    created_at, 
+                    overtime_date, 
+                    start_time, 
+                    end_time,
+                    overtime_status
+                `)
+                .eq('user_id', globalProfile.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada riwayat pengajuan lembur.</td></tr>';
+                return;
+            }
+
+            const html = data.map(req => {
+                const submittedDate = new Date(req.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                const overtimeDate = new Date(req.overtime_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                const startTime = formatTime(req.start_time);
+                const endTime = formatTime(req.end_time);
+                const status = req.overtime_status;
+
+                let statusClass;
+                if (status === 'Diajukan') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (status === 'Disetujui') statusClass = 'bg-green-100 text-green-800';
+                else statusClass = 'bg-red-100 text-red-800'; // Ditolak
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-500">${submittedDate}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${overtimeDate}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${startTime} - ${endTime}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // Menangani Submit Form Pengajuan Lembur
+        async function handleNewOvertimeRequest(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('saveOvertimeRequestButton');
+            saveButton.disabled = true;
+
+            const overtimeDateStr = document.getElementById('overtimeDate').value;
+            const startTimeStr = document.getElementById('overtimeStartTime').value;
+            const endTimeStr = document.getElementById('overtimeEndTime').value;
+            const description = document.getElementById('overtimeDescription').value;
+
+            if (!overtimeDateStr || !startTimeStr || !endTimeStr) {
+                showMessage('Harap lengkapi semua kolom waktu dan tanggal.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            
+            // Helper untuk menggabungkan tanggal dan waktu menjadi ISO String
+            const combineDateTimeForOvertime = (dateStr, timeStr) => {
+                if (!dateStr || !timeStr) return null;
+                // Supabase akan menginterpretasikannya sebagai timestampz (UTC)
+                return new Date(`${dateStr}T${timeStr}:00`).toISOString(); 
+            };
+            
+            // Gabungkan waktu ke tanggal untuk membuat timestampz
+            const startTimeISO = combineDateTimeForOvertime(overtimeDateStr, startTimeStr);
+            const endTimeISO = combineDateTimeForOvertime(overtimeDateStr, endTimeStr);
+            
+            // Validasi Waktu Akhir > Waktu Mulai
+            if (new Date(endTimeISO) <= new Date(startTimeISO)) {
+                showMessage('Waktu Akhir harus setelah Waktu Mulai.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            // Kirim ke Supabase
+            showMessage("Mengirim pengajuan Lembur...", 'info');
+            
+            const { error } = await _supabase
+                .from('overtime_requests')
+                .insert([{
+                    user_id: globalProfile.id,
+                    company_id: globalProfile.company_id,
+                    overtime_date: overtimeDateStr, // Tanggal saja (YYYY-MM-DD)
+                    start_time: startTimeISO,
+                    end_time: endTimeISO,
+                    description: description,
+                    overtime_status: 'Diajukan'
+                }]);
+
+            if (error) {
+                showMessage(`Gagal mengirim pengajuan: ${error.message}`, 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Pengajuan Lembur berhasil dikirim. Menunggu persetujuan Admin.', 'success');
+            document.getElementById('overtimeRequestForm').reset();
+            loadOvertimeHistory(); // Muat ulang riwayat
+            saveButton.disabled = false;
+        }
+
+        // --- FUNGSI BARU: MEMUAT RIWAYAT GAJI KARYAWAN ---
+
+        async function loadKaryawanPayslipHistory() {
+            const tableBody = document.getElementById('karyawanPayslipTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat riwayat payslip...</td></tr>';
+
+            const { data, error } = await _supabase
+                .from('payroll')
+                .select(`id, pay_period_month, takehomepay, status`)
+                .eq('user_id', globalProfile.id)
+                .order('pay_period_month', { ascending: false });
+
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Belum ada riwayat payslip yang tersedia.</td></tr>';
+                return;
+            }
+
+            const formatRupiah = (amount) => 
+                new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+
+            const html = data.map(item => {
+                const periodDate = new Date(item.pay_period_month);
+                // Tampilkan Bulan dan Tahun (cth: November 2025)
+                const periodDisplay = periodDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+                const netPay = formatRupiah(item.takehomepay);
+                const status = item.status;
+
+                let statusClass;
+                if (status === 'Paid') statusClass = 'bg-green-100 text-green-800';
+                else if (status === 'Processed') statusClass = 'bg-blue-100 text-blue-800';
+                else statusClass = 'bg-yellow-100 text-yellow-800'; // Pending/Other
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${periodDisplay}</td>
+                        <td class="px-4 py-3 text-right text-lg font-bold">${netPay}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status.toUpperCase()}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <!-- Gunakan fungsi viewPayslip yang sudah ada di Admin untuk menampilkan modal payslip -->
+                            <button onclick="viewPayslip('${item.id}')" class="text-blue-600 hover:text-blue-800 mr-2">Lihat Payslip</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
         }
 
         // FUNGSI NAVIGASI KARYAWAN BARU (menggantikan showKaryawanSection)
@@ -2427,30 +3934,28 @@
             Object.values(sections).forEach(sec => {
                 if(sec) sec.style.display = 'none';
             });
-            karyawanViewWrapper.classList.add('max-w-lg'); 
-            karyawanViewWrapper.classList.remove('max-w-full');
+            karyawanViewWrapper.classList.add('max-w-lg');
 
             // 2. Tampilkan section yang dipilih
             if (sections[sectionName]) {
                 sections[sectionName].style.display = 'block';
 
-                // Jika tabel (Requests) yang dibuka, buat lebar penuh
+                // Muat data spesifik tanpa mengubah lebar wrapper
                 if (sectionName === 'Requests') {
-                    karyawanViewWrapper.classList.remove('max-w-lg');
-                    karyawanViewWrapper.classList.add('max-w-full'); 
-                    loadAttendanceRequests(); // Muat data
+                    loadAttendanceRequests(); // Muat data Koreksi Kehadiran
                 } else if (sectionName === 'History') { 
-                    karyawanViewWrapper.classList.remove('max-w-lg');
-                    karyawanViewWrapper.classList.add('max-w-full'); 
-                    loadKaryawanHistory(); // <-- FUNGSI BARU
-                } else if (sectionName === 'Timeoff' || sectionName === 'Overtime' || sectionName === 'Salary') {
-                    // Muat data spesifik di sini nanti
-                    // loadTimeoffData();
+                    loadKaryawanHistory();
+                } else if (sectionName === 'Timeoff') { // <-- LOGIKA BARU UNTUK TIMEOFF
+                    loadTimeoffForm();
+                    loadTimeoffHistory();
+                } else if (sectionName === 'Overtime') { // <-- PERUBAHAN LOGIKA UNTUK LEMBUR
+                    loadOvertimeHistory();
+                } else if (sectionName === 'Salary') {
+                    loadKaryawanPayslipHistory();
                 }
             }
             
             // 3. Atur tombol footer yang aktif
-            // Catatan: Karena History bukan di footer, ia akan mengatur Absensi jika kembali, atau tidak mengubah state footer
             if (sectionName !== 'History') {
                setActiveFooterTab(sectionName);
             }
@@ -2486,52 +3991,79 @@
 
         // --- FUNGSI KARYAWAN (RIWAYAT KEHADIRAN) ---
         async function loadKaryawanHistory() {
-            const historyBody = document.getElementById('historyListTableBody');
-            historyBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat riwayat kehadiran...</td></tr>';
+            // 1. Tentukan bulan saat ini dan bulan sebelumnya
+            const today = new Date();
+            const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1); // Tanggal 1 bulan ini
+            const previousMonth = new Date(currentMonth);
+            previousMonth.setMonth(currentMonth.getMonth() - 1); // Tanggal 1 bulan lalu
+            const nextMonth = new Date(currentMonth);
+            nextMonth.setMonth(currentMonth.getMonth() + 1); // Bulan Depan
+
+            // 2. Format Nama Bulan untuk Tab
+            const currentMonthName = currentMonth.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+            const previousMonthName = previousMonth.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+            const nextMonthName = nextMonth.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' }); // BARU
             
-            // Tentukan rentang waktu (misal, 60 hari ke belakang)
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(endDate.getDate() - 60);
+            // 3. Update Nama Tab
+            document.getElementById('tabCurrentMonth').textContent = currentMonthName;
+            document.getElementById('tabPreviousMonth').textContent = previousMonthName;
+            document.getElementById('tabNextMonth').textContent = nextMonthName; // BARU
+            
+            // 4. Muat data untuk kedua bulan secara bersamaan
+            await Promise.all([
+                loadMonthlyHistory(currentMonth, 'calendarCurrentMonth'),
+                loadMonthlyHistory(previousMonth, 'calendarPreviousMonth'),
+                loadMonthlyHistory(nextMonth, 'calendarNextMonth') // BARU
+            ]);
+            
+            // 5. Pastikan tab bulan ini yang aktif secara default
+            switchHistoryTab('current');
+        }
 
-            const startISO = startDate.toISOString();
-            const endISO = endDate.toISOString();
+        // FUNGSI NAVIGASI TAB BULAN
+        function switchHistoryTab(period) {
+            const tabs = {
+                'previous': document.getElementById('tabPreviousMonth'),
+                'current': document.getElementById('tabCurrentMonth'),
+                'next': document.getElementById('tabNextMonth') // BARU
+            };
+            const contents = {
+                'previous': document.getElementById('calendarPreviousMonth'),
+                'current': document.getElementById('calendarCurrentMonth'),
+                'next': document.getElementById('calendarNextMonth') // BARU
+            };
 
-            const { data, error } = await _supabase
-                .from('attendance')
-                .select('*')
-                .eq('user_id', globalProfile.id)
-                .gte('created_at', startISO)
-                .lt('created_at', endISO)
-                .order('created_at', { ascending: false }); // Terbaru di atas
+            // Reset semua Tab Styles dan Konten
+            Object.keys(tabs).forEach(key => {
+                const tab = tabs[key];
+                const content = contents[key];
 
-            if (error) {
-                console.error("Gagal memuat riwayat:", error.message);
-                historyBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat riwayat: ${error.message}</td></tr>`;
-                return;
+                // 1. Reset Border & Text Color
+                tab.classList.remove('border-blue-600', 'text-blue-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+                
+                // 2. Reset Background Menyala
+                tab.classList.remove('tab-active-bg'); // Hapus background menyala
+                
+                // 3. Sembunyikan Konten
+                content.style.display = 'none';
+            });
+
+            // Set Active Tab and Content
+            const activeTab = tabs[period];
+            const activeContent = contents[period];
+
+            if (activeTab && activeContent) {
+                // 1. Set Border & Text Color Aktif
+                activeTab.classList.add('border-blue-600', 'text-blue-600');
+                activeTab.classList.remove('border-transparent', 'text-gray-500');
+
+                // 2. Set Background Menyala Aktif
+                activeTab.classList.add('tab-active-bg'); 
+                
+                // 3. Tampilkan Konten
+                activeContent.style.display = 'block';
             }
-
-            if (data.length === 0) {
-                historyBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Tidak ada riwayat kehadiran dalam 60 hari terakhir.</td></tr>';
-                return;
-            }
-
-            let html = data.map(att => {
-                const dateDisplay = new Date(att.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
-                const statusClass = getStatusClass(att.attendance_status); // Menggunakan helper Admin yang sudah ada
-
-                return `
-                    <tr>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${dateDisplay}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${formatTime(att.clock_in)}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${formatTime(att.clock_out)}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${att.attendance_status}</span>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            historyBody.innerHTML = html;
         }
 
         // --- 3. FUNGSI BARU: MEMUAT DAFTAR REQUEST KARYAWAN ---
@@ -2589,6 +4121,28 @@
         }
 
         async function doClockIn() {
+            const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu" , "Minggu"];
+            const todayName = dayNames[new Date().getDay()];
+            const schedule = globalProfile.workhours?.schedule;
+            const todayDate = getTodayDateString();
+
+            // BARU: 1. Cek Hari Libur Nasional (Prioritas Tertinggi)
+            const isMasterHoliday = await isTodayHoliday(todayDate);
+
+            if (isMasterHoliday) {
+                showMessage(`Gagal Clock-In: Hari ini adalah Hari Libur Nasional/Khusus.`, 'error');
+                karyawanClockInButton.disabled = false; 
+                return;
+            }
+
+            // 2. Cek Jadwal Kerja (Workhours)
+            if (schedule && schedule[todayName]?.is_off) {
+                // JIKA HARI INI HARI LIBUR
+                showMessage(`Gagal Clock-In: Hari ini (${todayName}) adalah Hari Libur sesuai jadwal Anda.`, 'error');
+                karyawanClockInButton.disabled = false; // Aktifkan tombol kembali
+                return; // Hentikan proses
+            }
+            
             karyawanClockInButton.disabled = true;
             showMessage("Meminta izin lokasi...", 'info');
             const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
@@ -2770,7 +4324,7 @@
                 
                 // Hitung statistik
                 if (status === 'Hadir' || status === 'Terlambat') totalHadir++;
-                else if (status === 'Izin' || status === 'Sakit') totalIzin++;
+                else if (status === 'Izin / Cuti') totalIzin++;
                 else if (status === 'Alpa') totalAlpa++;
 
                 html += `
@@ -2861,6 +4415,34 @@
             employeeListTableBody.innerHTML = html;
         }
 
+        // --- FUNGSI BARU: CEK APAKAH HARI INI HARI LIBUR (DARI MASTER DATA) ---
+        async function isTodayHoliday(dateString) {
+            const today = dateString || getTodayDateString();
+            
+            // Query untuk mencari hari libur yang cocok dengan tanggal hari ini
+            let query = _supabase.from('holidays')
+                .select('id')
+                .eq('holiday_date', today);
+
+            // Filter: Hari libur harus global (company_id IS NULL) 
+            // ATAU milik perusahaan karyawan yang sedang login
+            if (globalProfile.company_id) {
+                query = query.or(`company_id.eq.${globalProfile.company_id},company_id.is.null`);
+            } else {
+                query = query.is('company_id', null);
+            }
+            
+            const { data, error } = await query.limit(1);
+
+            if (error) {
+                console.error("Gagal cek hari libur:", error.message);
+                return false; // Anggap bukan hari libur jika gagal query
+            }
+
+            // Jika ada data (data.length > 0), berarti hari ini hari libur
+            return data && data.length > 0;
+        }
+                
         // --- LOGIKA REKAP KEHADIRAN ---
 
         async function initializeRekapFilters() {
@@ -2970,7 +4552,6 @@
             // --- TAMBAHKAN LOGIKA PENGHITUNGAN BARU INI (baris ~1677) ---
             let countHadir = 0;
             let countTerlambat = 0;
-            let countSakit = 0;
             let countIzin = 0;
             let countAlpa = 0;
 
@@ -2983,10 +4564,7 @@
                     case 'Terlambat':
                         countTerlambat++;
                         break;
-                    case 'Sakit':
-                        countSakit++;
-                        break;
-                    case 'Izin':
+                    case 'Izin / Cuti':
                         countIzin++;
                         break;
                     case 'Alpa':
@@ -2998,7 +4576,6 @@
             // Update kartu statistik di HTML
             document.getElementById('rekapTotalHadir').textContent = countHadir;
             document.getElementById('rekapTotalTerlambat').textContent = countTerlambat;
-            document.getElementById('rekapTotalSakit').textContent = countSakit;
             document.getElementById('rekapTotalIzin').textContent = countIzin;
             document.getElementById('rekapTotalAlpa').textContent = countAlpa;
 
@@ -3481,30 +5058,158 @@
 
         // --- FUNGSI BARU: AKSI SETUJUI / TOLAK IZIN/CUTI ---
         async function handleApproveTimeoff(requestId) {
-            // LOGIKA KOMPLEKS:
-            // 1. Ambil data timeoff_requests (untuk dapat tgl mulai, akhir, jenis, dan user_id)
-            // 2. Loop dari tgl mulai s/d tgl akhir
-            // 3. Untuk setiap tanggal, lakukan UPSERT ke tabel 'attendance'
-            //    dengan status = timeoff_type (cth: 'Izin' atau 'Sakit')
-            
-            // Untuk SAAT INI, kita hanya update statusnya saja
             showMessage("Memproses persetujuan (Timeoff)...", 'info');
+            
+            // 1. Ambil data pengajuan (termasuk jenis cuti dan data perusahaan)
+            const { data: request, error: requestError } = await _supabase
+                .from('timeoff_requests')
+                .select(`
+                    *,
+                    timeoff_types ( name, is_deductible )
+                `)
+                .eq('id', requestId)
+                .single();
+
+            if (requestError || !request) {
+                showMessage(`Gagal memuat data pengajuan: ${requestError?.message || 'Tidak ditemukan.'}`, 'error');
+                return;
+            }
+
+            // 2. Logika Pengurangan Saldo Cuti (JIKA DIPERLUKAN)
+            if (request.timeoff_types && request.timeoff_types.is_deductible) {
+                const startDate = new Date(request.start_date);
+                const endDate = new Date(request.end_date);
+                
+                // Hitung jumlah hari kerja (skip Sabtu/Minggu)
+                let totalDays = 0;
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dayOfWeek = d.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 0=Minggu, 6=Sabtu
+                        totalDays++;
+                    }
+                }
+
+                if (totalDays > 0) {
+                    // Ambil saldo karyawan
+                    const { data: balance, error: balanceError } = await _supabase
+                        .from('employee_timeoff_balances')
+                        .select('id, balance_days')
+                        .eq('user_id', request.user_id)
+                        .eq('timeoff_type_id', request.timeoff_type_id)
+                        .single();
+
+                    if (balanceError || !balance) {
+                        showMessage(`Gagal: Karyawan ini tidak memiliki data saldo untuk "${request.timeoff_types.name}".`, 'error');
+                        return;
+                    }
+                    
+                    if (balance.balance_days < totalDays) {
+                        showMessage(`Gagal: Saldo cuti karyawan tidak mencukupi (Sisa: ${balance.balance_days}, Dibutuhkan: ${totalDays}).`, 'error');
+                        return;
+                    }
+
+                    // Kurangi saldo
+                    const newBalance = balance.balance_days - totalDays;
+                    const { error: updateBalanceError } = await _supabase
+                        .from('employee_timeoff_balances')
+                        .update({ balance_days: newBalance })
+                        .eq('id', balance.id);
+
+                    if (updateBalanceError) {
+                        showMessage(`Gagal mengurangi saldo cuti: ${updateBalanceError.message}`, 'error');
+                        return;
+                    }
+                    showMessage(`Saldo cuti dikurangi: ${totalDays} hari. Sisa: ${newBalance} hari.`, 'info');
+                }
+            }
+
+            // 3. Masukkan data ke tabel 'attendance' (Logika UPSERT per hari)
+            const startDate = new Date(request.start_date + 'T00:00:00'); // Tgl Mulai (Lokal)
+            const endDate = new Date(request.end_date + 'T00:00:00'); // Tgl Akhir (Lokal)
+
+            try {
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dayOfWeek = d.getDay();
+                    // Skip jika Sabtu (6) atau Minggu (0)
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        continue; 
+                    }
+                    
+                    // Tentukan rentang hari (00:00:00 - 23:59:59)
+                    const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+                    const endOfDay = new Date(new Date(startOfDay).getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+                    // Cek apakah sudah ada data absensi di hari itu
+                    const { data: existingAtt, error: findError } = await _supabase
+                        .from('attendance')
+                        .select('id')
+                        .eq('user_id', request.user_id)
+                        .gte('created_at', startOfDay)
+                        .lt('created_at', endOfDay)
+                        .limit(1)
+                        .single();
+                    
+                    if (findError && findError.code !== 'PGRST116') { // Abaikan 'No rows found'
+                        throw new Error(`Gagal cek absensi: ${findError.message}`);
+                    }
+
+                    // Siapkan payload (Gunakan ENUM baru 'Izin / Cuti')
+                    const attendancePayload = {
+                        user_id: request.user_id,
+                        company_id: request.company_id,
+                        attendance_status: 'Izin / Cuti', 
+                        clock_in: null,
+                        clock_out: null,
+                        description: request.description || (request.timeoff_types ? request.timeoff_types.name : 'Izin'),
+                        updated_at: new Date().toISOString()
+                    };
+                    
+                    if (existingAtt) {
+                        // UPDATE jika sudah ada (cth: 'Alpa' diganti 'Izin')
+                        const { error } = await _supabase
+                            .from('attendance')
+                            .update(attendancePayload)
+                            .eq('id', existingAtt.id);
+                        if(error) throw new Error(`Gagal update absensi: ${error.message}`);
+                    } else {
+                        // INSERT jika belum ada ('Alpa' tidak tercatat)
+                        const insertPayload = {
+                            ...attendancePayload,
+                            created_at: startOfDay // Set created_at ke awal hari
+                        };
+                        const { error } = await _supabase
+                            .from('attendance')
+                            .insert([insertPayload]);
+                        if(error) throw new Error(`Gagal insert absensi: ${error.message}`);
+                    }
+                }
+            } catch (e) {
+                showMessage(`Error saat memproses absensi: ${e.message}`, 'error');
+                return; // Hentikan proses jika gagal di tengah jalan
+            }
+
+            // 4. Update status pengajuan timeoff
             const { error } = await _supabase
                 .from('timeoff_requests')
                 .update({ timeoff_status: 'Disetujui' })
                 .eq('id', requestId);
 
             if (error) {
-                showMessage(`Gagal menyetujui: ${error.message}`, 'error');
-                return;
+                showMessage(`Absensi diperbarui, tapi status request gagal diubah: ${error.message}`, 'error');
+            } else {
+                showMessage('Pengajuan Izin/Cuti disetujui dan data absensi telah diperbarui.', 'success');
             }
-            showMessage('Pengajuan Izin/Cuti disetujui.', 'success');
+            
             loadRequestTimeoffData();
-            // TODO: Tambahkan logika untuk memasukkan data ke tabel 'attendance'
         }
 
         async function handleRejectTimeoff(requestId) {
+            // (FUNGSI INI SEKARANG HANYA MENGUBAH STATUS)
             showMessage("Memproses penolakan (Timeoff)...", 'info');
+            
+            // TODO: Jika pengajuan sudah 'Disetujui' lalu 'Ditolak', 
+            // kita harus mengembalikan saldo cuti. (Logika masa depan)
+            
             const { error } = await _supabase
                 .from('timeoff_requests')
                 .update({ timeoff_status: 'Ditolak' })
@@ -3519,7 +5224,7 @@
         }
 
         // --- FUNGSI BARU: INIT FILTER PENGAJUAN LEMBUR ---
-async function initializeReqOvertimeFilters() {
+        async function initializeReqOvertimeFilters() {
             const employeeFilter = document.getElementById('reqOvertimeEmployeeFilter');
             const tableBody = document.getElementById('reqOvertimeTableBody');
 
@@ -3717,7 +5422,7 @@ async function initializeReqOvertimeFilters() {
             currentMasterType = tabName;
             
             // Definisikan tombol dan konten
-            const tabs = ['timeoff', 'salary', 'deduction'];
+            const tabs = ['timeoff', 'salary', 'deduction', 'holiday'];
             
             tabs.forEach(tab => {
                 const tabButton = document.getElementById(`tabMaster${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
@@ -3743,11 +5448,13 @@ async function initializeReqOvertimeFilters() {
                 loadSalaryTypes();
             } else if (tabName === 'deduction') {
                 loadDeductionTypes();
+            } else if (tabName === 'holiday') { // <-- BARU
+                loadHolidays();
             }
         }
 
         // Membuka Modal Add/Edit
-        async function openMasterModal(mode, type, id = null, name = '', description = '', companyId = null, method = 'Nominal Tetap', value = 0, conditionRuleString = '{}') {
+        async function openMasterModal(mode, type, id = null, name = '', description = '', companyId = null, method = 'Nominal Tetap', value = 0, conditionRuleString = '{}', isDeductible = false) {
             masterDataForm.reset();
             currentMasterType = type;
             
@@ -3786,19 +5493,26 @@ async function initializeReqOvertimeFilters() {
             // 1. Ambil semua elemen field khusus
             const deductionFields = document.getElementById('masterDeductionFields');
             const salaryFields = document.getElementById('masterSalaryFields');
+            const timeoffFields = document.getElementById('masterTimeoffFields'); // <-- BARU
             const deductionConditionContainer = document.getElementById('masterDeductionConditionContainer');
             const salaryConditionContainer = document.getElementById('masterSalaryConditionContainer');
 
             // 2. Sembunyikan semua field khusus terlebih dahulu
             deductionFields.classList.add('hidden');
             salaryFields.classList.add('hidden');
+            timeoffFields.classList.add('hidden');
             deductionConditionContainer.classList.add('hidden');
             salaryConditionContainer.classList.add('hidden');
 
             // 3. Parse aturan kondisi
             const conditionRule = JSON.parse(conditionRuleString.replace(/\\'/g, "'") || '{}');
 
-            if (type === 'deduction') {
+            if (type === 'timeoff') { // <-- BARU
+                // Tampilkan field CUTI
+                timeoffFields.classList.remove('hidden');
+                document.getElementById('masterTimeoffDeductible').checked = (isDeductible === 'true' || isDeductible === true);
+
+            } else if (type === 'deduction') {
                 // Tampilkan field POTONGAN
                 deductionFields.classList.remove('hidden');
                 document.getElementById('masterDeductionMethod').value = method;
@@ -3858,7 +5572,7 @@ async function initializeReqOvertimeFilters() {
             tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Memuat data...</td></tr>'; // <-- Colspan diubah jadi 4
 
             // (PERBAIKAN 1) Ambil nama perusahaan
-            let query = _supabase.from('timeoff_types').select('id, name, description, company_id, companies(name)');
+            let query = _supabase.from('timeoff_types').select('id, name, description, company_id, is_deductible, companies(name)');
             
             if (globalProfile.role !== 'super_admin') {
                 query = query.eq('company_id', globalProfile.company_id);
@@ -3896,7 +5610,7 @@ async function initializeReqOvertimeFilters() {
                         <td class="px-4 py-3 text-sm text-gray-500">${description}</td>
                         <td class="px-4 py-3 text-center text-sm font-medium">
                             <!-- (PERBAIKAN 3) Kirim item.company_id ke modal -->
-                            <button onclick="openMasterModal('edit', 'timeoff', '${item.id}', '${safeName}', '${safeDesc}', '${item.company_id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="openMasterModal('edit', 'timeoff', '${item.id}', '${safeName}', '${safeDesc}', '${item.company_id}', 'Nominal Tetap', 0, '{}', ${item.is_deductible})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
                             <button onclick="openConfirmDeleteModal('timeoff', '${item.id}', '${safeName}')" class="text-red-600 hover:text-red-900">Hapus</button>
                         </td>
                     </tr>
@@ -4054,13 +5768,17 @@ async function initializeReqOvertimeFilters() {
             }
 
             // (LOGIKA BARU) Tambahkan data khusus berdasarkan TIPE
-            payload.condition_rule = null; // Reset dulu
 
-            if (currentMasterType === 'deduction') {
+            if (currentMasterType === 'timeoff') { 
+                // Ambil data dari field Timeoff
+                payload.is_deductible = document.getElementById('masterTimeoffDeductible').checked;
+            
+            } else if (currentMasterType === 'deduction') {
                 // Ambil data dari field Potongan
                 payload.method = document.getElementById('masterDeductionMethod').value;
                 payload.value = parseFloat(document.getElementById('masterDeductionValue').value) || 0;
                 
+                payload.condition_rule = null; // <-- PINDAHKAN KE SINI
                 if (payload.method === 'Berdasarkan Absensi') {
                     const triggerStatus = document.getElementById('masterDeductionCondition').value;
                     if (triggerStatus) {
@@ -4073,6 +5791,7 @@ async function initializeReqOvertimeFilters() {
                 payload.method = document.getElementById('masterSalaryMethod').value;
                 payload.value = parseFloat(document.getElementById('masterSalaryValue').value) || 0;
 
+                payload.condition_rule = null; // <-- TAMBAHKAN JUGA DI SINI
                 const trigger = document.getElementById('masterSalaryCondition').value;
                 
                 if (payload.method === 'Berdasarkan Lembur' && trigger === 'overtime_approved') {
@@ -4112,6 +5831,51 @@ async function initializeReqOvertimeFilters() {
             if (currentMasterType === 'timeoff') loadTimeoffTypes();
             else if (currentMasterType === 'salary') loadSalaryTypes();
             else if (currentMasterType === 'deduction') loadDeductionTypes();
+        }
+
+        // CRUD: Hapus data (FUNGSI YANG HILANG)
+        async function handleDeleteMasterData() {
+            const { type, id } = currentMasterDelete;
+            if (!type || !id) {
+                console.error("Data delete master tidak ditemukan.");
+                closeConfirmDeleteModal();
+                return;
+            }
+
+            let tableName = '';
+            if (type === 'timeoff') tableName = 'timeoff_types';
+            else if (type === 'salary') tableName = 'salary_types';
+            else if (type === 'deduction') tableName = 'deduction_types';
+            else if (type === 'employee_salary') {
+                tableName = 'employee_salaries';
+            }
+            else {
+                console.error('Tipe master tidak dikenal:', type);
+                return;
+            }
+
+            showMessage("Menghapus data...", 'info');
+            
+            const { error } = await _supabase.from(tableName).delete().eq('id', id);
+
+            if (error) {
+                // Cek error foreign key (jika data masih terpakai)
+                if (error.code === '23503') { 
+                    showMessage('Gagal: Data ini masih digunakan (cth: oleh Karyawan atau Gaji).', 'error');
+                } else {
+                    showMessage(`Gagal menghapus: ${error.message}`, 'error');
+                }
+                return;
+            }
+
+            showMessage('Data master berhasil dihapus.', 'success');
+            closeConfirmDeleteModal();
+            
+            // Muat ulang tabel yang sesuai
+            if (type === 'timeoff') loadTimeoffTypes();
+            else if (type === 'salary') loadSalaryTypes();
+            else if (type === 'deduction') loadDeductionTypes();
+            
         }
 
         function openLateReasonModal() {
@@ -4368,7 +6132,7 @@ async function initializeReqOvertimeFilters() {
                     company_id,
                     workhour_id, 
                     workhours ( * ), 
-                    companies ( status) 
+                    companies ( status, payroll_start_day ) 
                 `)
                 .eq('id', session.user.id)
                 .single();
@@ -4426,6 +6190,8 @@ async function initializeReqOvertimeFilters() {
                 try {
                     document.getElementById('rekapFilterButton').onclick = loadRekapData;
                     document.getElementById('reqAttFilterButton').onclick = loadRequestAttendanceData;
+                    document.getElementById('reqOvertimeFilterButton').onclick = loadRequestOvertimeData;
+                    document.getElementById('reqTimeoffFilterButton').onclick = loadRequestTimeoffData;
                 } catch (e) {
                     console.warn("Tombol filter admin belum sepenuhnya dimuat atau ID salah:", e.message);
                 }
@@ -4537,11 +6303,11 @@ async function initializeReqOvertimeFilters() {
             console.warn("Tombol filter Izin/Cuti (reqTimeoffFilterButton) tidak ditemukan.");
         }
 
-        // Event listener untuk Filter Pengajuan Izin/Cuti (BARU)
+        // (BARU) Event listener untuk Form Pengajuan Izin/Cuti Karyawan
         try {
-            document.getElementById('reqTimeoffFilterButton').onclick = loadRequestTimeoffData;
+            document.getElementById('timeoffRequestForm').addEventListener('submit', handleNewTimeoffRequest);
         } catch (e) {
-            console.warn("Tombol filter Izin/Cuti (reqTimeoffFilterButton) tidak ditemukan.");
+            console.warn("Form pengajuan timeoff (timeoffRequestForm) tidak ditemukan.");
         }
 
         // (BARU) Event listener untuk Filter Pengajuan Lembur
@@ -5087,6 +6853,429 @@ async function initializeReqOvertimeFilters() {
             document.getElementById('timeoffBalanceForm').addEventListener('submit', handleSaveTimeoffBalance);
         } catch (e) {
             console.warn("Elemen Form Saldo Cuti (timeoffBalanceForm) tidak ditemukan.");
+        }
+
+        // --- FUNGSI BARU: LOGIKA PAYROLL & GAJI ---
+
+        // Inisialisasi awal menu Payroll
+        function initializePayroll() {
+            const today = new Date();
+            const year = today.getFullYear();
+            // Set default filter ke bulan lalu
+            const month = today.getMonth() === 0 ? 12 : today.getMonth(); // Bulan lalu (1-12)
+            const yearFilter = today.getMonth() === 0 ? year - 1 : year;
+            const monthString = String(month).padStart(2, '0');
+            
+            // Format input month (YYYY-MM)
+            document.getElementById('payrollMonthFilter').value = `${yearFilter}-${monthString}`;
+        }
+
+        // 1. Memuat Riwayat Payroll yang Sudah Diproses
+        async function loadPayrollHistory() {
+            const tableBody = document.getElementById('payrollHistoryTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Memuat riwayat penggajian...</td></tr>';
+            
+            let query = _supabase
+                .from('payroll')
+                .select(`
+                    *,
+                    user_id(full_name)
+                `)
+                .order('pay_period_month', { ascending: false });
+
+            if (globalProfile.role !== 'super_admin') {
+                query = query.eq('company_id', globalProfile.company_id);
+            }
+            
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Gagal memuat riwayat payroll:", error.message);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+                return;
+            }
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Belum ada riwayat penggajian yang tersimpan.</td></tr>';
+                return;
+            }
+            
+            const html = data.map(item => {
+                const periodDate = new Date(item.pay_period_month);
+                const periodDisplay = periodDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+                const name = item.user_id ? item.user_id.full_name : 'N/A';
+                const netPay = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.takehomepay);
+                const processedAt = item.processed_at ? new Date(item.processed_at).toLocaleDateString('id-ID') : '-';
+                
+                let statusClass;
+                if (item.status === 'Paid') statusClass = 'bg-green-100 text-green-800';
+                else if (item.status === 'Processed') statusClass = 'bg-blue-100 text-blue-800';
+                else if (item.status === 'Cancelled') statusClass = 'bg-red-100 text-red-800';
+                else statusClass = 'bg-yellow-100 text-yellow-800'; // Pending
+
+                return `
+                    <tr>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${periodDisplay}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${name}</td>
+                        <td class="px-4 py-3 text-right text-sm font-bold">${netPay}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${item.status.toUpperCase()}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${processedAt}</td>
+                        <td class="px-4 py-3 text-center text-sm font-medium">
+                            <button onclick="viewPayslip('${item.id}')" class="text-blue-600 hover:text-blue-800 mr-2">Lihat</button>
+                            ${item.status !== 'Paid' ? `<button onclick="openConfirmPayrollDelete('${item.id}', '${periodDisplay}')" class="text-red-600 hover:text-red-800">Hapus</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = html;
+        }
+
+        // 2. Fungsi untuk memulai Proses Kalkulasi dan Penyimpanan
+        async function calculateAndSavePayroll() {
+            const monthYear = document.getElementById('payrollMonthFilter').value; // Format: YYYY-MM
+            const calculateButton = document.getElementById('calculatePayrollButton');
+            const companyId = globalProfile.company_id; // <-- Wajib untuk filter RLS & payload
+            const payPeriodMonth = `${monthYear}-01`;           // <-- Wajib untuk payload payroll
+            
+            if (!monthYear) {
+                showMessage("Harap pilih periode bulan dan tahun.", 'error');
+                return;
+            }
+            
+            calculateButton.disabled = true;
+            calculateButton.innerHTML = `<div class="spinner w-4 h-4 border-2 border-t-transparent border-white mr-2" role="status"></div> Sedang memproses...`;
+            
+            showMessage(`Memulai kalkulasi payroll untuk periode ${monthYear}...`, 'info');
+
+            // 1. Tentukan tanggal awal periode (misal 2025-11-01)
+            // --- LOGIKA PERHITUNGAN RENTANG TANGGAL ABSENSI (DINAMIS BERDASARKAN SETTING PERUSAHAAN) ---
+            
+            // Ambil setting tanggal mulai dari profil admin yang login (default 1 jika setting belum ada)
+            const startDay = globalProfile.companies?.payroll_start_day || 1; 
+
+            // 1a. Tentukan Tanggal Akhir (Tanggal H-1 dari bulan yang difilter, dihitung dari startDay)
+            // Contoh: startDay=21, filter=Nov-2025. Tanggal akhir = 20 Nov 2025
+            // Contoh: startDay=1, filter=Nov-2025. Tanggal akhir = 31 Oct 2025 (atau 30 jika bukan 1)
+            
+            // Jika startDay=1, periode adalah 1-30/31 bulan yang difilter.
+            // Jika startDay>1, periode adalah startDay bulan lalu s/d startDay-1 bulan ini.
+            
+            let endAttendanceDate;
+            if (startDay === 1) {
+                // Jika mulai tgl 1, akhir periode adalah akhir bulan yang difilter.
+                endAttendanceDate = new Date(`${monthYear}-01`); // Mulai tgl 1 bulan yang difilter
+                endAttendanceDate.setMonth(endAttendanceDate.getMonth() + 1); // Maju 1 bulan
+                endAttendanceDate.setDate(0); // Mundur 1 hari (untuk mendapatkan akhir bulan)
+            } else {
+                // Jika mulai tgl kustom, akhir periode adalah Tgl (startDay - 1) bulan yang difilter.
+                endAttendanceDate = new Date(`${monthYear}-${String(startDay).padStart(2, '0')}`);
+                endAttendanceDate.setDate(endAttendanceDate.getDate() - 1);
+            }
+            
+            // 1b. Tentukan Tanggal Mulai (Tanggal startDay di bulan sebelumnya atau bulan yang difilter)
+            let startAttendanceDate;
+            if (startDay === 1) {
+                // Jika mulai tgl 1, awal periode adalah Tgl 1 bulan yang difilter.
+                startAttendanceDate = new Date(`${monthYear}-01`);
+            } else {
+                // Jika mulai tgl kustom, awal periode adalah Tgl startDay bulan sebelumnya.
+                startAttendanceDate = new Date(`${monthYear}-01`);
+                startAttendanceDate.setMonth(startAttendanceDate.getMonth() - 1); 
+                startAttendanceDate.setDate(startDay);
+            }
+            
+            // Konversi ke format ISO untuk query Supabase (filter absensi)
+            const startAttendanceISO = startAttendanceDate.toISOString();
+            // Penting: endAttendanceISO harus diatur ke akhir hari (T23:59:59)
+            // Kita gunakan tanggal akhir + 1 hari, lalu di-convert ke ISO, dan di-filter dengan < (kurang dari)
+            const endAttendanceNextDay = new Date(endAttendanceDate);
+            endAttendanceNextDay.setDate(endAttendanceNextDay.getDate() + 1);
+            const endAttendanceISO = endAttendanceNextDay.toISOString();
+            
+            console.log(`[Payroll Setting] Start Day: ${startDay}`);
+            console.log(`[Payroll Range] Attendance start: ${startAttendanceDate.toLocaleDateString('id-ID')} (${startAttendanceISO})`);
+            console.log(`[Payroll Range] Attendance end:   ${endAttendanceDate.toLocaleDateString('id-ID')} (Query sampai < ${endAttendanceNextDay.toLocaleDateString('id-ID')})`);
+
+            // 2. Ambil daftar Karyawan yang akan dihitung
+            let employeeQuery = _supabase
+                .from('profiles')
+                .select('id, full_name')
+                .eq('role', 'karyawan');
+                
+            if (globalProfile.role !== 'super_admin') {
+                employeeQuery = employeeQuery.eq('company_id', companyId);
+            }
+            const { data: employees, error: empError } = await employeeQuery;
+
+            if (empError || employees.length === 0) {
+                showMessage(`Gagal: Tidak ada karyawan ditemukan di perusahaan ini. ${empError?.message || ''}`, 'error');
+                calculateButton.disabled = false;
+                calculateButton.innerHTML = `<ion-icon name="calculator-outline" class="text-lg mr-2"></ion-icon> Hitung & Proses Payroll`;
+                return;
+            }
+
+            let successCount = 0;
+            let errorCount = 0;
+            
+            // 3. Lakukan Loop Perhitungan per Karyawan
+            for (const employee of employees) {
+                // --- LOGIKA PERHITUNGAN PALING SEDERHANA (HANYA GAJI POKOK) ---
+                
+                // A. Ambil Gaji Pokok (Anggap semua komponen gaji ada)
+                const { data: salaries, error: salError } = await _supabase
+                    .from('employee_salaries')
+                    .select(`salary_amount, salary_types(name, method)`)
+                    .eq('user_id', employee.id);
+
+                if (salError || salaries.length === 0) {
+                    console.warn(`[Payroll] ${employee.full_name}: Gagal memuat gaji. Dilewati.`);
+                    errorCount++;
+                    continue;
+                }
+
+                // BARU: Cek dan log jika gagal memuat gaji
+                if (salError) {
+                    console.error(`[Payroll] GAGAL QUERY SALARY untuk ${employee.full_name}:`, salError.message);
+                    errorCount++;
+                    continue; 
+                }
+                
+                if (salaries.length === 0) {
+                    console.warn(`[Payroll] DILEWATI: Karyawan ${employee.full_name} tidak memiliki komponen gaji yang ditetapkan.`);
+                    errorCount++;
+                    continue;
+                }
+                
+                let grossSalary = 0;
+                let salaryDetails = {};
+                
+                // Sum semua komponen gaji (untuk metode "Nominal Tetap" saja)
+                salaries.forEach(sal => {
+                    if (sal.salary_types.method === 'Nominal Tetap') {
+                        grossSalary += sal.salary_amount;
+                        salaryDetails[sal.salary_types.name] = sal.salary_amount;
+                    } else {
+                        salaryDetails[sal.salary_types.name] = 0; // Placeholder untuk komponen dinamis
+                    }
+                });
+
+                // B. Hitung Potongan (Anggap semua potongan 0 untuk sementara)
+                const totalDeductions = 0;
+                const deductionDetails = {}; // Placeholder
+                const netPay = grossSalary - totalDeductions;
+
+                // C. Buat Payload Payroll
+                const payrollPayload = {
+                    user_id: employee.id,
+                    company_id: companyId,
+                    pay_period_month: payPeriodMonth,
+                    salary_detail: salaryDetails, // JSONB
+                    salary_total: grossSalary,
+                    deduction_detail: deductionDetails, // JSONB
+                    deduction_total: totalDeductions,
+                    takehomepay: netPay,
+                    processor_id: globalProfile.id,
+                    processed_at: new Date().toISOString(),
+                    status: 'Processed',
+                };
+
+                // 4. Simpan ke Database (Upsert/Insert)
+                // Gunakan upsert agar tidak terjadi duplikasi jika proses dijalankan ulang
+                const { error: saveError } = await _supabase
+                    .from('payroll')
+                    .upsert([payrollPayload], { onConflict: 'user_id, pay_period_month' }); 
+
+                if (saveError) {
+                    console.error(`[Payroll] Gagal menyimpan ${employee.full_name}:`, saveError.message);
+                    showMessage(`[Gagal Payroll] ${employee.full_name}: ${saveError.message}`, 'error');
+                    errorCount++;
+                } else {
+                    successCount++;
+                }
+            } // Akhir Loop Karyawan
+
+            // 5. Selesai
+            const finalMessage = `Proses Selesai: ${successCount} payroll berhasil dihitung/diperbarui. ${errorCount} gagal.`;
+            showMessage(finalMessage, errorCount > 0 ? 'error' : 'success');
+            
+            calculateButton.disabled = false;
+            calculateButton.innerHTML = `<ion-icon name="calculator-outline" class="text-lg mr-2"></ion-icon> Hitung & Proses Payroll`;
+            loadPayrollHistory(); // Muat ulang riwayat
+        }
+
+        // 3. FUNGSI BARU: Aksi Lihat Payslip (Mengganti Placeholder)
+        async function viewPayslip(payrollId) {
+            showMessage(`Memuat rincian payslip...`, 'info');
+            
+            // 1. Ambil data payroll spesifik
+            const { data: payroll, error } = await _supabase
+                .from('payroll')
+                .select(`
+                    *,
+                    user_id(full_name),
+                    processor_id(full_name)
+                `)
+                .eq('id', payrollId)
+                .single();
+
+            if (error || !payroll) {
+                showMessage(`Gagal memuat payslip: ${error?.message || 'Data tidak ditemukan.'}`, 'error');
+                return;
+            }
+
+            // 2. Format Data Numerik
+            const formatRupiah = (amount) => 
+                new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+            
+            // 3. Isi Header dan Ringkasan
+            const periodDate = new Date(payroll.pay_period_month);
+            const periodDisplay = periodDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+
+            document.getElementById('payslipPeriod').textContent = `Periode ${periodDisplay}`;
+            document.getElementById('payslipEmployeeName').textContent = payroll.user_id ? payroll.user_id.full_name : 'N/A';
+
+            document.getElementById('payslipGross').textContent = formatRupiah(payroll.salary_total);
+            document.getElementById('payslipDeduction').textContent = formatRupiah(payroll.deduction_total);
+            document.getElementById('payslipNet').textContent = formatRupiah(payroll.takehomepay);
+
+            // 4. Tampilkan Rincian Penghasilan (JSONB: salary_detail)
+            const salaryDetailBody = document.getElementById('payslipSalaryDetailBody');
+            let salaryHtml = '';
+            const salaryDetails = payroll.salary_detail || {};
+            const salaryKeys = Object.keys(salaryDetails);
+
+            if (salaryKeys.length > 0) {
+                salaryKeys.forEach(key => {
+                    const amount = salaryDetails[key];
+                    salaryHtml += `
+                        <tr>
+                            <td class="py-1 text-gray-700">${key}</td>
+                            <td class="py-1 text-right font-medium text-green-600">${formatRupiah(amount)}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                salaryHtml = `<tr><td colspan="2" class="py-2 text-gray-500">Tidak ada rincian penghasilan.</td></tr>`;
+            }
+            salaryDetailBody.innerHTML = salaryHtml;
+
+            // 5. Tampilkan Rincian Potongan (JSONB: deduction_detail)
+            const deductionDetailBody = document.getElementById('payslipDeductionDetailBody');
+            let deductionHtml = '';
+            const deductionDetails = payroll.deduction_detail || {};
+            const deductionKeys = Object.keys(deductionDetails);
+
+            if (deductionKeys.length > 0) {
+                deductionKeys.forEach(key => {
+                    const amount = deductionDetails[key];
+                    deductionHtml += `
+                        <tr>
+                            <td class="py-1 text-gray-700">${key}</td>
+                            <td class="py-1 text-right font-medium text-red-600">(${formatRupiah(amount)})</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                deductionHtml = `<tr><td colspan="2" class="py-2 text-gray-500">Tidak ada rincian potongan.</td></tr>`;
+            }
+            deductionDetailBody.innerHTML = deductionHtml;
+            
+            // 6. Tampilkan Footer Info
+            const processorName = payroll.processor_id ? payroll.processor_id.full_name : 'Sistem';
+            const processedDate = payroll.processed_at ? new Date(payroll.processed_at).toLocaleDateString('id-ID') : 'N/A';
+            document.getElementById('payslipProcessedAt').textContent = `Diproses oleh ${processorName} pada ${processedDate}`;
+
+
+            // 7. Tampilkan Modal
+            payslipModal.classList.remove('hidden');
+        }
+
+        // 4. FUNGSI BARU: Aksi Hapus Payroll (Hanya memanggil konfirmasi)
+        function deletePayroll(payrollId, periodDisplay) {
+            // Mengganti window.confirm dengan modal kustom
+            openConfirmPayrollDelete(payrollId, periodDisplay);
+        }
+
+        // 4. Placeholder Aksi (Hapus Payroll)
+        async function deletePayroll(payrollId, periodDisplay) {
+            if (!confirm(`Apakah Anda yakin ingin menghapus hasil payroll periode ${periodDisplay} ini?`)) return;
+
+            showMessage("Menghapus hasil payroll...", 'info');
+            
+            const { error } = await _supabase.from('payroll').delete().eq('id', payrollId);
+
+            if (error) {
+                showMessage(`Gagal menghapus: ${error.message}`, 'error');
+                return;
+            }
+
+            showMessage('Hasil payroll berhasil dihapus.', 'success');
+            loadPayrollHistory();
+        }
+
+        // --- LOGIKA MODAL HAPUS PAYROLL ---
+        const payrollDeleteModal = document.getElementById('payrollDeleteModal');
+        const payrollDeleteText = document.getElementById('payrollDeleteText');
+        const payrollDeleteConfirmButton = document.getElementById('payrollDeleteConfirmButton');
+        const payslipModal = document.getElementById('payslipModal');
+
+        let currentPayrollDeleteId = null;
+
+        function openConfirmPayrollDelete(id, periodDisplay) {
+            currentPayrollDeleteId = id;
+            payrollDeleteText.innerHTML = `Apakah Anda yakin ingin menghapus hasil payroll periode <strong>${periodDisplay}</strong> ini? Tindakan ini tidak bisa dibatalkan.`;
+            payrollDeleteModal.classList.remove('hidden');
+        }
+
+        function closeConfirmPayrollDelete() {
+            payrollDeleteModal.classList.add('hidden');
+            currentPayrollDeleteId = null;
+        }
+
+        // Logika saat tombol konfirmasi Hapus di modal diklik
+        async function handleConfirmPayrollDelete() {
+            // PERBAIKAN: Simpan ID di variabel lokal terlebih dahulu
+            const idToDelete = currentPayrollDeleteId; 
+
+            if (!idToDelete) { // Cek variabel lokal
+                console.error("ID payroll untuk dihapus tidak ditemukan.");
+                closeConfirmPayrollDelete(); // Pastikan modal tertutup jika terjadi error aneh
+                return;
+            }
+
+            showMessage("Menghapus hasil payroll...", 'info');
+            closeConfirmPayrollDelete(); // Sekarang aman untuk memanggil close, karena ID sudah disimpan
+
+            // PERBAIKAN: Gunakan variabel lokal 'idToDelete'
+            const { error } = await _supabase.from('payroll').delete().eq('id', idToDelete); 
+
+            if (error) {
+                showMessage(`Gagal menghapus: ${error.message}`, 'error');
+                return;
+            }
+
+            showMessage('Hasil payroll berhasil dihapus.', 'success');
+            loadPayrollHistory();
+        }
+
+        // Event listener untuk tombol konfirmasi hapus payroll
+        try {
+            payrollDeleteConfirmButton.addEventListener('click', handleConfirmPayrollDelete);
+        } catch (e) {
+            console.warn("Elemen Konfirmasi Hapus Payroll tidak ditemukan.");
+        }
+
+        function closePayslipModal() {
+            payslipModal.classList.add('hidden');
+        }
+
+        // (BARU) Event listener untuk Form Pengajuan Lembur Karyawan
+        try {
+            document.getElementById('overtimeRequestForm').addEventListener('submit', handleNewOvertimeRequest);
+        } catch (e) {
+            console.warn("Form pengajuan lembur (overtimeRequestForm) tidak ditemukan.");
         }
 
     </script>
