@@ -45,40 +45,50 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        /* Gaya Kalender Khusus */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            font-size: 0.75rem; /* text-xs */
-        }
-        .day-header {
-            text-align: center;
-            font-weight: 600;
-            padding: 4px 0;
-            background-color: #e5e7eb; /* bg-gray-200 */
-        }
-        .day-cell {
-            aspect-ratio: 1 / 1; /* Membuat sel menjadi persegi */
+        /* Gaya Kalender BARU (List View) */
+        .calendar-list {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 6px; /* rounded-md */
-            text-align: center;
-            padding: 4px;
-            cursor: default;
-            transition: background-color 0.1s;
-            line-height: 1; /* Rapi saat font kecil */
+            gap: 6px; /* Spasi antar item hari */
         }
-        .day-number {
-            font-weight: 600;
+        .list-day-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 10px;
+            transition: background-color 0.1s;
+        }
+        /* Style khusus untuk 'Hari Ini' (dari JS) */
+        .list-day-item.border-blue-500 {
+            border-width: 2px;
+            padding: 10px 14px; /* Sesuaikan padding jika ada border */
+        }
+        .list-day-info {
+            display: flex;
+            align-items: baseline; /* Agar tanggal dan nama hari rapi */
+        }
+        .list-day-date {
+            font-weight: 700; /* bold */
+            font-size: 1.125rem; /* text-lg */
+            min-width: 28px; /* Agar tanggal 1-9 sejajar */
+        }
+        .list-day-name {
+            font-weight: 500; /* medium */
+            font-size: 0.875rem; /* text-sm */
+            margin-left: 12px;
+            opacity: 0.9;
+        }
+        .list-day-status {
+            font-weight: 600; /* semibold */
+            font-size: 0.875rem; /* text-sm */
+            text-align: right;
         }
         /* Status Colors - Sesuai dengan Legenda */
         .status-Hadir { background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; } /* Green */
         .status-Terlambat, .status-Izin { background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; } /* Yellow */
-        .status-Alpa { background-color: #fee2e2; border: 1px solid #ef4444; color: #991b1b; } /* Red */
-        .status-Weekend { background-color: #e0e7ff; border: 1px solid #6366f1; color: #3730a3; } /* Indigo (Hari Libur/Weekend) */
+        .status-Alpa { background-color: #e0e7ff; border: 1px solid #6366f1; color: #3730a3; } /* Indigo */
+        .status-Weekend { background-color: #fee2e2; border: 1px solid #ef4444; color: #991b1b; } /* Red * (Hari Libur/Weekend) */
         .status-Future, .status-Empty { background-color: #f9fafb; color: #9ca3af; } /* Gray (Tanggal masa depan atau sel kosong) */
         /* Gaya untuk tab bulan yang aktif (Background Menyala) */
         .tab-active-bg {
@@ -190,7 +200,6 @@
                                 Clock-In
                             </button>
                             <button id="karyawanClockOutButton" class="bg-red-600 text-white p-4 rounded-xl shadow-md hover:bg-red-700 transition duration-150 flex items-center justify-center font-bold text-lg disabled:opacity-50" disabled>
-                                <ion-icon name="log-out-outline" class="text-2xl mr-2"></ion-icon>
                                 Clock-Out
                             </button>
                         </div>        
@@ -231,19 +240,48 @@
                     <!-- SECTION 1 KARYAWAN: PENGAJUAN (REQUESTS) KARYAWAN (BARU) -->
                     <!-- ============================================== -->
                     <div id="karyawanSection_Requests" class="mt-2" style="display: none;">
-                        <div class="bg-white p-2 rounded-xl shadow-lg border border-gray-200">
-                            <!-- Tombol Kembali (BARU) -->
-                            <button onclick="showKaryawanContent('Absensi')" class="mt-2 mb-2 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
                                 <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
                             </button>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                                <h2 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Riwayat Pengajuan Koreksi</h2>
-                                <!-- Tombol untuk membuka Modal -->
-                                <button onclick="openRequestAttendanceModal()" class="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
-                                    <ion-icon name="add-outline" class="mr-1"></ion-icon> Ajukan Koreksi Baru
+                                
+                            <h2 class="text-xl font-semibold text-gray-800 mb-6">Pengajuan Koreksi Kehadiran</h2>
+
+                            <!-- Form Pengajuan Koreksi BARU (DIPINDAH DARI MODAL) -->
+                            <form id="requestAttendanceForm" class="space-y-4 border-b pb-6 mb-6">
+                                <div>
+                                    <label for="reqAttDate" class="block text-sm font-medium text-gray-700">Tanggal Absensi yang Dikoreksi</label>
+                                    <input type="date" id="reqAttDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="reqAttClockIn" class="block text-sm font-medium text-gray-700">Jam Masuk (Seharusnya)</label>
+                                        <input type="time" id="reqAttClockIn" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="reqAttClockOut" class="block text-sm font-medium text-gray-700">Jam Pulang (Seharusnya)</label>
+                                        <input type="time" id="reqAttClockOut" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="reqAttDescription" class="block text-sm font-medium text-gray-700">Alasan Koreksi</label>
+                                    <textarea id="reqAttDescription" rows="3" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Lupa absen pulang karena meeting mendadak di luar kantor."></textarea>
+                                </div>
+                                    
+                                <p class="text-xs text-gray-500">Penting: Anda harus mengisi setidaknya salah satu Jam Masuk atau Jam Pulang.</p>
+                                    
+                                <button type="submit" id="saveRequestButton" class="w-full flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                    Kirim Pengajuan Koreksi
                                 </button>
-                            </div>
-                            
+                            </form>
+                            <!-- Akhir Form Pengajuan Koreksi -->
+                                
+                            <!-- Riwayat Pengajuan -->
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Pengajuan Koreksi</h3>
                             <p class="text-sm text-gray-500 mb-4">Daftar ini adalah riwayat pengajuan koreksi absensi Anda (lupa clock-in/out).</p>
 
                             <!-- Tabel Riwayat Pengajuan Karyawan -->
@@ -750,15 +788,10 @@
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                                     
                                     <!-- Filter Rentang Tanggal -->
-                                    <div class="md:col-span-2 grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label for="rekapStartDate" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
-                                            <input type="date" id="rekapStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
-                                        <div>
-                                            <label for="rekapEndDate" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
-                                            <input type="date" id="rekapEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
+                                    <!-- Filter Periode Bulan (BARU) -->
+                                    <div class="md:col-span-2">
+                                        <label for="rekapMonthFilter" class="block text-xs font-medium text-gray-700 mb-1">Pilih Periode Bulan</label>
+                                        <input type="month" id="rekapMonthFilter" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
                                     </div>
 
                                     <!-- Filter Karyawan -->
@@ -1567,61 +1600,6 @@
                                     Simpan
                                 </button>
                                 <button type="button" onclick="closeCompanyModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
-                                    Batal
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Ajukan Koreksi Kehadiran (BARU) -->
-            <div id="requestAttendanceModal" class="fixed z-20 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                    <!-- Latar belakang overlay -->
-                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRequestAttendanceModal()"></div>
-                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                    
-                    <!-- Konten Modal -->
-                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                        <form id="requestAttendanceForm">
-                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="requestModalTitle">
-                                    Ajukan Koreksi Kehadiran
-                                </h3>
-                                <div class="mt-4 space-y-4">
-                                    <!-- Tanggal Absensi -->
-                                    <div>
-                                        <label for="reqAttDate" class="block text-sm font-medium text-gray-700">Tanggal Absensi yang Dikoreksi</label>
-                                        <input type="date" id="reqAttDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
-                                    </div>
-                                    
-                                    <!-- Jam Masuk & Pulang -->
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label for="reqAttClockIn" class="block text-sm font-medium text-gray-700">Jam Masuk (Seharusnya)</label>
-                                            <input type="time" id="reqAttClockIn" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
-                                        </div>
-                                        <div>
-                                            <label for="reqAttClockOut" class="block text-sm font-medium text-gray-700">Jam Pulang (Seharusnya)</label>
-                                            <input type="time" id="reqAttClockOut" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
-                                        </div>
-                                    </div>
-
-                                    <!-- Alasan -->
-                                    <div>
-                                        <label for="reqAttDescription" class="block text-sm font-medium text-gray-700">Alasan Koreksi</label>
-                                        <textarea id="reqAttDescription" rows="3" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Cth: Lupa absen pulang karena meeting mendadak di luar kantor."></textarea>
-                                    </div>
-                                    
-                                    <p class="text-xs text-gray-500">Penting: Anda harus mengisi setidaknya salah satu Jam Masuk atau Jam Pulang.</p>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button type="submit" id="saveRequestButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Kirim Pengajuan
-                                </button>
-                                <button type="button" onclick="closeRequestAttendanceModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
                                     Batal
                                 </button>
                             </div>
@@ -2886,18 +2864,6 @@
                 await handleAddNewEmployee();
             }
         });
-        
-        function openRequestAttendanceModal() {
-            requestAttendanceForm.reset(); // Kosongkan form
-            document.getElementById('saveRequestButton').disabled = false;
-            // Set tanggal default ke hari ini
-            document.getElementById('reqAttDate').value = getTodayDateString(); 
-            requestAttendanceModal.classList.remove('hidden');
-        }
-
-        function closeRequestAttendanceModal() {
-            requestAttendanceModal.classList.add('hidden');
-        }
 
         async function handleAddNewEmployee() {
             const email = document.getElementById('employeeEmail').value;
@@ -3386,95 +3352,122 @@
             const attendanceMap = {};
             if (data) {
                 data.forEach(att => {
-                    // Ambil tanggal dalam format YYYY-MM-DD (tanpa waktu)
-                    const dateKey = att.created_at.substring(0, 10); 
+                    // (REVISI) Konversi timestamp UTC (cth: 2025-11-16T17:00Z) 
+                    // ke objek Tanggal Lokal (cth: 17 Nov 2025 00:00 WIB)
+                    const localDate = new Date(att.created_at);
+                    
+                    // Gunakan helper untuk mendapatkan YYYY-MM-DD yang benar (cth: "2025-11-17")
+                    const dateKey = getTodayDateString(localDate); 
+                    
                     attendanceMap[dateKey] = att.attendance_status;
                 });
             }
 
-            // 3. Render Kalender
-            renderCalendarGrid(targetDate, attendanceMap, container);
+            // 3. Ambil data Hari Libur Nasional/Khusus untuk bulan ini (BARU)
+            let holidayQuery = _supabase.from('holidays')
+                .select('holiday_date, holiday_name')
+                .gte('holiday_date', targetDate.toISOString().substring(0, 10))
+                .lte('holiday_date', new Date(year, month, daysInMonth).toISOString().substring(0, 10));
+
+            if (globalProfile.company_id) {
+                // Ambil Global (NULL) atau milik perusahaan karyawan
+                holidayQuery = holidayQuery.or(`company_id.eq.${globalProfile.company_id},company_id.is.null`);
+            } else {
+                // Karyawan tidak terikat perusahaan (hanya ambil Global)
+                holidayQuery = holidayQuery.is('company_id', null);
+            }
+
+            const { data: holidayData } = await holidayQuery;
+
+            // Peta data Hari Libur (Key: YYYY-MM-DD, Value: Nama Hari Libur)
+            const holidayMap = {};
+            if (holidayData) {
+                holidayData.forEach(item => {
+                    holidayMap[item.holiday_date] = item.holiday_name;
+                });
+            }
+            // ----------------------------------------------------
+
+            // 4. Panggil Render Kalender (Ubah pemanggilan ini)
+            // Ubah: renderCalendarGrid(targetDate, attendanceMap, container);
+            // Menjadi:
+            renderCalendarGrid(targetDate, attendanceMap, container, holidayMap);
         }
 
         // 2. Merender grid kalender ke dalam kontainer
-        function renderCalendarGrid(date, attendanceMap, container) {
+        function renderCalendarGrid(date, attendanceMap, container, holidayMap) {
             const today = new Date();
             const year = date.getFullYear();
             const month = date.getMonth();
-            const firstDayOfMonth = new Date(year, month, 1);
             const daysInMonth = getDaysInMonth(date);
             
-            // Hari mulai (0=Minggu, 1=Senin, ..., 6=Sabtu)
-            const startDayIndex = firstDayOfMonth.getDay(); 
-            
-            const calendarDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-            let html = '<div class="calendar-grid">';
+            // (BARU) Mulai kontainer list
+            let html = '<div class="calendar-list">';
 
-            // HEADER HARI
-            calendarDays.forEach(day => {
-                html += `<div class="day-header">${day}</div>`;
-            });
-
-            // SEL KOSONG (PADDING)
-            // PostgreSQL day index (1=Mon, ..., 7=Sun). JS day index (0=Sun, ..., 6=Sat).
-            // Kita perlu offset dari hari Minggu (0)
-            const offset = (startDayIndex === 0) ? 6 : startDayIndex - 1; // Jika Minggu (0), offset 6; lainnya offset hari-1
-
-            for (let i = 0; i < offset; i++) {
-                html += '<div class="day-cell status-Empty"></div>';
-            }
-            
-            // Tanggal
+            // (DIUBAH) Loop hanya untuk tanggal, tanpa header atau padding
             for (let day = 1; day <= daysInMonth; day++) {
                 const currentDate = new Date(year, month, day);
-                const dayOfWeek = currentDate.getDay(); // 0 (Sun) to 6 (Sat)
-                const dateKey = currentDate.toISOString().substring(0, 10); // YYYY-MM-DD
-                const status = attendanceMap[dateKey];
+                // (BARU) Ambil nama hari
+                const dayName = currentDate.toLocaleDateString('id-ID', { weekday: 'long' });
                 
-                // Cek apakah tanggal hari ini atau masa depan
+                // --- Logika Penentuan Status (INI TIDAK BERUBAH) ---
+                const dateKey = getTodayDateString(currentDate);
+                const status = attendanceMap[dateKey];
                 const isFuture = currentDate > today; 
+                const holidayName = holidayMap[dateKey];
                 
                 let statusClass = '';
                 let statusInfo = '';
                 
-                if (dayOfWeek === 0 || dayOfWeek === 6) { // Sabtu (6) atau Minggu (0)
-                    statusClass = 'status-Weekend';
-                    statusInfo = 'Libur';
-                }
-
-                if (isFuture) {
-                    statusClass = 'status-Future';
-                    statusInfo = 'Masa Depan';
-                } else if (status) {
-                    // Ada data absensi
+                if (holidayName) { // 1. Prioritas: Hari Libur Nasional
+                    statusClass = 'status-Weekend'; 
+                    statusInfo = holidayName; 
+                
+                } else if (status) { // 2. Prioritas: Cek data absensi (Hadir, Izin, Terlambat)
                     if (status === 'Hadir') {
                         statusClass = 'status-Hadir';
                         statusInfo = 'Hadir';
                     } else if (status === 'Terlambat' || status === 'Izin / Cuti' || status === 'Sakit') {
-                        statusClass = 'status-Terlambat'; // Menggunakan kelas yellow
+                        statusClass = 'status-Terlambat'; 
                         statusInfo = status;
                     } else { // Alpa (atau status tidak dikenal lainnya)
                         statusClass = 'status-Alpa';
                         statusInfo = 'Alpa';
                     }
-                } else if (!isFuture && dayOfWeek !== 0 && dayOfWeek !== 6) {
-                    // Jika bukan masa depan, bukan weekend, dan tidak ada data
+
+                } else if (currentDate.getDay() === 0 || currentDate.getDay() === 6) { // 3. Prioritas: Weekend
+                    statusClass = 'status-Weekend';
+                    statusInfo = 'Libur';
+                
+                } else if (isFuture) { // 4. Prioritas: Masa Depan (jika tidak ada data)
+                    statusClass = 'status-Future';
+                    statusInfo = 'Masa Depan';
+
+                } else if (!isFuture) { // 5. Prioritas: Belum Absen / Alpa (jika bukan masa depan & tidak ada data)
                     statusClass = 'status-Alpa';
                     statusInfo = 'Belum Absen';
                 }
                 
-                // Tambahkan kelas untuk menandai hari ini
                 const isTodayClass = (currentDate.toDateString() === today.toDateString()) ? 'border-4 border-blue-500' : '';
+                // --- Akhir Logika Status ---
 
+                // (DIUBAH) Render HTML sebagai list item
                 html += `
-                    <div class="day-cell ${statusClass} ${isTodayClass}" title="${statusInfo}">
-                        <span class="day-number">${day}</span>
-                        <span class="text-xxs uppercase opacity-75">${statusInfo.replace(' / Cuti', '')}</span>
+                    <div class="list-day-item ${statusClass} ${isTodayClass}" title="${statusInfo}">
+                        <!-- Bagian Kiri: Tanggal dan Hari -->
+                        <div class="list-day-info">
+                            <span class="list-day-date">${String(day).padStart(2, '0')}</span>
+                            <span class="list-day-name">${dayName}</span>
+                        </div>
+                        <!-- Bagian Kanan: Status -->
+                        <div class="list-day-status">
+                            <span>${statusInfo}</span>
+                        </div>
                     </div>
                 `;
             }
 
-            html += '</div>';
+            html += '</div>'; // Tutup .calendar-list
             container.innerHTML = html;
         }
 
@@ -3482,8 +3475,9 @@
         async function loadKaryawanAttendanceStatus() {
             const todayDate = getTodayDateString();
             const isMasterHoliday = await isTodayHoliday(todayDate); // Gunakan tanggal hari ini
-            const startOfDay = new Date(todayDate).toISOString();
-            const endOfDay = new Date(new Date(todayDate).getTime() + 24 * 60 * 60 * 1000).toISOString();
+            // (REVISI) Buat rentang ISO dari string tanggal LOKAL
+            const startOfDay = new Date(todayDate + 'T00:00:00').toISOString();
+            const endOfDay = new Date(todayDate + 'T23:59:59').toISOString();
             
             karyawanAttendanceStatus.textContent = 'Memuat status...';
 
@@ -3942,6 +3936,8 @@
 
                 // Muat data spesifik tanpa mengubah lebar wrapper
                 if (sectionName === 'Requests') {
+                    document.getElementById('requestAttendanceForm').reset(); // BARU: Reset form
+                    document.getElementById('reqAttDate').value = getTodayDateString(); // BARU: Set tanggal hari ini
                     loadAttendanceRequests(); // Muat data Koreksi Kehadiran
                 } else if (sectionName === 'History') { 
                     loadKaryawanHistory();
@@ -4121,7 +4117,7 @@
         }
 
         async function doClockIn() {
-            const dayNames = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu" , "Minggu"];
+            const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
             const todayName = dayNames[new Date().getDay()];
             const schedule = globalProfile.workhours?.schedule;
             const todayDate = getTodayDateString();
@@ -4266,53 +4262,56 @@
         async function loadAdminAttendanceData(dateString) {
             adminAttendanceTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Memuat data...</td></tr>';
             
-            const startOfDay = new Date(dateString).toISOString();
-            const endOfDay = new Date(new Date(dateString).getTime() + 24 * 60 * 60 * 1000).toISOString();
+            // Tentukan rentang hari (00:00 - 23:59 LOKAL)
+            const startOfDay = new Date(dateString + 'T00:00:00').toISOString();
+            const endOfDay = new Date(dateString + 'T23:59:59').toISOString();
             
-            // 1. Ambil semua karyawan di perusahaan admin
+            // 1. Ambil semua karyawan di perusahaan admin + JADWAL KERJA
             let profilesQuery = _supabase
                 .from('profiles')
-                .select('id, full_name');
+                .select('id, full_name, workhours( schedule )'); // Ambil jadwal kerja
             
-            // Tambahkan filter HANYA jika yang login BUKAN Super Admin
             if (globalProfile.role !== 'super_admin') {
                 profilesQuery = profilesQuery.eq('company_id', globalProfile.company_id);
             }
             
-            // Jalankan query yang sudah dimodifikasi
             const { data: profiles, error: profilesError } = await profilesQuery;
 
-            if (profilesError) {
-                console.error("Gagal memuat daftar karyawan:", profilesError.message);
+            if (profilesError || profiles.length === 0) {
+                adminAttendanceTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada karyawan di perusahaan ini.</td></tr>';
+                document.getElementById('adminNoDataMessage').classList.add('hidden');
                 return;
             }
 
             const employeeIds = profiles.map(p => p.id);
-            if (employeeIds.length === 0) {
-                 adminAttendanceTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Belum ada karyawan di perusahaan ini.</td></tr>';
-                 document.getElementById('adminNoDataMessage').classList.add('hidden');
-                 return;
-            }
 
             // 2. Ambil data absensi untuk tanggal dan user ID yang sesuai
             const { data: attendanceData, error: attendanceError } = await _supabase
                 .from('attendance')
                 .select('id, user_id, clock_in, clock_out, attendance_status, location')
                 .in('user_id', employeeIds)
-                .gte('created_at', startOfDay)
-                .lt('created_at', endOfDay);
+                .gte('created_at', startOfDay) // Gunakan rentang ISO
+                .lte('created_at', endOfDay); // Gunakan rentang ISO
             
             if (attendanceError) {
                 console.error("Gagal memuat data absensi:", attendanceError.message);
                 return;
             }
             
+            // 3. (BARU) Cek apakah hari ini Hari Libur Nasional
+            const isMasterHoliday = await isTodayHoliday(dateString);
+            
+            // 4. (BARU) Tentukan nama hari (Senin, Selasa, dll)
+            const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const todayName = dayNames[new Date(dateString + 'T00:00:00').getDay()];
+
+            // 5. Buat Peta (Map) data absensi
             const attendanceMap = attendanceData.reduce((map, att) => {
                 map[att.user_id] = att;
                 return map;
             }, {});
 
-            // 3. Gabungkan dan Render Data
+            // 6. Gabungkan dan Render Data (LOGIKA DIPERBARUI)
             adminAttendanceTableBody.innerHTML = ''; // Kosongkan tabel
             
             let html = '';
@@ -4320,23 +4319,45 @@
 
             profiles.forEach(profile => {
                 const att = attendanceMap[profile.id];
-                let status = att ? att.attendance_status : 'Alpa';
+                
+                // (LOGIKA BARU) Tentukan status default
+                let status = 'Alpa';
+                let clockIn = '-', clockOut = '-', location = '-', statusClass = getStatusClass('Alpa');
+
+                if (att) {
+                    // Karyawan punya data absensi
+                    status = att.attendance_status;
+                    statusClass = getStatusClass(status);
+                    clockIn = formatTime(att.clock_in);
+                    clockOut = formatTime(att.clock_out);
+                    location = att.location || '-';
+                } else {
+                    // Karyawan tidak ada data (Cek Libur/Shift)
+                    const schedule = profile.workhours?.schedule;
+                    const isShiftOff = (schedule && schedule[todayName] && schedule[todayName].is_off === true);
+                    
+                    if (isMasterHoliday || isShiftOff) {
+                        status = 'Libur';
+                        statusClass = getStatusClass('Izin'); // Tampilan visual seperti Izin
+                    }
+                }
                 
                 // Hitung statistik
                 if (status === 'Hadir' || status === 'Terlambat') totalHadir++;
-                else if (status === 'Izin / Cuti') totalIzin++;
+                else if (status === 'Izin / Cuti' || status === 'Sakit') totalIzin++;
                 else if (status === 'Alpa') totalAlpa++;
+                // 'Libur' tidak dihitung di statistik
 
                 html += `
-                    <tr data-id="${att ? att.id : 'new'}" data-user-id="${profile.id}">
+                    <tr data-id="${att ? att.id : 'null'}" data-user-id="${profile.id}">
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${profile.full_name}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${att ? formatTime(att.clock_in) : '-'}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${att ? formatTime(att.clock_out) : '-'}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockIn}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockOut}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-center">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(status)}">${status}</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-500">
-                            ${att ? (att.location || '-') : '-'}
+                            ${location}
                         </td>
                     </tr>
                 `;
@@ -4474,183 +4495,166 @@
             options += allEmployees.map(emp => `<option value="${emp.id}">${emp.full_name}</option>`).join('');
             employeeFilter.innerHTML = options;
 
-            // 3. Atur tanggal default ke 30 hari ke belakang
-            const today = getTodayDateString();
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
-            document.getElementById('rekapEndDate').value = today;
-            document.getElementById('rekapStartDate').value = getTodayDateString(thirtyDaysAgo);
+            // 3. Atur tanggal default ke bulan ini
+            const today = new Date();
+            const year = today.getFullYear();
+            // Format YYYY-MM
+            const month = String(today.getMonth() + 1).padStart(2, '0'); 
+            document.getElementById('rekapMonthFilter').value = `${year}-${month}`;
         }
 
         async function loadRekapData() {
             const rekapTableBody = document.getElementById('rekapTableBody');
-            const startDate = document.getElementById('rekapStartDate').value;
-            const endDate = document.getElementById('rekapEndDate').value;
-            const employeeId = document.getElementById('rekapEmployeeFilter').value;
+            const monthYear = document.getElementById('rekapMonthFilter').value; // Cth: "2025-11"
+            const employeeIdFilter = document.getElementById('rekapEmployeeFilter').value;
             const statusFilter = document.getElementById('rekapStatusFilter').value;
+            const summaryContainer = document.getElementById('rekapSummaryContainer');
 
-            if (!startDate || !endDate) {
-                showMessage("Harap isi rentang tanggal.", 'error');
+            if (!monthYear) {
+                showMessage("Harap pilih periode bulan.", 'error');
                 return;
             }
 
             rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Mencari data...</td></tr>';
+            summaryContainer.classList.add('hidden'); // Sembunyikan statistik
 
-            // Menyesuaikan rentang tanggal (Supabase menggunakan created_at)
-            const startISO = new Date(startDate).toISOString();
-            // Tambahkan 24 jam ke tanggal akhir agar inklusif
-            const endOfDay = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000);
-            const endISO = endOfDay.toISOString();
+            // 1. Tentukan rentang tanggal dari input bulan
+            const [year, monthIdx] = monthYear.split('-').map(n => parseInt(n, 10));
+            const month = monthIdx - 1; // JavaScript month index (0-11)
+            
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0); // Tgl 0 bulan depan = hari terakhir bulan ini
+            const daysInMonth = endDate.getDate();
 
-            let query = _supabase
+            const startISO = startDate.toISOString();
+            // Gunakan tgl 1 bulan depan untuk filter .lt()
+            const endISO = new Date(year, month + 1, 1).toISOString(); 
+
+            // 2. Ambil SEMUA karyawan yang relevan (sesuai filter)
+            let employeeQuery = _supabase.from('profiles')
+                .select('id, full_name, workhours( schedule )'); // Ambil jadwal kerja
+                
+            if (globalProfile.role !== 'super_admin') {
+                employeeQuery = employeeQuery.eq('company_id', globalProfile.company_id);
+            }
+            if (employeeIdFilter) {
+                employeeQuery = employeeQuery.eq('id', employeeIdFilter);
+            }
+            const { data: profiles, error: profilesError } = await employeeQuery;
+
+            if (profilesError || !profiles || profiles.length === 0) {
+                rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada karyawan ditemukan.</td></tr>';
+                return;
+            }
+
+            // 3. Ambil SEMUA data absensi di rentang bulan ini
+            const { data: attendanceData, error: attendanceError } = await _supabase
                 .from('attendance')
-                .select(`
-                    *,
-                    profiles(full_name)
-                `)
+                .select('created_at, user_id, clock_in, clock_out, attendance_status, description')
+                .in('user_id', profiles.map(p => p.id))
                 .gte('created_at', startISO)
                 .lt('created_at', endISO);
 
-            // Filter berdasarkan Perusahaan (Penting untuk RLS, tapi kita filter lagi di sini)
-            if (globalProfile.role !== 'super_admin') {
-                query = query.eq('company_id', globalProfile.company_id);
+            if (attendanceError) {
+                rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat absensi: ${attendanceError.message}</td></tr>`;
+                return;
             }
             
-            // Filter berdasarkan Nama Karyawan
-            if (employeeId) {
-                query = query.eq('user_id', employeeId);
+            // 4. Ambil SEMUA Hari Libur Nasional di rentang bulan ini
+            const { data: holidays } = await _supabase.from('holidays')
+                .select('holiday_date')
+                .gte('holiday_date', `${year}-${monthIdx}-01`)
+                .lte('holiday_date', `${year}-${monthIdx}-${daysInMonth}`);
+                
+            const holidayMap = {};
+            if (holidays) {
+                holidays.forEach(h => { holidayMap[h.holiday_date] = true; });
             }
 
-            // Filter berdasarkan Status
-            if (statusFilter) {
-                query = query.eq('attendance_status', statusFilter);
-            }
-
-            // Urutkan berdasarkan tanggal terbaru
-            query = query.order('created_at', { ascending: false });
-
-            const { data, error } = await query;
-            const summaryContainer = document.getElementById('rekapSummaryContainer');
-
-
-            if (error) {
-                console.error("Gagal memuat data rekap:", error.message);
-                rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
-                return;
-                summaryContainer.classList.add('hidden'); // Sembunyikan jika error
-                return;
-            }
-
-            if (data.length === 0) {
-                rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data kehadiran yang cocok dengan filter yang Anda pilih.</td></tr>';
-                return;
-                summaryContainer.classList.add('hidden'); // Sembunyikan jika tidak ada data
-                return;
-            }
-
-            // --- TAMBAHKAN LOGIKA PENGHITUNGAN BARU INI (baris ~1677) ---
-            let countHadir = 0;
-            let countTerlambat = 0;
-            let countIzin = 0;
-            let countAlpa = 0;
-
-            // Hitung total dari data yang didapat
-            data.forEach(att => {
-                switch (att.attendance_status) {
-                    case 'Hadir':
-                        countHadir++;
-                        break;
-                    case 'Terlambat':
-                        countTerlambat++;
-                        break;
-                    case 'Izin / Cuti':
-                        countIzin++;
-                        break;
-                    case 'Alpa':
-                        countAlpa++;
-                        break;
-                }
+            // 5. Buat Peta (Map) data absensi untuk pencarian cepat
+            // Key: "USER_ID|YYYY-MM-DD"
+            const attendanceMap = new Map();
+            attendanceData.forEach(att => {
+                const dateKey = getTodayDateString(new Date(att.created_at));
+                attendanceMap.set(`${att.user_id}|${dateKey}`, att);
             });
 
-            // Update kartu statistik di HTML
-            document.getElementById('rekapTotalHadir').textContent = countHadir;
-            document.getElementById('rekapTotalTerlambat').textContent = countTerlambat;
-            document.getElementById('rekapTotalIzin').textContent = countIzin;
-            document.getElementById('rekapTotalAlpa').textContent = countAlpa;
+            // 6. Loop (Hari -> Karyawan) untuk membangun tabel
+            let html = '';
+            let countHadir = 0, countTerlambat = 0, countIzin = 0, countAlpa = 0;
+            const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-            // Tampilkan kontainer statistik
-            summaryContainer.classList.remove('hidden');
-
-            // --- LOGIKA PENGUMPULAN KETERANGAN DARI TABEL REQUESTS ---
-            const employeeIdsInRekap = [...new Set(data.map(att => att.user_id))];
-            const uniqueAttendanceDates = [...new Set(data.map(att => getTodayDateString(new Date(att.created_at))))];
-            let requestsMap = {}; // Key: user_id|YYYY-MM-DD, Value: description
-
-            // Helper untuk memuat request yang SUDAH DISETUJUI
-            const loadRequests = async (tableName, dateColumn, statusColumn) => {
-                const { data: requests, error } = await _supabase
-                    .from(tableName)
-                    .select(`user_id, description, ${dateColumn}, ${statusColumn}`) 
-                    .in('user_id', employeeIdsInRekap)
-                    .eq(statusColumn, 'Disetujui') // HANYA ambil yang disetujui
-                    .in(dateColumn, uniqueAttendanceDates);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                const dateKey = getTodayDateString(currentDate); // "YYYY-MM-DD"
+                const dayOfWeek = currentDate.getDay(); // 0=Minggu, 6=Sabtu
                 
-                if (error) {
-                    console.error(`Gagal memuat data ${tableName}:`, error.message);
-                    return;
-                }
+                const isMasterHoliday = holidayMap[dateKey] === true;
 
-                if (requests) {
-                    requests.forEach(req => {
-                        const dateValue = req[dateColumn];
-                        const key = `${req.user_id}|${dateValue}`;
-                        // Simpan deskripsi pengajuan
-                        requestsMap[key] = req.description; 
-                    });
-                }
-            };
-            
-            if (employeeIdsInRekap.length > 0 && uniqueAttendanceDates.length > 0) {
-                // 1. Ambil dari attendance_requests (Koreksi Absensi)
-                await loadRequests('attendance_requests', 'attendance_date', 'requests_status');
-                
-                // 2. Ambil dari overtime_requests (Lembur)
-                await loadRequests('overtime_requests', 'overtime_date', 'overtime_status'); 
-                
-                // 3. (Tambahkan di sini jika ada timeoff_requests)
-                // await loadRequests('timeoff_requests', 'timeoff_date', 'timeoff_status'); 
+                profiles.forEach(profile => {
+                    const schedule = profile.workhours?.schedule;
+                    const todayName = dayNames[dayOfWeek]; // "Senin", "Selasa", ...
+                    
+                    // Cek jadwal kerja (shift)
+                    const isShiftOff = (schedule && schedule[todayName] && schedule[todayName].is_off === true);
+                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                    
+                    // Cek data absensi di Peta
+                    const att = attendanceMap.get(`${profile.id}|${dateKey}`);
+                    
+                    let status = 'Alpa';
+                    let statusClass = getStatusClass('Alpa');
+                    let clockIn = '-', clockOut = '-', ket = '-';
+
+                    if (att) {
+                        // Karyawan punya data absensi
+                        status = att.attendance_status;
+                        statusClass = getStatusClass(status);
+                        clockIn = formatTime(att.clock_in);
+                        clockOut = formatTime(att.clock_out);
+                        ket = att.description || '-';
+                    } else if (isMasterHoliday || isShiftOff || isWeekend) {
+                        // Karyawan tidak ada data, tapi hari libur
+                        status = 'Libur';
+                        statusClass = getStatusClass('Izin'); // Tampilan visual seperti Izin
+                    }
+                    
+                    // Logika Penghitungan Statistik
+                    if (status === 'Hadir') countHadir++;
+                    else if (status === 'Terlambat') countTerlambat++;
+                    else if (status === 'Izin / Cuti') countIzin++;
+                    else if (status === 'Alpa') countAlpa++;
+
+                    // Logika Filter Status (Tampilkan jika cocok)
+                    if (statusFilter === '' || statusFilter === status) {
+                        html += `
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${dateKey}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${profile.full_name}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockIn}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockOut}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-center">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${status}</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-500">${ket}</td>
+                            </tr>
+                        `;
+                    }
+                });
             }
-            // --- AKHIR LOGIKA KETERANGAN ---
+            
+            if (html === '') {
+                 html = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data ditemukan untuk filter status ini.</td></tr>';
+                 summaryContainer.classList.add('hidden');
+            } else {
+                // Update kartu statistik
+                document.getElementById('rekapTotalHadir').textContent = countHadir;
+                document.getElementById('rekapTotalTerlambat').textContent = countTerlambat;
+                document.getElementById('rekapTotalIzin').textContent = countIzin;
+                document.getElementById('rekapTotalAlpa').textContent = countAlpa;
+                summaryContainer.classList.remove('hidden');
+            }
 
-            let html = data.map(att => {
-                const date = new Date(att.created_at);
-                const dateDisplay = date.toLocaleDateString('id-ID'); 
-                const dateKey = getTodayDateString(date); 
-
-                const requestKey = `${att.user_id}|${dateKey}`;
-                
-                // Ambil keterangan: 
-                // Prioritas 1: Langsung dari data absensi (untuk alasan telat)
-                // Prioritas 2: Dari requestsMap (untuk koreksi yang disetujui)
-                const keterangan = att.description || requestsMap[requestKey] || '-';
-
-                const name = att.profiles ? att.profiles.full_name : 'N/A';
-                const statusClass = getStatusClass(att.attendance_status);
-                
-                return `
-                    <tr>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${dateDisplay}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${name}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatTime(att.clock_in)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatTime(att.clock_out)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${att.attendance_status}</span>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${keterangan}</td>
-                    </tr>
-                `;
-            }).join('');
             rekapTableBody.innerHTML = html;
         }
         
@@ -5135,17 +5139,20 @@
                         continue; 
                     }
                     
-                    // Tentukan rentang hari (00:00:00 - 23:59:59)
-                    const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
-                    const endOfDay = new Date(new Date(startOfDay).getTime() + 24 * 60 * 60 * 1000).toISOString();
+                    // (REVISI) Gunakan string lokal YYYY-MM-DD
+                    const localDateString = getTodayDateString(d); // Cth: "2025-11-17"
+                    
+                    // (REVISI) Buat rentang ISO dari string lokal untuk memastikan akurasi zona waktu
+                    const startOfDay = new Date(localDateString + 'T00:00:00').toISOString(); // 17 Nov 00:00:00 Lokal -> ISO UTC
+                    const endOfDay = new Date(localDateString + 'T23:59:59').toISOString(); // 17 Nov 23:59:59 Lokal -> ISO UTC
 
                     // Cek apakah sudah ada data absensi di hari itu
                     const { data: existingAtt, error: findError } = await _supabase
                         .from('attendance')
                         .select('id')
                         .eq('user_id', request.user_id)
-                        .gte('created_at', startOfDay)
-                        .lt('created_at', endOfDay)
+                        .gte('created_at', startOfDay) // (REVISI) Gunakan rentang ISO yang baru
+                        .lte('created_at', endOfDay) // (REVISI) Gunakan rentang ISO yang baru
                         .limit(1)
                         .single();
                     
@@ -5175,7 +5182,7 @@
                         // INSERT jika belum ada ('Alpa' tidak tercatat)
                         const insertPayload = {
                             ...attendancePayload,
-                            created_at: startOfDay // Set created_at ke awal hari
+                            created_at: startOfDay // (REVISI) Tetap gunakan startOfDay (ISO 17 Nov 00:00 Lokal)
                         };
                         const { error } = await _supabase
                             .from('attendance')
@@ -6263,9 +6270,6 @@
 
             // Jalankan pemeriksaan saat aplikasi dimuat
             checkAuthAndRole();
-
-            const requestAttendanceModal = document.getElementById('requestAttendanceModal');
-            const requestAttendanceForm = document.getElementById('requestAttendanceForm');
         
         // --- 6. EVENT LISTENER BARU ---
             requestAttendanceForm.addEventListener('submit', handleNewAttendanceRequest);
@@ -6932,76 +6936,60 @@
             tableBody.innerHTML = html;
         }
 
-        // 2. Fungsi untuk memulai Proses Kalkulasi dan Penyimpanan
+        // ===============================================================
+        // FUNGSI UTAMA PAYROLL (REVISI LENGKAP)
+        // ===============================================================
+
         async function calculateAndSavePayroll() {
+            // 1. Ambil Filter & UI Elements
             const monthYear = document.getElementById('payrollMonthFilter').value; // Format: YYYY-MM
             const calculateButton = document.getElementById('calculatePayrollButton');
-            const companyId = globalProfile.company_id; // <-- Wajib untuk filter RLS & payload
-            const payPeriodMonth = `${monthYear}-01`;           // <-- Wajib untuk payload payroll
-            
+            const companyId = globalProfile.company_id;
+            const payPeriodMonth = `${monthYear}-01`; // Cth: 2025-11-01
+
             if (!monthYear) {
                 showMessage("Harap pilih periode bulan dan tahun.", 'error');
                 return;
             }
-            
+
             calculateButton.disabled = true;
             calculateButton.innerHTML = `<div class="spinner w-4 h-4 border-2 border-t-transparent border-white mr-2" role="status"></div> Sedang memproses...`;
-            
             showMessage(`Memulai kalkulasi payroll untuk periode ${monthYear}...`, 'info');
 
-            // 1. Tentukan tanggal awal periode (misal 2025-11-01)
-            // --- LOGIKA PERHITUNGAN RENTANG TANGGAL ABSENSI (DINAMIS BERDASARKAN SETTING PERUSAHAAN) ---
-            
-            // Ambil setting tanggal mulai dari profil admin yang login (default 1 jika setting belum ada)
+            // 2. Tentukan Rentang Tanggal Absensi
+            // (Logika ini sudah benar dari kode Anda sebelumnya, mengambil dari setting perusahaan)
             const startDay = globalProfile.companies?.payroll_start_day || 1; 
 
-            // 1a. Tentukan Tanggal Akhir (Tanggal H-1 dari bulan yang difilter, dihitung dari startDay)
-            // Contoh: startDay=21, filter=Nov-2025. Tanggal akhir = 20 Nov 2025
-            // Contoh: startDay=1, filter=Nov-2025. Tanggal akhir = 31 Oct 2025 (atau 30 jika bukan 1)
-            
-            // Jika startDay=1, periode adalah 1-30/31 bulan yang difilter.
-            // Jika startDay>1, periode adalah startDay bulan lalu s/d startDay-1 bulan ini.
-            
             let endAttendanceDate;
             if (startDay === 1) {
-                // Jika mulai tgl 1, akhir periode adalah akhir bulan yang difilter.
-                endAttendanceDate = new Date(`${monthYear}-01`); // Mulai tgl 1 bulan yang difilter
-                endAttendanceDate.setMonth(endAttendanceDate.getMonth() + 1); // Maju 1 bulan
-                endAttendanceDate.setDate(0); // Mundur 1 hari (untuk mendapatkan akhir bulan)
+                endAttendanceDate = new Date(`${monthYear}-01`);
+                endAttendanceDate.setMonth(endAttendanceDate.getMonth() + 1);
+                endAttendanceDate.setDate(0);
             } else {
-                // Jika mulai tgl kustom, akhir periode adalah Tgl (startDay - 1) bulan yang difilter.
                 endAttendanceDate = new Date(`${monthYear}-${String(startDay).padStart(2, '0')}`);
                 endAttendanceDate.setDate(endAttendanceDate.getDate() - 1);
             }
             
-            // 1b. Tentukan Tanggal Mulai (Tanggal startDay di bulan sebelumnya atau bulan yang difilter)
             let startAttendanceDate;
             if (startDay === 1) {
-                // Jika mulai tgl 1, awal periode adalah Tgl 1 bulan yang difilter.
                 startAttendanceDate = new Date(`${monthYear}-01`);
             } else {
-                // Jika mulai tgl kustom, awal periode adalah Tgl startDay bulan sebelumnya.
                 startAttendanceDate = new Date(`${monthYear}-01`);
                 startAttendanceDate.setMonth(startAttendanceDate.getMonth() - 1); 
                 startAttendanceDate.setDate(startDay);
             }
             
-            // Konversi ke format ISO untuk query Supabase (filter absensi)
             const startAttendanceISO = startAttendanceDate.toISOString();
-            // Penting: endAttendanceISO harus diatur ke akhir hari (T23:59:59)
-            // Kita gunakan tanggal akhir + 1 hari, lalu di-convert ke ISO, dan di-filter dengan < (kurang dari)
             const endAttendanceNextDay = new Date(endAttendanceDate);
             endAttendanceNextDay.setDate(endAttendanceNextDay.getDate() + 1);
             const endAttendanceISO = endAttendanceNextDay.toISOString();
             
-            console.log(`[Payroll Setting] Start Day: ${startDay}`);
-            console.log(`[Payroll Range] Attendance start: ${startAttendanceDate.toLocaleDateString('id-ID')} (${startAttendanceISO})`);
-            console.log(`[Payroll Range] Attendance end:   ${endAttendanceDate.toLocaleDateString('id-ID')} (Query sampai < ${endAttendanceNextDay.toLocaleDateString('id-ID')})`);
+            console.log(`[Payroll] Menghitung data absensi dari ${startAttendanceDate.toLocaleDateString('id-ID')} sampai ${endAttendanceDate.toLocaleDateString('id-ID')}`);
 
-            // 2. Ambil daftar Karyawan yang akan dihitung
+            // 3. Ambil Karyawan (REVISI: Ambil JADWAL KERJA)
             let employeeQuery = _supabase
                 .from('profiles')
-                .select('id, full_name')
+                .select('id, full_name, workhours( schedule )') // (REVISI: Ambil workhours)
                 .eq('role', 'karyawan');
                 
             if (globalProfile.role !== 'super_admin') {
@@ -7015,89 +7003,238 @@
                 calculateButton.innerHTML = `<ion-icon name="calculator-outline" class="text-lg mr-2"></ion-icon> Hitung & Proses Payroll`;
                 return;
             }
+            const employeeIds = employees.map(e => e.id);
 
+            // ===============================================================
+            // 4. PRE-FETCH DATA (LOGIKA BARU YANG PENTING)
+            // ===============================================================
+            
+            // 4a. Ambil SEMUA data absensi dalam rentang waktu
+            const { data: allAttendance, error: attError } = await _supabase
+                .from('attendance')
+                .select('user_id, attendance_status, created_at') // (REVISI: Ambil created_at)
+                .in('user_id', employeeIds)
+                .gte('created_at', startAttendanceISO)
+                .lt('created_at', endAttendanceISO);
+
+            if (attError) {
+                showMessage(`Gagal memuat data absensi: ${attError.message}`, 'error');
+            }
+            
+            // (REVISI) Buat Peta Absensi (Key: "USER_ID|YYYY-MM-DD")
+            // Ini PENTING untuk lookup harian
+            const attendanceLookupMap = new Map();
+            if(allAttendance) {
+                allAttendance.forEach(att => {
+                    // Konversi UTC ke tanggal lokal yang benar
+                    const dateKey = getTodayDateString(new Date(att.created_at)); 
+                    attendanceLookupMap.set(`${att.user_id}|${dateKey}`, att.attendance_status);
+                });
+            }
+
+            // 4b. Ambil SEMUA data lembur (Overtime) yang disetujui
+            // (Logika ini sudah benar)
+            const { data: allOvertime, error: otError } = await _supabase
+                .from('overtime_requests')
+                .select('user_id, start_time, end_time')
+                .in('user_id', employeeIds)
+                .eq('overtime_status', 'Disetujui')
+                .gte('overtime_date', getTodayDateString(startAttendanceDate))
+                .lte('overtime_date', getTodayDateString(endAttendanceDate));
+
+            if (otError) {
+                showMessage(`Gagal memuat data lembur: ${otError.message}`, 'error');
+            }
+
+            // Buat Peta Lembur (Map<user_id, total_jam_lembur>)
+            // (Logika ini sudah benar)
+            const overtimeMap = new Map();
+            if(allOvertime) {
+                allOvertime.forEach(ot => {
+                    const totalHours = (new Date(ot.end_time) - new Date(ot.start_time)) / (1000 * 60 * 60);
+                    const currentHours = overtimeMap.get(ot.user_id) || 0;
+                    overtimeMap.set(ot.user_id, currentHours + totalHours);
+                });
+            }
+
+            // 4c. Ambil SEMUA aturan Potongan (Deduction)
+            // (Logika ini sudah benar)
+            const { data: allDeductionRules, error: dedError } = await _supabase
+                .from('deduction_types')
+                .select('name, method, value, condition_rule')
+                .or(`company_id.eq.${companyId},company_id.is.null`);
+            
+            if (dedError) {
+                showMessage(`Gagal memuat aturan potongan: ${dedError.message}`, 'error');
+            }
+            
+            // (BARU) 4d. Ambil SEMUA Hari Libur Nasional
+            const { data: allHolidays, error: holidayError } = await _supabase.from('holidays')
+                .select('holiday_date')
+                .gte('holiday_date', getTodayDateString(startAttendanceDate))
+                .lte('holiday_date', getTodayDateString(endAttendanceDate));
+                
+            const holidayMap = {};
+            if (allHolidays) {
+                allHolidays.forEach(h => { holidayMap[h.holiday_date] = true; });
+            }
+            // Definisikan nama hari (penting untuk cek jadwal/shift)
+            const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+            // ===============================================================
+            // 5. LOOP PERHITUNGAN PER KARYAWAN
+            // ===============================================================
             let successCount = 0;
             let errorCount = 0;
-            
-            // 3. Lakukan Loop Perhitungan per Karyawan
+
             for (const employee of employees) {
-                // --- LOGIKA PERHITUNGAN PALING SEDERHANA (HANYA GAJI POKOK) ---
-                
-                // A. Ambil Gaji Pokok (Anggap semua komponen gaji ada)
-                const { data: salaries, error: salError } = await _supabase
-                    .from('employee_salaries')
-                    .select(`salary_amount, salary_types(name, method)`)
-                    .eq('user_id', employee.id);
+                try {
+                    let grossSalary = 0;
+                    let salaryDetails = {};
+                    let totalDeductions = 0;
+                    let deductionDetails = {};
 
-                if (salError || salaries.length === 0) {
-                    console.warn(`[Payroll] ${employee.full_name}: Gagal memuat gaji. Dilewati.`);
-                    errorCount++;
-                    continue;
-                }
-
-                // BARU: Cek dan log jika gagal memuat gaji
-                if (salError) {
-                    console.error(`[Payroll] GAGAL QUERY SALARY untuk ${employee.full_name}:`, salError.message);
-                    errorCount++;
-                    continue; 
-                }
-                
-                if (salaries.length === 0) {
-                    console.warn(`[Payroll] DILEWATI: Karyawan ${employee.full_name} tidak memiliki komponen gaji yang ditetapkan.`);
-                    errorCount++;
-                    continue;
-                }
-                
-                let grossSalary = 0;
-                let salaryDetails = {};
-                
-                // Sum semua komponen gaji (untuk metode "Nominal Tetap" saja)
-                salaries.forEach(sal => {
-                    if (sal.salary_types.method === 'Nominal Tetap') {
-                        grossSalary += sal.salary_amount;
-                        salaryDetails[sal.salary_types.name] = sal.salary_amount;
-                    } else {
-                        salaryDetails[sal.salary_types.name] = 0; // Placeholder untuk komponen dinamis
+                    // (REVISI) Ambil data lembur
+                    const employeeOvertimeHours = overtimeMap.get(employee.id) || 0;
+                    
+                    // (LOGIKA BARU) Bangun array status (termasuk 'Alpa')
+                    const employeeAttendance = []; // Ini array yang akan diisi
+                    
+                    // Kita harus buat salinan 'startAttendanceDate' agar loop tidak merusak tanggal aslinya
+                    const loopDate = new Date(startAttendanceDate.getTime());
+                    
+                    while (loopDate <= endAttendanceDate) {
+                        const dateKey = getTodayDateString(loopDate); // "YYYY-MM-DD"
+                        const dayOfWeek = loopDate.getDay(); // 0=Minggu, 6=Sabtu
+                        const todayName = dayNames[dayOfWeek]; // "Senin", "Selasa", ...
+                        
+                        const isMasterHoliday = holidayMap[dateKey] === true;
+                        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                        
+                        let status = 'Alpa'; // Status default
+                        
+                        // 1. Cek di Peta Absensi (Lookup Map)
+                        const attStatus = attendanceLookupMap.get(`${employee.id}|${dateKey}`);
+                        
+                        if (attStatus) {
+                            status = attStatus; // 'Hadir', 'Terlambat', 'Izin / Cuti'
+                        } else {
+                            // 2. Tidak ada data, cek apakah hari libur/shift
+                            const schedule = employee.workhours?.schedule;
+                            const isShiftOff = (schedule && schedule[todayName] && schedule[todayName].is_off === true);
+                            
+                            if (isMasterHoliday || isShiftOff || isWeekend) {
+                                status = 'Libur'; // Bukan 'Alpa'
+                            }
+                        }
+                        
+                        // Masukkan status (Hadir, Alpa, Libur, dll) ke array karyawan
+                        employeeAttendance.push(status);
+                        
+                        // Lanjut ke hari berikutnya
+                        loopDate.setDate(loopDate.getDate() + 1);
                     }
-                });
+                    // (Array 'employeeAttendance' sekarang sudah penuh, cth: ['Hadir', 'Alpa', 'Alpa', 'Libur', ...])
 
-                // B. Hitung Potongan (Anggap semua potongan 0 untuk sementara)
-                const totalDeductions = 0;
-                const deductionDetails = {}; // Placeholder
-                const netPay = grossSalary - totalDeductions;
+                    // 5a. Ambil Komponen Gaji Karyawan
+                    const { data: salaries, error: salError } = await _supabase
+                        .from('employee_salaries')
+                        .select(`salary_amount, salary_types(name, method)`)
+                        .eq('user_id', employee.id);
+                    
+                    if (salError) throw new Error(`Gagal query gaji: ${salError.message}`);
+                    if (!salaries || salaries.length === 0) throw new Error(`Tidak punya komponen gaji.`);
 
-                // C. Buat Payload Payroll
-                const payrollPayload = {
-                    user_id: employee.id,
-                    company_id: companyId,
-                    pay_period_month: payPeriodMonth,
-                    salary_detail: salaryDetails, // JSONB
-                    salary_total: grossSalary,
-                    deduction_detail: deductionDetails, // JSONB
-                    deduction_total: totalDeductions,
-                    takehomepay: netPay,
-                    processor_id: globalProfile.id,
-                    processed_at: new Date().toISOString(),
-                    status: 'Processed',
-                };
+                    // 5b. Hitung PENGHASILAN (Gaji Kotor)
+                    for (const sal of salaries) {
+                        if (!sal.salary_types) continue;
+                        
+                        const componentName = sal.salary_types.name;
+                        const componentMethod = sal.salary_types.method;
+                        const componentRate = sal.salary_amount;
+                        let calculatedAmount = 0;
 
-                // 4. Simpan ke Database (Upsert/Insert)
-                // Gunakan upsert agar tidak terjadi duplikasi jika proses dijalankan ulang
-                const { error: saveError } = await _supabase
-                    .from('payroll')
-                    .upsert([payrollPayload], { onConflict: 'user_id, pay_period_month' }); 
+                        if (componentMethod === 'Nominal Tetap') {
+                            calculatedAmount = componentRate;
+                        } 
+                        else if (componentMethod === 'Berdasarkan Lembur') {
+                            // (Logika ini sudah benar)
+                            calculatedAmount = employeeOvertimeHours * componentRate;
+                        } 
+                        else if (componentMethod === 'Berdasarkan Absensi') {
+                            // (Logika ini sekarang berfungsi)
+                            const hadirs = employeeAttendance.filter(s => s === 'Hadir').length;
+                            calculatedAmount = hadirs * componentRate; // Cth: Bonus per kehadiran
+                        }
+                        
+                        salaryDetails[componentName] = calculatedAmount;
+                        grossSalary += calculatedAmount;
+                    }
 
-                if (saveError) {
-                    console.error(`[Payroll] Gagal menyimpan ${employee.full_name}:`, saveError.message);
-                    showMessage(`[Gagal Payroll] ${employee.full_name}: ${saveError.message}`, 'error');
-                    errorCount++;
-                } else {
+                    // 5c. Hitung POTONGAN (Deductions)
+                    if(allDeductionRules) {
+                        for (const rule of allDeductionRules) {
+                            const componentName = rule.name;
+                            const componentMethod = rule.method;
+                            const componentRate = rule.value;
+                            let calculatedAmount = 0;
+
+                            if (componentMethod === 'Nominal Tetap') {
+                                calculatedAmount = componentRate;
+                            } else if (componentMethod === 'Persentase') {
+                                calculatedAmount = (grossSalary * componentRate) / 100;
+                            } else if (componentMethod === 'Berdasarkan Absensi') {
+                                // (Logika ini sekarang berfungsi)
+                                const triggerStatus = rule.condition_rule?.trigger_status; // "Alpa"
+                                if (triggerStatus) {
+                                    // Hitung jumlah 'Alpa' (atau 'Terlambat') dari array yang baru kita buat
+                                    const count = employeeAttendance.filter(s => s === triggerStatus).length;
+                                    calculatedAmount = count * componentRate; // (Jumlah Alpa * Rate per Alpa)
+                                }
+                            }
+
+                            if (calculatedAmount > 0) {
+                                deductionDetails[componentName] = calculatedAmount;
+                                totalDeductions += calculatedAmount;
+                            }
+                        }
+                    }
+
+                    // 5d. Kalkulasi Final
+                    const netPay = grossSalary - totalDeductions;
+
+                    // 5e. Siapkan Payload untuk Disimpan
+                    const payrollPayload = {
+                        user_id: employee.id,
+                        company_id: companyId,
+                        pay_period_month: payPeriodMonth,
+                        salary_detail: salaryDetails,       // JSONB
+                        salary_total: grossSalary,
+                        deduction_detail: deductionDetails,  // JSONB
+                        deduction_total: totalDeductions,
+                        takehomepay: netPay,
+                        processor_id: globalProfile.id,
+                        processed_at: new Date().toISOString(),
+                        status: 'Processed', 
+                    };
+
+                    // 5f. Simpan (UPSERT)
+                    const { error: saveError } = await _supabase
+                        .from('payroll')
+                        .upsert([payrollPayload], { onConflict: 'user_id, pay_period_month' });
+
+                    if (saveError) throw new Error(saveError.message);
+                    
                     successCount++;
-                }
-            } // Akhir Loop Karyawan
 
-            // 5. Selesai
-            const finalMessage = `Proses Selesai: ${successCount} payroll berhasil dihitung/diperbarui. ${errorCount} gagal.`;
+                } catch (e) {
+                    console.error(`[Payroll] Gagal memproses ${employee.full_name}:`, e.message);
+                    errorCount++;
+                }
+            } // --- Akhir Loop Karyawan ---
+
+            // 6. Selesai
+            const finalMessage = `Proses Selesai: ${successCount} payroll berhasil dihitung/diperbarui. ${errorCount} gagal/dilewati.`;
             showMessage(finalMessage, errorCount > 0 ? 'error' : 'success');
             
             calculateButton.disabled = false;
