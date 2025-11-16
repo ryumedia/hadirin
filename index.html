@@ -178,6 +178,10 @@
                                 <!-- Icon Admin/Pengaturan: Menggunakan Icon Gerigi (Cog) -->
                                 <ion-icon name="settings-outline" class="text-2xl"></ion-icon>
                             </button>
+                            <!-- ===== TOMBOL PROFIL BARU ===== -->
+                            <button onclick="showKaryawanContent('Profile')" class="p-2 text-gray-600 hover:text-blue-600 transition duration-150">
+                                <ion-icon name="person-circle-outline" class="text-2xl"></ion-icon>
+                            </button>
                             <!-- Tombol Logout (Menambahkan onclick yang benar) -->
                             <button id="logoutBtn" onclick="doLogout()" class="p-2 text-red-500 hover:text-red-700 transition duration-150">
                                 <!-- Icon Logout -->
@@ -190,8 +194,8 @@
                     <div id="karyawanSection_Absensi" class="mt-2 p-6 bg-white rounded-xl shadow-lg transition-all duration-300" style="display: block;">
                         
                         <!-- ===== TAMBAHKAN KODE LOGO DI SINI ===== -->
-                        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" alt="Logo Hadirin.org" class="w-24 mx-auto mb-4">
-                        <!-- ======================================= -->
+                            <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" alt="Logo Hadirin.org" class="w-24 mx-auto mb-4">
+                            <!-- ======================================= -->
                         <!-- JAM (DIPUSATKAN) -->
                         <!-- Gunakan div dengan w-full dan text-center untuk memusatkan jam -->
                         <div class="w-full text-center mt-3 mb-3">
@@ -509,6 +513,53 @@
                             </div>
                         </div>
                     </div>
+                    <!-- ============================================== -->
+                    <!-- SECTION 6 KARYAWAN: PROFIL PENGGUNA (BARU) -->
+                    <!-- ============================================== -->
+                    <div id="karyawanSection_Profile" class="mt-2" style="display: none;">
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            
+                            <!-- Tombol Kembali -->
+                            <button onclick="showKaryawanContent('Absensi')" class="mb-4 text-sm text-gray-600 hover:text-blue-600 transition flex items-center">
+                                <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon> Kembali ke Home
+                            </button>
+                                
+                            <h2 class="text-xl font-semibold text-gray-800 mb-6">Profil Saya</h2>
+
+                            <!-- Info Pengguna (Read-only) -->
+                            <div class="space-y-4 border-b pb-6 mb-6">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500">Nama Lengkap</label>
+                                    <p id="profileInfoNama" class="mt-1 text-sm text-gray-900 font-medium">Memuat...</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500">Email</label>
+                                    <p id="profileInfoEmail" class="mt-1 text-sm text-gray-900">Memuat...</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500">Perusahaan</label>
+                                    <p id="profileInfoPerusahaan" class="mt-1 text-sm text-gray-900">Memuat...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Ubah Password -->
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ubah Password</h3>
+                            <form id="changePasswordForm" class="space-y-4">
+                                <div>
+                                    <label for="profileNewPassword" class="block text-sm font-medium text-gray-700">Password Baru</label>
+                                    <input type="password" id="profileNewPassword" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Masukkan password baru Anda (min. 6 karakter)">
+                                </div>
+                                <div>
+                                    <label for="profileConfirmPassword" class="block text-sm font-medium text-gray-700">Konfirmasi Password Baru</label>
+                                    <input type="password" id="profileConfirmPassword" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm" placeholder="Ketik ulang password baru">
+                                </div>
+                                    
+                                <button type="submit" id="savePasswordButton" class="w-full flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 text-sm font-medium">
+                                    Simpan Password Baru
+                                </button>
+                            </form>
+                        </div>
+                    </div>
     
 
             </div>
@@ -616,7 +667,7 @@
                                 <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
                             </button>
                             <div>
-                                <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Admin <span id="adminRoleDisplay" class="text-sm font-medium text-blue-600"></span></h1>
+                                <h1 id="adminHeaderTitle" class="text-3xl font-extrabold text-gray-900">Dashboard Admin <span id="adminRoleDisplay" class="text-sm font-medium text-blue-600"></span></h1>
                                 <!-- Menampilkan Nama & Email Admin yang Login (BARU) -->
                                 <p id="adminInfoDisplay" class="text-gray-900 font-normal mt-1 text-sm">Nama Admin (email@domain.com)</p>
                             </div>
@@ -2393,6 +2444,14 @@
 
             // SET NAMA PERUSAHAAN DI HEADER KARYAWAN
             document.getElementById('companyText').textContent = data.name;
+            
+            // (BARU) SET NAMA PERUSAHAAN DI HEADER ADMIN
+            try {
+                // Mengganti teks "Dashboard Admin " dengan nama perusahaan
+                document.getElementById('adminHeaderTitle').childNodes[0].nodeValue = data.name + " ";
+            } catch(e) {
+                console.warn("Gagal set header admin, elemen tidak ditemukan.");
+            }
         }
         
         // FUNGSI NAVIGASI SIDEBAR ADMIN (DIPERBAIKI UNTUK ACCORDION)
@@ -3918,6 +3977,61 @@
             tableBody.innerHTML = html;
         }
 
+        async function loadKaryawanProfileData() {
+            if (!globalProfile) return;
+
+            document.getElementById('profileInfoNama').textContent = globalProfile.full_name || 'N/A';
+            
+            // Ambil email dari sesi auth (lebih pasti daripada profil)
+            const { data: { user } } = await _supabase.auth.getUser();
+            document.getElementById('profileInfoEmail').textContent = user ? user.email : 'N/A';
+            
+            // Ambil nama perusahaan dari header (sudah di-load oleh loadCompanyDetails)
+            document.getElementById('profileInfoPerusahaan').textContent = document.getElementById('companyText').textContent || 'N/A';
+            
+            // Reset form password setiap kali dibuka
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('savePasswordButton').disabled = false;
+        }
+
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const saveButton = document.getElementById('savePasswordButton');
+            saveButton.disabled = true;
+
+            const newPassword = document.getElementById('profileNewPassword').value;
+            const confirmPassword = document.getElementById('profileConfirmPassword').value;
+
+            if (newPassword.length < 6) {
+                showMessage('Password baru harus minimal 6 karakter.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showMessage('Password baru dan konfirmasi tidak cocok.', 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage("Memperbarui password Anda...", 'info');
+            
+            // Panggil API Auth Supabase
+            const { error } = await _supabase.auth.updateUser({
+                password: newPassword
+            });
+
+            if (error) {
+                showMessage(`Gagal memperbarui password: ${error.message}`, 'error');
+                saveButton.disabled = false;
+                return;
+            }
+
+            showMessage('Password Anda telah berhasil diperbarui.', 'success');
+            document.getElementById('changePasswordForm').reset();
+            saveButton.disabled = false;
+        }
+
         // FUNGSI NAVIGASI KARYAWAN BARU (menggantikan showKaryawanSection)
         function showKaryawanContent(sectionName) {
             const sections = {
@@ -3926,7 +4040,8 @@
                 'History': document.getElementById('karyawanSection_History'),
                 'Timeoff': document.getElementById('karyawanSection_Timeoff'),
                 'Overtime': document.getElementById('karyawanSection_Overtime'),
-                'Salary': document.getElementById('karyawanSection_Salary')
+                'Salary': document.getElementById('karyawanSection_Salary'),
+                'Profile': document.getElementById('karyawanSection_Profile')
             };
             const karyawanViewWrapper = document.querySelector('#karyawanView > div');
             
@@ -3954,11 +4069,13 @@
                     loadOvertimeHistory();
                 } else if (sectionName === 'Salary') {
                     loadKaryawanPayslipHistory();
+                } else if (sectionName === 'Profile') { // <-- (TAMBAHKAN 2)
+                    loadKaryawanProfileData(); // Panggil fungsi baru
                 }
             }
             
             // 3. Atur tombol footer yang aktif
-            if (sectionName !== 'History') {
+            if (sectionName !== 'History' && sectionName !== 'Profile') {
                setActiveFooterTab(sectionName);
             }
         }
@@ -4354,8 +4471,16 @@
                 else if (status === 'Alpa') totalAlpa++;
                 // 'Libur' tidak dihitung di statistik
 
+                // (BARU) Siapkan data untuk modal
+                const safeName = profile.full_name.replace(/'/g, "\\'");
+                const attId = att ? `'${att.id}'` : 'null'; // ID absensi (jika ada)
+                const clockInVal = att ? formatTimeForInput(att.clock_in) : ''; // Waktu clock-in (jika ada)
+                const clockOutVal = att ? formatTimeForInput(att.clock_out) : ''; // Waktu clock-out (jika ada)
+
                 html += `
-                    <tr data-id="${att ? att.id : 'null'}" data-user-id="${profile.id}">
+                    <tr class="cursor-pointer hover:bg-gray-50 transition-colors" 
+                        onclick="openModal(${attId}, '${profile.id}', '${safeName}', '${status}', '${clockInVal}', '${clockOutVal}')"
+                    >
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${profile.full_name}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockIn}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${clockOut}</td>
@@ -7419,6 +7544,18 @@
             document.getElementById('overtimeRequestForm').addEventListener('submit', handleNewOvertimeRequest);
         } catch (e) {
             console.warn("Form pengajuan lembur (overtimeRequestForm) tidak ditemukan.");
+        }
+
+        // (BARU) Event listener untuk Form Pengajuan Lembur Karyawan
+        try {
+            document.getElementById('overtimeRequestForm').addEventListener('submit', handleNewOvertimeRequest);
+            
+            // ===== TAMBAHKAN EVENT LISTENER BARU DI SINI =====
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+            // ===============================================
+            
+        } catch (e) {
+            console.warn("Form pengajuan lembur (overtimeRequestForm) atau changePasswordForm tidak ditemukan.");
         }
 
     </script>
