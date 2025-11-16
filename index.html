@@ -112,6 +112,9 @@
         <div id="loginView" class="view flex flex-grow items-center justify-center p-4">
             <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 sm:p-10">
                 <div class="text-center mb-8">
+                    <!-- ===== TAMBAHKAN KODE LOGO DI SINI ===== -->
+                    <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" alt="Logo Hadirin.org" class="w-24 mx-auto mb-4">
+                    <!-- ======================================= -->
                     <h1 class="text-3xl font-bold text-blue-600">Hadirin.org</h1>
                     <p class="text-gray-500 mt-2">Aplikasi Manajemen Kehadiran</p>
                 </div>
@@ -186,6 +189,9 @@
                     <!-- Karyawan Absensi Section -->
                     <div id="karyawanSection_Absensi" class="mt-2 p-6 bg-white rounded-xl shadow-lg transition-all duration-300" style="display: block;">
                         
+                        <!-- ===== TAMBAHKAN KODE LOGO DI SINI ===== -->
+                        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" alt="Logo Hadirin.org" class="w-24 mx-auto mb-4">
+                        <!-- ======================================= -->
                         <!-- JAM (DIPUSATKAN) -->
                         <!-- Gunakan div dengan w-full dan text-center untuk memusatkan jam -->
                         <div class="w-full text-center mt-3 mb-3">
@@ -6990,7 +6996,7 @@
             let employeeQuery = _supabase
                 .from('profiles')
                 .select('id, full_name, workhours( schedule )') // (REVISI: Ambil workhours)
-                .eq('role', 'karyawan');
+                .in('role', ['karyawan', 'company_admin']);
                 
             if (globalProfile.role !== 'super_admin') {
                 employeeQuery = employeeQuery.eq('company_id', companyId);
