@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Memuat Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Library untuk konversi data ke XLSX (Excel) -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -606,6 +608,12 @@
                                 <ion-icon name="calendar-outline" class="text-lg mr-3"></ion-icon> Rekap Kehadiran
                             </button>
                         </li>
+                        <li class="mb-1">
+                            <a href="#" onclick="showAdminSection('statistics')" id="menuStatistics" class="flex items-center p-3 rounded-lg hover:bg-blue-700 hover:text-white transition duration-150">
+                                <ion-icon name="stats-chart-outline" class="mr-3 text-2xl"></ion-icon>
+                                Statistik Kehadiran
+                            </a>
+                        </li>
                         <li>
                             <button id="menuMasters" onclick="showAdminSection('masters')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="archive-outline" class="text-lg mr-3"></ion-icon> Master Data
@@ -870,19 +878,22 @@
                                             <option value="">-- Semua Status --</option>
                                             <option value="Hadir">Hadir</option>
                                             <option value="Terlambat">Terlambat</option>
-                                            <option value="Izin">Izin</option>
-                                            <option value="Sakit">Sakit</option>
+                                            <option value="Izin / Cuti">Izin / Cuti</option>
                                             <option value="Alpa">Alpa</option>
                                         </select>
                                     </div>
                                 </div>
                                 
-                                <button id="rekapFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium mb-8">
-                                    <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Rekap
-                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                                    <button id="rekapFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium mb-2">
+                                        <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Rekap
+                                    </button>
+                                    <button id="rekapDownloadButton" onclick="exportAttendanceData()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium mb-2 disabled:opacity-50" disabled>
+                                        <ion-icon name="download-outline" class="text-lg mr-1"></ion-icon> Download Data (.xlsx)
+                                    </button>
+                                </div>    
                                 
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-4">Hasil Rekap</h3>
-
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-t pt-2">Hasil Rekap</h3>
                                 <!-- KARTU STATISTIK REKAP (BARU) -->
                                 <!-- Container ini akan 'hidden' dan baru muncul setelah data dimuat -->
                                 <div id="rekapSummaryContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 hidden">
@@ -924,6 +935,50 @@
                                 </div>
                             </div>
                         </div> <!-- End sectionRekap -->
+
+                        <!-- SECTION 5: STATISTIK KEHADIRAN KUMULATIF (BARU) -->
+                        <!-- ============================================== -->
+                        <div id="sectionStatistics" class="hidden">
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistik Kehadiran Karyawan</h2>
+
+                                <!-- Filter Tanggal -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 border-b pb-4">
+                                    <div class="md:col-span-1">
+                                        <label for="statsStartDate" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                        <input type="date" id="statsStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label for="statsEndDate" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                        <input type="date" id="statsEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div class="md:col-span-1 flex items-end">
+                                        <button id="statsFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                                            <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Statistik
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tabel Statistik Hasil -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky-col">Karyawan</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hadir</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Terlambat</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Izin / Cuti</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Alpa</th>
+                                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Hari Kerja</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200" id="statsTableBody">
+                                            <tr><td colspan="6" class="text-center py-8 text-gray-500">Pilih rentang tanggal untuk melihat statistik.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- SECTION 5: PENGAJUAN KOREKSI KEHADIRAN (BARU) -->
                         <div id="sectionReqattendance" style="display: none;">
@@ -1444,6 +1499,49 @@
             <!-- MODALS (DIPINDAHKAN KE LUAR TAMPILAN)                         -->
             <!-- =============================================================== -->
 
+            <!-- Modal Konfirmasi Lokasi Absen (BARU) -->
+            <div id="locationConfirmModal" class="fixed z-30 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeLocationConfirmModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="locationConfirmModalTitle">
+                                Konfirmasi Lokasi Absensi
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600 mb-4">
+                                    Lokasi Anda saat ini telah didapatkan. Mohon pastikan titik pada peta sudah sesuai dengan posisi Anda.
+                                </p>
+
+                                <!-- Kontainer Peta -->
+                                <div class="mb-4">
+                                    <div id="mapIframeContainer" class="w-full h-64 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                                        <!-- Google Maps Iframe akan dimasukkan di sini oleh JS -->
+                                        <p class="text-gray-500">Memuat peta...</p>
+                                    </div>
+                                </div>
+
+                                <!-- Info Lokasi -->
+                                <p class="text-xs text-gray-500 mb-4">
+                                    Koordinat: <strong id="locationConfirmCoords">Memuat...</strong>
+                                </p>
+
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" id="confirmClockInButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Lanjutkan Clock-In
+                            </button>
+                            <button type="button" onclick="closeLocationConfirmModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                Batalkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Modal Ubah Status Kehadiran -->
             <div id="statusModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -1722,6 +1820,9 @@
                             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" id="lateReasonSubmitButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
                                     Kirim Alasan & Clock-In
+                                </button>
+                                <button type="button" onclick="closeLateReasonModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                                    Batalkan
                                 </button>
                             </div>
                         </form>
@@ -2246,6 +2347,7 @@
         let modalAttendanceData = {}; // Data absensi yang sedang diedit di modal Admin
         let allEmployees = []; // Digunakan untuk mengisi dropdown filter
         let timeoffBalancesCache = {}; // (BARU) Cache untuk saldo cuti karyawan
+        let currentRekapData = [];
         
         // DOM ELEMENTS
         const loadingView = document.getElementById('loadingView');
@@ -2460,10 +2562,10 @@
         // FUNGSI NAVIGASI SIDEBAR ADMIN (DIPERBAIKI UNTUK ACCORDION)
         function showAdminSection(sectionName) {
             // Daftar semua section 
-            const sections = ['summary', 'employees', 'employeesalaries', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime', 'masters', 'workhours', 'timeoffbalance', 'payroll'];
+            const sections = ['summary', 'employees', 'employeesalaries', 'companies', 'rekap', 'reqattendance', 'reqtimeoff', 'reqovertime', 'masters', 'workhours', 'timeoffbalance', 'payroll', 'statistics'];
             
             // Daftar semua tombol menu (termasuk sub-menu)
-            const menus = ['menuSummary', 'menuEmployees', 'menuEmployeeSalaries', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests', 'menuMasters', 'menuWorkhours', 'menuTimeoffBalance', 'menuPayroll'];
+            const menus = ['menuSummary', 'menuEmployees', 'menuEmployeeSalaries', 'menuCompanies', 'menuRekap', 'menuReqAttendance', 'menuReqTimeoff', 'menuReqOvertime', 'menuRequests', 'menuMasters', 'menuWorkhours', 'menuTimeoffBalance', 'menuPayroll', 'menuStatistics'];
             
             // Elemen Accordion
             const requestsMenu = document.getElementById('menuRequests');
@@ -2538,6 +2640,8 @@
             } else if (sectionName === 'rekap') { 
                 initializeRekapFilters();
                 document.getElementById('rekapTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Silakan atur filter dan klik "Tampilkan Rekap".</td></tr>';
+            } else if (sectionName === 'statistics') {
+                initializeStatsFilters();
             } else if (sectionName === 'reqattendance') { 
                 initializeReqAttFilters(); 
             } else if (sectionName === 'reqtimeoff') { 
@@ -4243,105 +4347,111 @@
         }
 
         async function doClockIn() {
+            karyawanClockInButton.disabled = true; // Nonaktifkan tombol saat memulai
+            showMessage("Memeriksa jadwal dan status kehadiran...", 'info');
+            
             const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-            const todayName = dayNames[new Date().getDay()];
-            const schedule = globalProfile.workhours?.schedule;
+            const now = new Date();
+            const todayName = dayNames[now.getDay()];
             const todayDate = getTodayDateString();
 
-            // BARU: 1. Cek Hari Libur Nasional (Prioritas Tertinggi)
-            const isMasterHoliday = await isTodayHoliday(todayDate);
+            // 1. Cek Data Absensi Hari Ini (Jika sudah clock-in, hentikan)
+            const isAlreadyClockedIn = await checkExistingAttendance(todayDate);
+            if (isAlreadyClockedIn) {
+                showMessage(`Anda sudah Clock-In hari ini!`, 'error');
+                karyawanClockInButton.disabled = true;
+                return;
+            }
 
+            // 2. Cek Hari Libur Nasional (Prioritas Tertinggi)
+            const isMasterHoliday = await isTodayHoliday(todayDate);
             if (isMasterHoliday) {
                 showMessage(`Gagal Clock-In: Hari ini adalah Hari Libur Nasional/Khusus.`, 'error');
                 karyawanClockInButton.disabled = false; 
                 return;
             }
 
-            // 2. Cek Jadwal Kerja (Workhours)
+            // 3. Cek Jadwal Kerja (Workhours)
+            const schedule = globalProfile.workhours?.schedule;
             if (schedule && schedule[todayName]?.is_off) {
-                // JIKA HARI INI HARI LIBUR
                 showMessage(`Gagal Clock-In: Hari ini (${todayName}) adalah Hari Libur sesuai jadwal Anda.`, 'error');
-                karyawanClockInButton.disabled = false; // Aktifkan tombol kembali
-                return; // Hentikan proses
-            }
-            
-            karyawanClockInButton.disabled = true;
-            showMessage("Meminta izin lokasi...", 'info');
-            const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
-
-            let locationString = 'Lokasi gagal didapatkan';
-            let locationCoords = null;
-            
-            try {
-                locationCoords = await getCurrentLocation();
-                locationString = `${locationCoords.latitude}, ${locationCoords.longitude}`;
-                locationDisplayElement.textContent = `Lokasi: ${locationString}`;
-            } catch (e) {
-                showMessage(`Gagal Absen: ${e.message}`, 'error');
-                karyawanClockInButton.disabled = false;
-                locationDisplayElement.textContent = `Lokasi: ${e.message.split('.')[0]}`;
+                karyawanClockInButton.disabled = false; 
                 return;
             }
-
-            const now = new Date();
             
-            // --- LOGIKA CEK KETERLAMBATAN (BARU - DINAMIS) ---
+            // 4. Cek Keterlambatan (DAPATKAN STATUS HADIR / TERLAMBAT)
             let isLate = false;
+            let attendanceStatus = 'Hadir'; // Default
+            
             try {
-                // 1. Tentukan nama hari ini (Sesuai key JSON: "Senin", "Selasa", ...)
-                const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-                const todayName = dayNames[now.getDay()]; // cth: "Jumat"
-
-                // 2. Ambil jadwal kerja dari globalProfile (yang dimuat saat login)
-                const schedule = globalProfile.workhours?.schedule;
-
-                if (!globalProfile.workhours || !schedule || !schedule[todayName]) {
-                    // Karyawan tidak punya jam kerja / tidak ada aturan untuk hari ini
-                    console.warn(`Tidak ada jadwal kerja (workhour) ditemukan untuk ${globalProfile.full_name} pada hari ${todayName}. Keterlambatan tidak dihitung.`);
-                    // Anggap tidak terlambat agar tidak error
-                    isLate = false;
+                if (!globalProfile.workhours || !schedule || !schedule[todayName] || !schedule[todayName].start) {
+                    console.warn(`Tidak ada jadwal kerja (workhour) ditemukan untuk hari ${todayName}. Keterlambatan tidak dihitung.`);
                 } else {
                     const todayRule = schedule[todayName];
-
-                    // 3. Cek jika hari ini libur (is_off)
-                    if (todayRule.is_off) {
-                        // Tidak terlambat jika jadwalnya hari libur
-                        isLate = false;
-                    } else if (todayRule.start) {
-                        // 4. Bandingkan jam
-                        const [hours, minutes] = todayRule.start.split(':').map(Number);
-                        const deadline = new Date(now); // Salin objek 'now'
-                        deadline.setHours(hours, minutes, 0, 0); // Atur jam deadline (cth: 08:30:00.000)
-
-                        if (now > deadline) {
-                            isLate = true; // Karyawan terlambat!
-                        }
-                    } else {
-                        // Ada jadwal hari ini tapi tidak ada jam 'start'
-                        console.warn(`Jadwal hari ${todayName} tidak memiliki jam 'start'. Keterlambatan tidak dihitung.`);
-                        isLate = false;
+                    const [hours, minutes] = todayRule.start.split(':').map(Number);
+                    const deadline = new Date(now); 
+                    deadline.setHours(hours, minutes, 0, 0); 
+                    
+                    if (now > deadline) {
+                        isLate = true; 
+                        attendanceStatus = 'Terlambat';
                     }
                 }
             } catch (e) {
                 console.error("Gagal memproses logika jam kerja (workhours):", e.message);
-                // Jika proses gagal = anggap tidak terlambat agar tidak error
-                isLate = false;
             }
-            // --- AKHIR LOGIKA CEK KETERLAMBATAN ---
-
+            
+            // 5. Jika Terlambat, buka Modal Alasan
             if (isLate) {
-                // JIKA TERLAMBAT: Buka modal
-                showMessage("Anda terlambat! Harap isi alasan.", 'info');
-                // Simpan data sementara untuk digunakan saat modal disubmit
-                tempClockInData = { now, locationString }; 
+                // Simpan data status (Terlambat) untuk digunakan saat modal alasan di-submit
+                tempClockInData = { status: attendanceStatus }; 
                 openLateReasonModal();
-                // Tombol clock-in akan tetap 'disabled' sampai modal disubmit
-            } else {
-                // JIKA TEPAT WAKTU: Langsung insert
-                showMessage("Lokasi didapatkan. Memproses Clock-In...", 'info');
-                await insertAttendance(now, locationString, 'Hadir', null);
-                // Tombol akan di-handle oleh loadKaryawanAttendanceStatus (menjadi disabled)
+                // Tombol Clock-In tetap disabled (akan di-handle oleh modal alasan)
+                return; 
             }
+            
+            // 6. Jika Hadir Tepat Waktu, langsung ke Tahap 2: Lokasi
+            await processClockInLocation(attendanceStatus); 
+        }
+        
+        // FUNGSI BARU: TAHAP 2: PROSES LOKASI DAN TAMPILKAN PETA
+        async function processClockInLocation(status, description = null) { // (BARU) Tambahkan argumen description
+            showMessage("Meminta izin lokasi untuk peta...", 'info');
+            const locationDisplayElement = document.getElementById('karyawanLocationDisplay');
+            locationDisplayElement.textContent = `Lokasi: Mencari...`;
+
+            let locationCoords = null;
+            try {
+                locationCoords = await getCurrentLocation();
+                
+                // Tampilkan koordinat di display
+                locationDisplayElement.textContent = `Lokasi: ${locationCoords.latitude}, ${locationCoords.longitude}`;
+                
+                // Buka modal konfirmasi lokasi
+                openLocationConfirmModal(locationCoords, status, description); // (BARU) Kirim description
+                
+            } catch (e) {
+                showMessage(`Gagal Absen: ${e.message}`, 'error');
+                karyawanClockInButton.disabled = false; // Aktifkan kembali
+                locationDisplayElement.textContent = `Lokasi: ${e.message.split('.')[0]}`;
+                return;
+            }
+        }
+        
+        // FUNGSI BARU: Cek Kehadiran (Helper)
+        async function checkExistingAttendance(dateString) {
+            const startOfDay = new Date(dateString + 'T00:00:00').toISOString();
+            const endOfDay = new Date(dateString + 'T23:59:59').toISOString();
+            
+            const { data, error } = await _supabase
+                .from('attendance')
+                .select('id')
+                .eq('user_id', globalProfile.id)
+                .gte('created_at', startOfDay)
+                .lt('created_at', endOfDay)
+                .limit(1);
+            
+            return data && data.length > 0;
         }
 
         async function doClockOut() {
@@ -4373,6 +4483,74 @@
 
         karyawanClockInButton.addEventListener('click', doClockIn);
         karyawanClockOutButton.addEventListener('click', doClockOut);
+
+        // Data sementara untuk Konfirmasi Lokasi (BARU)
+        let tempLocationData = {}; 
+
+        // 1. Membuka Modal Konfirmasi Lokasi
+        function openLocationConfirmModal(coords, status, description = null) {
+            // Simpan koordinat dan status (Hadir/Terlambat) sementara
+            tempLocationData = {
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                status: status,
+                now: new Date(),
+                description: description // Termasuk alasan jika datang dari modal Keterlambatan
+            };
+
+            const coordsString = `${coords.latitude}, ${coords.longitude}`;
+            document.getElementById('locationConfirmCoords').textContent = coordsString;
+
+            // Buat URL embed Google Maps 
+            const mapUrl = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&z=15&output=embed`;
+            
+            // Masukkan iframe ke dalam container
+            document.getElementById('mapIframeContainer').innerHTML = `
+                <iframe
+                    width="100%"
+                    height="100%"
+                    frameborder="0"
+                    style="border:0"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="${mapUrl}"
+                    allowfullscreen
+                ></iframe>
+            `;
+
+            document.getElementById('locationConfirmModal').classList.remove('hidden');
+        }
+
+        // 2. Menutup Modal Konfirmasi Lokasi
+        function closeLocationConfirmModal() {
+            document.getElementById('locationConfirmModal').classList.add('hidden');
+            tempLocationData = {}; // Hapus data sementara
+            karyawanClockInButton.disabled = false; // Aktifkan lagi tombol Clock-In
+        }
+
+        // 3. Menangani Tombol 'Lanjutkan Clock-In' (Final Action)
+        async function handleConfirmClockIn() {
+            const { latitude, longitude, status, now, description } = tempLocationData;
+            
+            if (!now || !latitude) {
+                showMessage("Gagal: Data lokasi tidak lengkap.", 'error');
+                closeLocationConfirmModal();
+                return;
+            }
+            
+            const locationString = `${latitude}, ${longitude}`;
+            
+            showMessage(`Lokasi dikonfirmasi. Memproses Clock-In (${status})...`, 'info');
+            document.getElementById('confirmClockInButton').disabled = true;
+
+            // Panggil fungsi insertAttendance dengan status yang sudah ditentukan
+            const success = await insertAttendance(now, locationString, status, description);
+
+            if (success) {
+                closeLocationConfirmModal();
+            } else {
+                 document.getElementById('confirmClockInButton').disabled = false;
+            }
+        }
 
         // ===============================================================
         // 3. LOGIKA ADMIN (adminView)
@@ -4643,6 +4821,7 @@
             const employeeIdFilter = document.getElementById('rekapEmployeeFilter').value;
             const statusFilter = document.getElementById('rekapStatusFilter').value;
             const summaryContainer = document.getElementById('rekapSummaryContainer');
+            const downloadButton = document.getElementById('rekapDownloadButton'); // BARU
 
             if (!monthYear) {
                 showMessage("Harap pilih periode bulan.", 'error');
@@ -4650,8 +4829,10 @@
             }
 
             rekapTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Mencari data...</td></tr>';
-            summaryContainer.classList.add('hidden'); // Sembunyikan statistik
-
+            summaryContainer.classList.add('hidden'); 
+            downloadButton.disabled = true; // Nonaktifkan tombol download saat mencari
+            currentRekapData = []; // Reset data
+            
             // 1. Tentukan rentang tanggal dari input bulan
             const [year, monthIdx] = monthYear.split('-').map(n => parseInt(n, 10));
             const month = monthIdx - 1; // JavaScript month index (0-11)
@@ -4661,12 +4842,11 @@
             const daysInMonth = endDate.getDate();
 
             const startISO = startDate.toISOString();
-            // Gunakan tgl 1 bulan depan untuk filter .lt()
             const endISO = new Date(year, month + 1, 1).toISOString(); 
 
             // 2. Ambil SEMUA karyawan yang relevan (sesuai filter)
             let employeeQuery = _supabase.from('profiles')
-                .select('id, full_name, workhours( schedule )'); // Ambil jadwal kerja
+                .select('id, full_name, workhours( schedule )'); 
                 
             if (globalProfile.role !== 'super_admin') {
                 employeeQuery = employeeQuery.eq('company_id', globalProfile.company_id);
@@ -4710,13 +4890,19 @@
             const attendanceMap = new Map();
             attendanceData.forEach(att => {
                 const dateKey = getTodayDateString(new Date(att.created_at));
-                attendanceMap.set(`${att.user_id}|${dateKey}`, att);
+                attendanceMap.set(`${att.user_id}|${dateKey}`, {
+                    status: att.attendance_status,
+                    clock_in: formatTime(att.clock_in),
+                    clock_out: formatTime(att.clock_out),
+                    ket: att.description || '-'
+                });
             });
 
             // 6. Loop (Hari -> Karyawan) untuk membangun tabel
             let html = '';
             let countHadir = 0, countTerlambat = 0, countIzin = 0, countAlpa = 0;
             const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const rekapDataForExport = []; // Array untuk export
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const currentDate = new Date(year, month, day);
@@ -4729,11 +4915,9 @@
                     const schedule = profile.workhours?.schedule;
                     const todayName = dayNames[dayOfWeek]; // "Senin", "Selasa", ...
                     
-                    // Cek jadwal kerja (shift)
                     const isShiftOff = (schedule && schedule[todayName] && schedule[todayName].is_off === true);
                     const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                     
-                    // Cek data absensi di Peta
                     const att = attendanceMap.get(`${profile.id}|${dateKey}`);
                     
                     let status = 'Alpa';
@@ -4741,16 +4925,14 @@
                     let clockIn = '-', clockOut = '-', ket = '-';
 
                     if (att) {
-                        // Karyawan punya data absensi
-                        status = att.attendance_status;
+                        status = att.status;
                         statusClass = getStatusClass(status);
-                        clockIn = formatTime(att.clock_in);
-                        clockOut = formatTime(att.clock_out);
-                        ket = att.description || '-';
+                        clockIn = att.clock_in;
+                        clockOut = att.clock_out;
+                        ket = att.ket;
                     } else if (isMasterHoliday || isShiftOff || isWeekend) {
-                        // Karyawan tidak ada data, tapi hari libur
                         status = 'Libur';
-                        statusClass = getStatusClass('Izin'); // Tampilan visual seperti Izin
+                        statusClass = getStatusClass('Izin'); 
                     }
                     
                     // Logika Penghitungan Statistik
@@ -4759,7 +4941,22 @@
                     else if (status === 'Izin / Cuti') countIzin++;
                     else if (status === 'Alpa') countAlpa++;
 
-                    // Logika Filter Status (Tampilkan jika cocok)
+                    // Simpan data mentah untuk Export
+                    const rowData = {
+                        tanggal: dateKey,
+                        nama_karyawan: profile.full_name,
+                        jam_masuk: clockIn,
+                        jam_pulang: clockOut,
+                        status: status,
+                        keterangan: ket
+                    };
+                    
+                    // Hanya simpan data yang memenuhi filter status (untuk tombol download)
+                    if (statusFilter === '' || statusFilter === status) {
+                        rekapDataForExport.push(rowData); 
+                    }
+
+                    // Logika Filter Status (Tampilkan di tabel jika cocok)
                     if (statusFilter === '' || statusFilter === status) {
                         html += `
                             <tr>
@@ -4777,21 +4974,227 @@
                 });
             }
             
+            // 7. Update UI Akhir
             if (html === '') {
                  html = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data ditemukan untuk filter status ini.</td></tr>';
                  summaryContainer.classList.add('hidden');
+                 downloadButton.disabled = true;
             } else {
-                // Update kartu statistik
                 document.getElementById('rekapTotalHadir').textContent = countHadir;
                 document.getElementById('rekapTotalTerlambat').textContent = countTerlambat;
                 document.getElementById('rekapTotalIzin').textContent = countIzin;
                 document.getElementById('rekapTotalAlpa').textContent = countAlpa;
                 summaryContainer.classList.remove('hidden');
+                
+                // Aktifkan tombol download dan simpan data
+                downloadButton.disabled = false;
+                currentRekapData = rekapDataForExport; // Simpan data yang sudah difilter
             }
 
             rekapTableBody.innerHTML = html;
         }
+
+        // --- FUNGSI BARU: EXPORT KE EXCEL/XLSX ---
+        function exportAttendanceData() {
+            if (currentRekapData.length === 0) {
+                showMessage("Tidak ada data untuk diunduh.", 'error');
+                return;
+            }
+            
+            showMessage("Mempersiapkan data untuk diunduh...", 'info');
+
+            // 1. Konversi array JSON ke format Sheet (menggunakan xlsx.js)
+            const ws = XLSX.utils.json_to_sheet(currentRekapData);
+            
+            // 2. Buat Workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rekap_Kehadiran");
+            
+            // 3. Tentukan Nama File
+            const monthYear = document.getElementById('rekapMonthFilter').value;
+            const employeeFilter = document.getElementById('rekapEmployeeFilter');
+            const employeeName = employeeFilter.value 
+                ? employeeFilter.options[employeeFilter.selectedIndex].text.replace('-- ', '') 
+                : 'Semua_Karyawan';
+            
+            const fileName = `Rekap_Absensi_${employeeName}_${monthYear}.xlsx`;
+            
+            // 4. Unduh File
+            XLSX.writeFile(wb, fileName);
+            showMessage(`File ${fileName} berhasil diunduh.`, 'success');
+        }
         
+        // --- LOGIKA STATISTIK KEHADIRAN KUMULATIF (BARU) ---
+
+        // Helper: Inisialisasi filter tanggal dan event listener
+        function initializeStatsFilters() {
+            const today = getTodayDateString();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            document.getElementById('statsEndDate').value = today;
+            document.getElementById('statsStartDate').value = getTodayDateString(thirtyDaysAgo);
+
+            // Tambahkan event listener untuk tombol filter
+            document.getElementById('statsFilterButton').removeEventListener('click', loadStatsData);
+            document.getElementById('statsFilterButton').addEventListener('click', loadStatsData);
+        }
+
+        // Fungsi utama untuk memuat dan menghitung statistik
+        async function loadStatsData() {
+            const statsTableBody = document.getElementById('statsTableBody');
+            const startDateStr = document.getElementById('statsStartDate').value;
+            const endDateStr = document.getElementById('statsEndDate').value;
+            const filterButton = document.getElementById('statsFilterButton');
+
+            if (!startDateStr || !endDateStr) {
+                showMessage("Harap isi tanggal mulai dan tanggal akhir.", 'error');
+                return;
+            }
+
+            filterButton.disabled = true;
+            statsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Mencari data statistik...</td></tr>';
+            
+            // Konversi tanggal ke objek Date (menggunakan format lokal untuk menghindari TZ issue)
+            const startDate = new Date(startDateStr + 'T00:00:00');
+            const endDate = new Date(endDateStr + 'T00:00:00');
+            
+            // Pastikan tanggal akhir tidak lebih awal dari tanggal mulai
+            if (startDate > endDate) {
+                showMessage("Tanggal Mulai tidak boleh setelah Tanggal Akhir.", 'error');
+                filterButton.disabled = false;
+                return;
+            }
+
+            // 1. Tentukan rentang ISO untuk query
+            const startISO = startDate.toISOString();
+            const endISO = new Date(endDate.getTime() + 24 * 60 * 60 * 1000).toISOString(); // Sampai akhir hari terakhir
+
+            // 2. Ambil Semua Karyawan (Admin Company/Super Admin)
+            let employeeQuery = _supabase.from('profiles')
+                .select('id, full_name, role, workhours( schedule )')
+                .in('role', ['karyawan', 'company_admin']) // Termasuk Admin Company
+                .order('full_name', { ascending: true });
+                
+            if (globalProfile.role !== 'super_admin') {
+                employeeQuery = employeeQuery.eq('company_id', globalProfile.company_id);
+            }
+            const { data: profiles, error: profilesError } = await employeeQuery;
+
+            if (profilesError || !profiles || profiles.length === 0) {
+                statsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada karyawan ditemukan.</td></tr>';
+                filterButton.disabled = false;
+                return;
+            }
+            const employeeIds = profiles.map(p => p.id);
+
+            // 3. Ambil Semua Data Absensi dalam rentang
+            const { data: attendanceData, error: attendanceError } = await _supabase
+                .from('attendance')
+                .select('user_id, attendance_status, created_at')
+                .in('user_id', employeeIds)
+                .gte('created_at', startISO)
+                .lt('created_at', endISO);
+
+            if (attendanceError) {
+                statsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat absensi: ${attendanceError.message}</td></tr>`;
+                filterButton.disabled = false;
+                return;
+            }
+
+            // 4. Ambil Semua Hari Libur Nasional
+            const { data: holidays } = await _supabase.from('holidays')
+                .select('holiday_date')
+                .or(`company_id.eq.${globalProfile.company_id},company_id.is.null`)
+                .gte('holiday_date', startDateStr)
+                .lte('holiday_date', endDateStr);
+                
+            const holidayMap = {};
+            if (holidays) holidays.forEach(h => { holidayMap[h.holiday_date] = true; });
+
+            // 5. Hitung Statistik Kumulatif
+            const employeeStats = profiles.reduce((acc, profile) => {
+                acc[profile.id] = { 
+                    name: profile.full_name,
+                    hadir: 0, 
+                    terlambat: 0, 
+                    izinCuti: 0, 
+                    alpa: 0, 
+                    totalWorkDays: 0,
+                    schedule: profile.workhours?.schedule
+                };
+                return acc;
+            }, {});
+
+            const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            
+            // Loop Harian: Lakukan loop dari tanggal mulai sampai tanggal akhir
+            const loopDate = new Date(startDate.getTime());
+            while (loopDate <= endDate) {
+                const dateKey = getTodayDateString(loopDate);
+                const dayOfWeek = loopDate.getDay(); 
+                const todayName = dayNames[dayOfWeek];
+                
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const isMasterHoliday = holidayMap[dateKey] === true;
+
+                profiles.forEach(profile => {
+                    const employeeId = profile.id;
+                    const stats = employeeStats[employeeId];
+                    const schedule = stats.schedule;
+                    
+                    const isShiftOff = (schedule && schedule[todayName] && schedule[todayName].is_off === true);
+                    
+                    // Cek apakah ini seharusnya HARI KERJA
+                    if (!isMasterHoliday && !isShiftOff && !isWeekend) {
+                        stats.totalWorkDays++;
+                    }
+                });
+
+                loopDate.setDate(loopDate.getDate() + 1); // Lanjut ke hari berikutnya
+            }
+
+            // Loop Absensi: Ambil data absensi yang ada
+            attendanceData.forEach(att => {
+                const stats = employeeStats[att.user_id];
+                if (!stats) return; // Skip jika profil tidak ditemukan (data usang)
+                
+                if (att.attendance_status === 'Hadir') {
+                    stats.hadir++;
+                } else if (att.attendance_status === 'Terlambat') {
+                    stats.terlambat++;
+                } else if (att.attendance_status === 'Izin / Cuti' || att.attendance_status === 'Sakit') {
+                    stats.izinCuti++;
+                }
+            });
+
+            // Hitung Alpa: Alpa = Total Hari Kerja - (Hadir + Terlambat + Izin/Cuti)
+            Object.values(employeeStats).forEach(stats => {
+                const totalPresentDays = stats.hadir + stats.terlambat + stats.izinCuti;
+                stats.alpa = Math.max(0, stats.totalWorkDays - totalPresentDays);
+                stats.hadir += stats.terlambat; // Gabungkan Hadir dan Terlambat
+                stats.terlambat = 0; // Reset Terlambat setelah digabungkan
+            });
+
+            // 6. Render Tabel
+            let html = '';
+            Object.values(employeeStats).forEach(stats => {
+                html += `
+                    <tr>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 sticky-col">${stats.name}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 text-right">${stats.hadir}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 text-right">${stats.terlambat}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 text-right">${stats.izinCuti}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 text-right font-semibold text-red-600">${stats.alpa}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">${stats.totalWorkDays}</td>
+                    </tr>
+                `;
+            });
+            
+            statsTableBody.innerHTML = html;
+            filterButton.disabled = false;
+        }
+
         // --- FUNGSI BARU: INIT FILTER PENGAJUAN KOREKSI KEHADIRAN (DITINGKATKAN) ---
         async function initializeReqAttFilters() {
             const employeeFilter = document.getElementById('reqAttEmployeeFilter');
@@ -6027,6 +6430,7 @@
         function closeLateReasonModal() {
             lateReasonModal.classList.add('hidden');
             tempClockInData = {}; // Hapus data sementara
+            karyawanClockInButton.disabled = false;
         }
 
         // Fungsi baru untuk menangani INSERT (dipanggil oleh doClockIn atau submit modal)
@@ -6411,28 +6815,26 @@
         // Event listener untuk Modal Alasan Keterlambatan (BARU)
         lateReasonForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const saveButton = document.getElementById('lateReasonSubmitButton');
-            saveButton.disabled = true;
+            const submitButton = document.getElementById('lateReasonSubmitButton');
+            submitButton.disabled = true;
             
             const description = lateReasonDescription.value;
-            const { now, locationString } = tempClockInData;
+            const { status } = tempClockInData; // Ambil status yang sudah divalidasi (Terlambat)
 
-            if (!now || !locationString) {
-                showMessage("Data absensi tidak ditemukan. Silakan coba lagi.", 'error');
-                saveButton.disabled = false;
+            if (!status) {
+                showMessage("Kesalahan alur: Status tidak ditemukan.", 'error');
+                submitButton.disabled = false;
                 return;
             }
-
-            // Panggil fungsi insert terpusat dengan status 'Terlambat'
-            const success = await insertAttendance(now, locationString, 'Terlambat', description);
-
-            if (success) {
-                closeLateReasonModal();
-            }
-            // Tombol clock-in akan tetap disabled (karena sudah absen)
-            // Tombol submit modal akan di-enable lagi saat modal dibuka (di openLateReasonModal)
-            saveButton.disabled = false; 
-        });       
+            
+            // 1. Lanjut ke Tahap 2 (Pencarian Lokasi/Peta), dengan membawa STATUS dan DESKRIPSI
+            showMessage("Alasan diterima. Melanjutkan ke Tahap 2 (Pencarian Lokasi)...", 'info');
+            closeLateReasonModal(); // Tutup modal alasan
+            await processClockInLocation(status, description); // Lanjut ke proses lokasi
+            
+            // Tombol submit akan diaktifkan lagi jika ada error di processClockInLocation
+            submitButton.disabled = false;
+        });
 
         // Event listener untuk Filter Pengajuan Izin/Cuti (BARU)
         try {
@@ -7556,6 +7958,18 @@
             // ===== TAMBAHKAN EVENT LISTENER BARU DI SINI =====
             document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
             // ===============================================
+            
+        } catch (e) {
+            console.warn("Form pengajuan lembur (overtimeRequestForm) atau changePasswordForm tidak ditemukan.");
+        }
+
+        try {
+            document.getElementById('overtimeRequestForm').addEventListener('submit', handleNewOvertimeRequest);
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+            
+            // ===== TAMBAHKAN LISTENER KONFIRMASI LOKASI DI SINI =====
+            document.getElementById('confirmClockInButton').addEventListener('click', handleConfirmClockIn);
+            // =======================================================
             
         } catch (e) {
             console.warn("Form pengajuan lembur (overtimeRequestForm) atau changePasswordForm tidak ditemukan.");
