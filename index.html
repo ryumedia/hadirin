@@ -5172,8 +5172,6 @@
             Object.values(employeeStats).forEach(stats => {
                 const totalPresentDays = stats.hadir + stats.terlambat + stats.izinCuti;
                 stats.alpa = Math.max(0, stats.totalWorkDays - totalPresentDays);
-                stats.hadir += stats.terlambat; // Gabungkan Hadir dan Terlambat
-                stats.terlambat = 0; // Reset Terlambat setelah digabungkan
             });
 
             // 6. Render Tabel
@@ -7978,3 +7976,4 @@
     </script>
 </body>
 </html>
+
