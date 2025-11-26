@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeri Full Screen 8 Halaman</title>
+    <!-- Link Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden; /* Mencegah scroll */
+            font-family: Arial, sans-serif;
+            background-color: #000;
+        }
+
+        /* Container Utama */
+        .slider-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Style untuk Slide */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* Sembunyikan slide secara default */
+            transition: opacity 0.5s ease-in-out; /* Efek transisi halus */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* --- PERBAIKAN: Agar gambar IMG pas di layar --- */
+        .slide img {
+            max-width: 100%;    /* Lebar maksimal 100% dari layar */
+            max-height: 100%;   /* Tinggi maksimal 100% dari layar */
+            object-fit: fill; /* Menjaga proporsi gambar agar tidak gepeng */
+            display: block;
+        }
+        
+        /* Jika gambar dibungkus link <a>, pastikan link juga fleksibel */
+        .slide a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Class untuk menampilkan slide aktif */
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        /* Teks Placeholder di tengah (Opsional, bisa dihapus) */
+        .placeholder-text {
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Tombol Navigasi (Panah Kiri Kanan) */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5); /* Hitam transparan */
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .prev-btn { left: 30px; }
+        .next-btn { right: 30px; }
+
+        /* Tombol WhatsApp Melayang (Floating Button) */
+        .wa-float {
+            position: fixed;
+            width: 70px;
+            height: 70px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 35px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .wa-float:hover {
+            background-color: #128C7E;
+            transform: scale(1.1);
+        }
+
+        /* Animasi Denyut untuk WA */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        /* Indikator Halaman (Titik-titik bawah) */
+        .dots-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slider-container">
+        
+        <!-- HALAMAN 1: Menggunakan Tag IMG -->
+        <!-- Gambar akan otomatis menyesuaikan layar (fit) -->
+        <div class="slide active">
+            <a href="https://i.imghippo.com/files/ELdv6326IQA.jpg" target="_blank" rel="noopener">
+                <img src="https://i.imghippo.com/files/ELdv6326IQA.jpg" alt="Uploaded image on Imghippo">
+            </a>
+        </div>
+
+        <!-- HALAMAN 2 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/buoE2263ts.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/buoE2263ts.jpg" alt="Uploaded image on Imghippo" border="0">
+            </a>
+        </div>
+
+        <!-- HALAMAN 3 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/bllp2953Pug.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/bllp2953Pug.jpg" alt="Uploaded image on Imghippo" border="0">
+            </a>
+        </div>
+
+        <!-- HALAMAN 4 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/Qjw8017lA.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/Qjw8017lA.jpg" alt="Uploaded image on Imghippo" border="0">
+            </a>
+        </div>
+
+        <!-- HALAMAN 5 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/LUlG1468Yw.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/LUlG1468Yw.jpg" alt="Uploaded image on Imghippo" border="0">
+            </a>
+        </div>
+
+        <!-- HALAMAN 6 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/yos9917Pag.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/yos9917Pag.jpg" alt="Uploaded image on Imghippo" border="0"></a>
+        </div>
+
+        <!-- HALAMAN 7 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/XCR1159ihQ.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/XCR1159ihQ.jpg" alt="Uploaded image on Imghippo" border="0"></a>
+        </div>
+
+        <!-- HALAMAN 8 -->
+        <div class="slide">
+            <a href="https://i.imghippo.com/files/mDHy8690b.jpg" target="_blank" rel="noopener">
+            <img src="https://i.imghippo.com/files/mDHy8690b.jpg" alt="Uploaded image on Imghippo" border="0"></a>
+        </div>
+
+        <!-- TOMBOL NAVIGASI KIRI KANAN -->
+        <button class="nav-btn prev-btn" onclick="moveSlide(-1)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="nav-btn next-btn" onclick="moveSlide(1)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- INDIKATOR DOTS -->
+        <div class="dots-container" id="dots">
+            <!-- Dots akan digenerate otomatis oleh Javascript -->
+        </div>
+
+    </div>
+
+    <!-- TOMBOL WHATSAPP -->
+    <!-- Ganti '6281234567890' dengan nomor Anda -->
+    <a href="https://wa.me/6285224131324?text=Halo%2C%20saya%20tertarik%20untuk%20menggunakan%20HADIRIN." class="wa-float" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.getElementById('dots');
+        const totalSlides = slides.length;
+
+        // Membuat Dots Indikator secara otomatis
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+
+        function updateSlider() {
+            // Update Class Active pada Slide
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                dots[index].classList.remove('active');
+                
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    dots[index].classList.add('active');
+                }
+            });
+        }
+
+        function moveSlide(direction) {
+            currentSlide += direction;
+
+            // Logika Loop (Muter balik jika sampai ujung)
+            if (currentSlide >= totalSlides) {
+                currentSlide = 0;
+            } else if (currentSlide < 0) {
+                currentSlide = totalSlides - 1;
+            }
+
+            updateSlider();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+        }
+
+        // Opsional: Navigasi Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') moveSlide(1);
+            if (e.key === 'ArrowLeft') moveSlide(-1);
+        });
+    </script>
+
+</body>
+</html>
