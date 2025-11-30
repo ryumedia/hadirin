@@ -116,7 +116,7 @@
         <!-- 1. Tampilan Login -->
         <div id="loginView" class="view flex flex-grow items-center justify-center p-4">
             <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 sm:p-10">
-               <div class="text-center mb-8">
+                <div class="text-center mb-8">
                     <div class="w-48 h-48 mx-auto mb-2 relative flex items-center justify-center">
                     <!-- ===== TAMBAHKAN KODE LOGO DI SINI ===== -->
                     <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" alt="Logo Hadirin.org" class="w-full h-full object-contain">
@@ -588,22 +588,6 @@
                             </button>
                         </li>
                         <li>
-                            <button id="menuEmployees" onclick="showAdminSection('employees')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
-                                <ion-icon name="people-outline" class="text-lg mr-3"></ion-icon> Manajemen Karyawan
-                            </button>
-                        </li>
-                        <!-- MANAJEMEN GAJI KARYAWAN (BARU) -->
-                        <li>
-                            <button id="menuEmployeeSalaries" onclick="showAdminSection('employeesalaries')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
-                                <ion-icon name="wallet-outline" class="text-lg mr-3"></ion-icon> Gaji Karyawan
-                            </button>
-                        </li>
-                        <li id="menuCompaniesContainer" class="hidden"> <!-- Kontainer untuk menu Super Admin -->
-                            <button id="menuCompanies" onclick="showAdminSection('companies')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
-                                <ion-icon name="business-outline" class="text-lg mr-3"></ion-icon> Manajemen Perusahaan
-                            </button>
-                        </li>
-                        <li>
                             <button id="menuRekap" onclick="showAdminSection('rekap')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="calendar-outline" class="text-lg mr-3"></ion-icon> Rekap Kehadiran
                             </button>
@@ -615,14 +599,23 @@
                             </a>
                         </li>
                         <li>
+                            <button id="menuWorkhours" onclick="showAdminSection('workhours')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="briefcase-outline" class="text-lg mr-3"></ion-icon> Manajemen Jam Kerja
+                            </button>
+                        </li>
+                        <li>
+                            <button id="menuEmployees" onclick="showAdminSection('employees')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="people-outline" class="text-lg mr-3"></ion-icon> Manajemen Karyawan
+                            </button>
+                        </li>
+                        <li>
                             <button id="menuMasters" onclick="showAdminSection('masters')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="archive-outline" class="text-lg mr-3"></ion-icon> Master Data
                             </button>
                         </li>
-                        <!-- MANAJEMEN JAM KERJA (BARU) -->
                         <li>
-                            <button id="menuWorkhours" onclick="showAdminSection('workhours')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
-                                <ion-icon name="briefcase-outline" class="text-lg mr-3"></ion-icon> Manajemen Jam Kerja
+                            <button id="menuTimeoffBalance" onclick="showAdminSection('timeoffbalance')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="today-outline" class="text-lg mr-3"></ion-icon> Saldo Cuti Karyawan
                             </button>
                         </li>
                         <!-- Grup Menu PENGAJUAN (ACCORDION BARU) -->
@@ -633,7 +626,6 @@
                                 <ion-icon id="requestsSubMenuIcon" name="chevron-down-outline" class="text-lg transition-transform duration-300"></ion-icon>
                             </button>
                         </li>
-                        
                         <!-- Sub Menu Requests (Default Hidden, overflow-hidden untuk transisi) -->
                         <ul id="requestsSubMenu" class="space-y-1 pl-4 h-0 overflow-hidden transition-all duration-300 ease-in-out">
                             <li>
@@ -654,9 +646,14 @@
                         </ul>
                         <!-- Akhir Sub Menu Requests -->
                         <!-- Akhir Grup Menu Pengajuan -->
+                        <li id="menuCompaniesContainer" class="hidden"> <!-- Kontainer untuk menu Super Admin -->
+                            <button id="menuCompanies" onclick="showAdminSection('companies')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="business-outline" class="text-lg mr-3"></ion-icon> Manajemen Perusahaan
+                            </button>
+                        </li>
                         <li>
-                            <button id="menuTimeoffBalance" onclick="showAdminSection('timeoffbalance')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
-                                <ion-icon name="today-outline" class="text-lg mr-3"></ion-icon> Saldo Cuti Karyawan
+                            <button id="menuEmployeeSalaries" onclick="showAdminSection('employeesalaries')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
+                                <ion-icon name="wallet-outline" class="text-lg mr-3"></ion-icon> Gaji Karyawan
                             </button>
                         </li>
                         <li>
@@ -7976,7 +7973,3 @@
     </script>
 </body>
 </html>
-
-
-
-
