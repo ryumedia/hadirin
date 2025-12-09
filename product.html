@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadirin - Aplikasi Kehadiran Lengkap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom Font */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9; /* Slate 100 outside */
+        }
+
+        /* Define Custom Color Variable for cleaner usage in some CSS parts */
+        :root {
+            --primary-color: #2763ea;
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Hide scrollbar for clean aesthetic */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(39, 99, 234, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(39, 99, 234, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(39, 99, 234, 0); }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Menu Animation */
+        #mobile-menu {
+            transition: all 0.3s ease-in-out;
+            transform-origin: top;
+        }
+        .menu-hidden {
+            opacity: 0;
+            transform: scaleY(0);
+            height: 0;
+        }
+        .menu-visible {
+            opacity: 1;
+            transform: scaleY(1);
+            height: auto;
+        }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen">
+
+    <!-- Main Mobile Container (max-w-lg) -->
+    <main class="w-full max-w-lg bg-white shadow-2xl relative overflow-hidden min-h-screen pb-24">
+        
+        <!-- Navigation / Header -->
+        <nav class="fixed top-0 w-full max-w-lg z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+            <div class="px-6 py-4 flex justify-between items-center relative">
+                <!-- Logo Placeholder -->
+                <a href="#" class="flex items-center gap-2 group">
+                    <!-- FIX: Menggunakan tag <img> untuk menampilkan logo -->
+                    <img 
+                        src="https://blogger.googleusercontent.com/img/a/AVvXsEhfFNn0L9WN_NL0oZqPDAt1J8eC6CoXfHYNNf5idh9IpCt6TAWsPpSIg64pXtaxz5n2oZ0cKgIYjPNRvEpc_NwoZjcFKfmMCf_kii467EUQpOBzSCOiR1ELJ1dRyj75INwPfKYasAS79IEDbnQ-08yqEGE5UsHrzTBbWGC32SAfUVmSconpUsAO7vDxifs" 
+                        alt="Hadirin Logo" 
+                        class="w-10 h-10 rounded-lg shadow-md group-hover:scale-105 transition object-cover"
+                    >
+                    <div class="flex flex-col leading-tight">
+                        <span class="font-bold text-slate-800 text-lg tracking-tight">Hadirin</span>
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Aplikasi Kehadiran Lengkap</span>
+                    </div>
+                </a>
+
+                <!-- Hamburger Button -->
+                <button id="menu-btn" class="bg-[#2763ea]/10 text-[#2763ea] p-2 rounded-lg hover:bg-[#2763ea]/20 transition focus:outline-none focus:ring-2 focus:ring-[#2763ea]/50 flex items-center justify-center">
+                    <!-- Icon Menu (Visible by default) -->
+                    <i data-lucide="menu" id="icon-open" class="w-6 h-6"></i>
+                    <!-- Icon Close (Hidden by default) -->
+                    <i data-lucide="x" id="icon-close" class="w-6 h-6 hidden"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu" class="menu-hidden bg-white border-b border-gray-100 shadow-lg absolute w-full left-0 z-40 px-6 py-4 space-y-2">
+                <a href="#overview" class="block px-4 py-3 text-slate-600 hover:bg-[#2763ea]/10 hover:text-[#2763ea] rounded-lg font-medium transition" onclick="toggleMenu()">Overview</a>
+                <a href="#fitur" class="block px-4 py-3 text-slate-600 hover:bg-[#2763ea]/10 hover:text-[#2763ea] rounded-lg font-medium transition" onclick="toggleMenu()">Fitur Aplikasi</a>
+                <a href="#keunggulan" class="block px-4 py-3 text-slate-600 hover:bg-[#2763ea]/10 hover:text-[#2763ea] rounded-lg font-medium transition" onclick="toggleMenu()">Keunggulan</a>
+                <a href="#kontak" class="block px-4 py-3 text-slate-600 hover:bg-[#2763ea]/10 hover:text-[#2763ea] rounded-lg font-medium transition" onclick="toggleMenu()">Kontak Kami</a>
+            </div>
+        </nav>
+
+        <!-- Hero Section (Overview) -->
+        <section id="overview" class="pt-32 px-6 pb-12 bg-gradient-to-br from-[#2763ea]/5 to-white rounded-b-[3rem]">
+            <div class="text-center mb-10">
+                <!-- App Logo Placeholder (Replaces Version Text) -->
+                <div class="flex justify-center mb-6">
+                    <img 
+                        src="https://blogger.googleusercontent.com/img/a/AVvXsEhvDQZgkpGf7o30SDvC64poshBYUS6yjJ3FzjqVnZn7XGaRY8GaQPzJbCWyMoTfhJr9uEgmpEtYqyYNKAxHjCNpBlAwD9auAaAmtINZXWwII_1etFThbEEkvFQzKjRjC6XCHMV3S7bYYHtTk4q0AuoSinxmIGeCRkpYYrW57dGmvJlwqvuwhDXkUuv6Uk4" 
+                        alt="Logo Aplikasi" 
+                        class="w-20 h-20 rounded-2xl shadow-lg shadow-blue-200"
+                    >
+                </div>
+                
+                <h1 class="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+                    Kelola Kehadiran, <br><span class="text-[#2763ea]">Dalam Genggaman</span>
+                </h1>
+                <p class="text-slate-500 leading-relaxed">
+                    Pantau Kehadiran, Lembur, Sampai Gaji tim dari mana saja dengan aplikasi web mobile yang Lengkap.
+                </p>
+            </div>
+
+            <!-- Image Placeholder for Hero (Replaces CSS Mockup) -->
+            <div class="relative mx-auto w-64 h-auto animate-float">
+                 <!-- Ganti URL di src="..." dengan gambar aplikasi/mockup utama Anda nanti -->
+                <img 
+                    src="https://i.imghippo.com/files/WJKG2671bao.png" 
+                    alt="App Mockup" 
+                    class="rounded-[2.5rem] shadow-2xl border-8 border-slate-900 w-full h-auto object-cover bg-slate-900"
+                >
+            </div>
+        </section>
+
+        <!-- Metrics / Social Proof -->
+        <section class="px-6 py-8">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm text-center">
+                    <h3 class="text-3xl font-bold text-[#2763ea]">10+</h3>
+                    <p class="text-sm text-slate-500">Company Aktif</p>
+                </div>
+                <div class="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm text-center">
+                    <h3 class="text-3xl font-bold text-[#2763ea]">99%</h3>
+                    <p class="text-sm text-slate-500">Kepuasan User</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Fitur Aplikasi -->
+        <section id="fitur" class="px-6 py-12 bg-slate-50">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-slate-900">Fitur Unggulan</h2>
+                <p class="text-slate-500 text-sm mt-2">Didesain khusus untuk efisiensi Manajemen dan Tim.</p>
+            </div>
+
+            <div class="space-y-16">
+                <!-- Feature Item 1: Text Left, Image Right -->
+                <div class="flex items-center justify-between gap-6">
+                    <div class="flex-1 space-y-2">
+                        <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2">
+                            <i data-lucide="clock-check" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Clock-in dan Clock-out</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Memudahkan karyawan untuk melakukan cek kehadiran dengan fitur lokasi dan cek keterlambatan karyawan. Semua terekap dalam dashboard Admin.
+                        </p>
+                    </div>
+                    <!-- Placeholder Image (Right) -->
+                    <div class="w-32 flex-shrink-0">
+                        <img 
+                            src="https://i.imghippo.com/files/NIn3371PyY.png" 
+                            alt="Fitur Scan" 
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                        >
+                    </div>
+                </div>
+
+                <!-- Feature Item 2: Image Left, Text Right (Reversed) -->
+                <div class="flex flex-row-reverse items-center justify-between gap-6">
+                    <div class="flex-1 space-y-2 text-right">
+                        <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2 ml-auto">
+                            <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Smart Report</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Karyawan tidak akan lupa melakukan cek kehadiran dengan fitur Lihat Riwayat. Semua riwayat kehadiran karyawan per hari bisa dilihat dalam menu ini.
+                        </p>
+                    </div>
+                    <!-- Placeholder Image (Left) -->
+                    <div class="w-32 flex-shrink-0">
+                        <img 
+                            src="https://i.imghippo.com/files/IV6851VIs.png" 
+                            alt="Fitur Tracking" 
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                        >
+                    </div>
+                </div>
+
+                <!-- Feature Item 3 -->
+                 <div class="flex items-center justify-between gap-6">
+                    <div class="flex-1 space-y-2">
+                        <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2">
+                            <i data-lucide="user-round-pen" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Easy Request</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Karyawan tak perlu khawatir jika ada koreksi kehadiran. Fitur pengajuan lengkap mulai dari pengajuan koreksi kehadiran, ijin/cuti dan kembur tersedia di aplikasi ini.
+                        </p>
+                    </div>
+                    <!-- Placeholder Image (Right) -->
+                    <div class="w-32 flex-shrink-0">
+                        <img 
+                            src="https://i.imghippo.com/files/hV7192ocA.png" 
+                            alt="Fitur Laporan" 
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                        >
+                    </div>
+                </div>
+
+                 <!-- Feature Item 4: Image Left, Text Right (Reversed) -->
+                <div class="flex flex-row-reverse items-center justify-between gap-6">
+                    <div class="flex-1 space-y-2 text-right">
+                        <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2 ml-auto">
+                            <i data-lucide="hand-coins" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Payroll Update</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Fasilitas payroll yang transparan untuk karyawan memudahkan karyawan yang membutuhkan slip gaji perbulannya.
+                        </p>
+                    </div>
+                    <!-- Placeholder Image (Left) -->
+                    <div class="w-32 flex-shrink-0">
+                        <img 
+                            src="https://i.imghippo.com/files/JUF1546TU.png" 
+                            alt="Fitur Tracking" 
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                        >
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CMS Showcase Section -->
+        <section class="bg-slate-900 text-white py-16 px-6 rounded-3xl mx-2 my-8 relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-2xl font-bold mb-4">Dashboard Admin Powerful</h2>
+                <p class="text-slate-400 text-sm mb-8 leading-relaxed">
+                    Admin bisa mengontrol kehadiran, pengajuan ijin/cuti dan lebur dalam dashboard yang lengkap. Atur hari libur, Saldo Cuti dan pengaturan payroll dalam sekali klik.
+                </p>
+
+                <!-- Image Placeholder for CMS Dashboard (Replaces CSS Mockup) -->
+                <div class="rounded-xl overflow-hidden shadow-2xl border border-slate-700 transform hover:scale-[1.02] transition duration-500">
+                     <!-- Ganti URL di src="..." dengan screenshot dashboard admin Anda nanti -->
+                    <img 
+                        src="https://i.imghippo.com/files/NFG7501AE.png" 
+                        alt="Dashboard Admin" 
+                        class="w-full h-auto object-cover"
+                    >
+                </div>
+            </div>
+            
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#2763ea] blur-[80px] opacity-30"></div>
+        </section>
+
+        <!-- Keunggulan Section -->
+        <section id="keunggulan" class="px-6 pb-12 pt-8">
+            <h2 class="text-xl font-bold text-slate-900 mb-6 border-l-4 border-[#2763ea] pl-3">Keunggulan</h2>
+            <div class="space-y-4">
+                <div class="flex gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 bg-[#2763ea]/10 rounded-lg flex items-center justify-center text-[#2763ea] flex-shrink-0">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Real-time Sync</h3>
+                        <p class="text-xs text-slate-500 mt-1">Data tersinkronisasi otomatis antara aplikasi mobile dan CMS desktop.</p>
+                    </div>
+                </div>
+                 <div class="flex gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 bg-[#2763ea]/10 rounded-lg flex items-center justify-center text-[#2763ea] flex-shrink-0">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Keamanan Data</h3>
+                        <p class="text-xs text-slate-500 mt-1">Penyimpanan data dan server profesional untuk memastikan data Anda aman.</p>
+                    </div>
+                </div>
+                 <div class="flex gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 bg-[#2763ea]/10 rounded-lg flex items-center justify-center text-[#2763ea] flex-shrink-0">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Mudah Rekap Laporan</h3>
+                        <p class="text-xs text-slate-500 mt-1">Laporan otomatis harian, mingguan, dan bulanan siap dicetak.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section id="kontak" class="px-6 pb-24 pt-4">
+            <div class="bg-[#2763ea] rounded-3xl p-8 text-white shadow-xl shadow-blue-200 relative overflow-hidden">
+                 <div class="absolute -top-10 -left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
+                <div class="text-center relative z-10 mb-8">
+                    <h2 class="text-2xl font-bold mb-2">Kontak Kami</h2>
+                    <p class="text-blue-100 text-sm">Siap memulai? Hubungi kami untuk demo gratis.</p>
+                </div>
+                <div class="space-y-4 relative z-10 mb-8">
+                    <div class="flex items-start gap-3 text-sm">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-blue-200 flex-shrink-0 mt-0.5"></i>
+                        <span class="text-blue-50">Jl. Ciwaru No.18 Ujungberung Bandung</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm">
+                        <i data-lucide="phone" class="w-5 h-5 text-blue-200 flex-shrink-0"></i>
+                        <span class="text-blue-50">+62 852-2413-1324</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm">
+                        <i data-lucide="mail" class="w-5 h-5 text-blue-200 flex-shrink-0"></i>
+                        <span class="text-blue-50">ryumediadigital@gmail.com</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm">
+                        <i data-lucide="instagram" class="w-5 h-5 text-blue-200 flex-shrink-0"></i>
+                        <span class="text-blue-50">@ryumediadigital</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 relative z-10">
+                    <!-- Updated Button: Now an <a> tag linking to WhatsApp -->
+                    <a href="https://wa.me/6285224131324?text=Halo%2C%20saya%20tertarik%20mendapatkan%20PROMO%20KHUSUS%20aplikasi%20Hadirin" target="_blank" class="block w-full bg-white text-[#2763ea] font-bold py-3.5 rounded-xl hover:bg-blue-50 transition shadow-lg text-center">
+                        Ambil Promo
+                    </a>
+                </div>
+            </div>
+            <p class="text-center text-slate-400 text-xs mt-8">
+                &copy; 2025 ryumedia.id. All rights reserved.
+            </p>
+        </section>
+
+        <!-- Floating WhatsApp Button -->
+        <div class="fixed bottom-6 w-full max-w-lg pointer-events-none z-50 px-6">
+            <div class="flex justify-end pointer-events-auto">
+                <a href="https://wa.me/6285224131324?text=Halo%2C%20saya%20tertarik%20dengan%20aplikasi%20Hadirin" target="_blank" class="bg-[#fdc621] hover:bg-[#d7a50f] text-white p-4 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-110 animate-pulse-ring cursor-pointer group">
+                    <i data-lucide="message-circle" class="w-6 h-6 fill-current"></i>
+                    <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-semibold text-sm">
+                        Chat Kami
+                    </span>
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Menu Toggle Logic
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        // Selector fix: Grab elements by ID *after* Lucide runs
+        // Lucide copies ID to the SVG element, so this selector works fine.
+        const iconOpen = document.getElementById('icon-open');
+        const iconClose = document.getElementById('icon-close');
+        
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                // Show Menu
+                mobileMenu.classList.remove('menu-hidden');
+                mobileMenu.classList.add('menu-visible');
+                
+                // Toggle Icons: Hide Hamburger, Show Close
+                if(iconOpen) iconOpen.classList.add('hidden');
+                if(iconClose) iconClose.classList.remove('hidden');
+                
+            } else {
+                // Hide Menu
+                mobileMenu.classList.remove('menu-visible');
+                mobileMenu.classList.add('menu-hidden');
+
+                // Toggle Icons: Show Hamburger, Hide Close
+                if(iconOpen) iconOpen.classList.remove('hidden');
+                if(iconClose) iconClose.classList.add('hidden');
+            }
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>
