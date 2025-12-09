@@ -27,6 +27,52 @@
             }
         }
     </script>
+
+    <!-- ===== SKRIP KEAMANAN (LAPIS PERTAMA) ===== -->
+    <script>
+        // 1. Blokir Klik Kanan (Context Menu)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Blokir Kombinasi Tombol Keyboard
+        document.onkeydown = function(e) {
+            // Blokir F12 (Developer Tools default)
+            if(e.keyCode == 123) {
+                return false;
+            }
+
+            // Blokir Ctrl+Shift+I (Inspect Element)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+
+            // Blokir Ctrl+Shift+J (Console)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+
+            // Blokir Ctrl+Shift+C (Inspect Element selection)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+
+            // Blokir Ctrl+U (View Source)
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+
+            // Blokir Ctrl+S (Save Page)
+            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
+                return false;
+            }
+
+            // Blokir Ctrl+P (Print)
+            if(e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) {
+                return false;
+            }
+        }
+    </script>
+    <!-- ========================================== -->
+
     <!-- Memuat icon (Ionicons) -->
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
@@ -578,7 +624,7 @@
             <div class="w-full max-w-full mx-auto flex flex-col min-h-screen sm:flex-row">
                 
                 <!-- SIDEBAR (Menu Samping) -->
-                <nav id="adminSidebar" class="bg-gray-800 text-white w-full sm:w-64 flex-shrink-0 p-4 sm:p-6 border-r border-gray-700 transition-all duration-300 ease-in-out">
+                <nav id="adminSidebar" class="bg-gray-800 text-white w-full sm:w-64 flex-shrink-0 p-4 sm:p-6 border-r border-gray-700 transition-all duration-300 ease-in-out hidden sm:block">
                     <h2 class="text-xl font-bold mb-6 hidden sm:block">Menu Admin</h2>
                     
                     <ul id="adminSidebarContent" class="space-y-2">
@@ -613,7 +659,7 @@
                                 <ion-icon name="archive-outline" class="text-lg mr-3"></ion-icon> Master Data
                             </button>
                         </li>
-                        <li>
+                                                <li>
                             <button id="menuTimeoffBalance" onclick="showAdminSection('timeoffbalance')" class="w-full flex items-center p-3 rounded-lg text-left text-sm font-medium transition duration-150 hover:bg-gray-700">
                                 <ion-icon name="today-outline" class="text-lg mr-3"></ion-icon> Saldo Cuti Karyawan
                             </button>
@@ -671,7 +717,7 @@
                     <!-- Header Admin (Dipindahkan ke dalam <main>) -->
                     <header class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b pb-4">
                         <div class="flex items-center"> <!-- Kolom Kiri Header (DIUBAH) -->
-                            <button id="sidebarToggleButton" onclick="toggleAdminSidebar()" class="text-gray-600 hover:text-gray-900 transition mr-4 hidden sm:block">
+                            <button id="sidebarToggleButton" onclick="toggleAdminSidebar()" class="text-gray-600 hover:text-gray-900 transition mr-4 block sm:hidden">
                                 <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
                             </button>
                             <div>
@@ -2946,23 +2992,14 @@
         // --- FUNGSI TOGGLE SIDEBAR ADMIN (BARU) ---
         function toggleAdminSidebar() {
             const sidebar = document.getElementById('adminSidebar');
-            const content = document.getElementById('adminSidebarContent');
             
-            isSidebarOpen = !isSidebarOpen;
-
-            if (isSidebarOpen) {
-                // STATE TERTUTUP -> TERBUKA
-                sidebar.classList.remove('sm:w-0', 'p-0', 'overflow-hidden');
-                sidebar.classList.add('sm:w-64', 'p-4', 'sm:p-6');
-                content.classList.remove('hidden');
+            // Cek apakah sidebar sedang mengandung class 'hidden'
+            if (sidebar.classList.contains('hidden')) {
+                // JIKA TERTUTUP -> BUKA
+                sidebar.classList.remove('hidden');
             } else {
-                // STATE TERBUKA -> TERTUTUP
-                sidebar.classList.remove('sm:w-64', 'p-4', 'sm:p-6');
-                sidebar.classList.add('sm:w-0', 'p-0', 'overflow-hidden'); 
-                // Tunda penyembunyian konten agar transisi lebar terlihat
-                setTimeout(() => {
-                    content.classList.add('hidden');
-                }, 300); // Sesuai dengan durasi transisi Tailwind (duration-300)
+                // JIKA TERBUKA -> TUTUP
+                sidebar.classList.add('hidden');
             }
         }
 
