@@ -69,6 +69,63 @@
             transform: scaleY(1);
             height: auto;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-img {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            border-radius: 0.5rem;
+        }
+        .modal-close {
+            position: absolute;
+            top: -1rem;
+            right: -1rem;
+            background: white;
+            color: #2763ea;
+            border-radius: 9999px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border: 2px solid #e2e8f0;
+        }
     </style>
 </head>
 <body class="flex justify-center min-h-screen">
@@ -124,7 +181,7 @@
                 </div>
                 
                 <h1 class="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                    Kelola Kehadiran, <br><span class="text-[#2763ea]">Dalam Genggaman</span>
+                    Kelola Kehadiran <br><span class="text-[#2763ea]">Dalam Genggaman</span>
                 </h1>
                 <p class="text-slate-500 leading-relaxed">
                     Pantau Kehadiran, Lembur, Sampai Gaji tim dari mana saja dengan aplikasi web mobile yang Lengkap.
@@ -160,7 +217,7 @@
         <section id="fitur" class="px-6 py-12 bg-slate-50">
             <div class="text-center mb-10">
                 <h2 class="text-2xl font-bold text-slate-900">Fitur Unggulan</h2>
-                <p class="text-slate-500 text-sm mt-2">Didesain khusus untuk efisiensi Manajemen dan Tim.</p>
+                <p class="text-slate-500 text-base mt-2">Didesain khusus untuk efisiensi Manajemen dan Tim.</p>
             </div>
 
             <div class="space-y-16">
@@ -170,8 +227,8 @@
                         <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2">
                             <i data-lucide="clock-check" class="w-5 h-5"></i>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-lg">Clock-in dan Clock-out</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">
+                        <h3 class="font-bold text-slate-800 text-2xl">Clock-in dan Clock-out</h3>
+                        <p class="text-base text-slate-500 leading-relaxed">
                             Memudahkan karyawan untuk melakukan cek kehadiran dengan fitur lokasi dan cek keterlambatan karyawan. Semua terekap dalam dashboard Admin.
                         </p>
                     </div>
@@ -180,7 +237,7 @@
                         <img 
                             src="https://i.imghippo.com/files/NIn3371PyY.png" 
                             alt="Fitur Scan" 
-                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover clickable-img cursor-pointer"
                         >
                     </div>
                 </div>
@@ -191,8 +248,8 @@
                         <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2 ml-auto">
                             <i data-lucide="pie-chart" class="w-5 h-5"></i>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-lg">Smart Report</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">
+                        <h3 class="font-bold text-slate-800 text-2xl">Smart Report</h3>
+                        <p class="text-base text-slate-500 leading-relaxed">
                             Karyawan tidak akan lupa melakukan cek kehadiran dengan fitur Lihat Riwayat. Semua riwayat kehadiran karyawan per hari bisa dilihat dalam menu ini.
                         </p>
                     </div>
@@ -201,7 +258,7 @@
                         <img 
                             src="https://i.imghippo.com/files/IV6851VIs.png" 
                             alt="Fitur Tracking" 
-                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover clickable-img cursor-pointer"
                         >
                     </div>
                 </div>
@@ -212,8 +269,8 @@
                         <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2">
                             <i data-lucide="user-round-pen" class="w-5 h-5"></i>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-lg">Easy Request</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">
+                        <h3 class="font-bold text-slate-800 text-2xl">Easy Request</h3>
+                        <p class="text-base text-slate-500 leading-relaxed">
                             Karyawan tak perlu khawatir jika ada koreksi kehadiran. Fitur pengajuan lengkap mulai dari pengajuan koreksi kehadiran, ijin/cuti dan kembur tersedia di aplikasi ini.
                         </p>
                     </div>
@@ -222,7 +279,7 @@
                         <img 
                             src="https://i.imghippo.com/files/hV7192ocA.png" 
                             alt="Fitur Laporan" 
-                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover clickable-img cursor-pointer"
                         >
                     </div>
                 </div>
@@ -233,8 +290,8 @@
                         <div class="w-10 h-10 bg-[#2763ea]/10 text-[#2763ea] rounded-lg flex items-center justify-center mb-2 ml-auto">
                             <i data-lucide="hand-coins" class="w-5 h-5"></i>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-lg">Payroll Update</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">
+                        <h3 class="font-bold text-slate-800 text-2xl">Payroll Update</h3>
+                        <p class="text-base text-slate-500 leading-relaxed">
                             Fasilitas payroll yang transparan untuk karyawan memudahkan karyawan yang membutuhkan slip gaji perbulannya.
                         </p>
                     </div>
@@ -243,7 +300,7 @@
                         <img 
                             src="https://i.imghippo.com/files/JUF1546TU.png" 
                             alt="Fitur Tracking" 
-                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover"
+                            class="rounded-xl shadow-lg border-4 border-white w-full h-auto object-cover clickable-img cursor-pointer"
                         >
                     </div>
                 </div>
@@ -254,7 +311,7 @@
         <section class="bg-slate-900 text-white py-16 px-6 rounded-3xl mx-2 my-8 relative overflow-hidden">
             <div class="relative z-10">
                 <h2 class="text-2xl font-bold mb-4">Dashboard Admin Powerful</h2>
-                <p class="text-slate-400 text-sm mb-8 leading-relaxed">
+                <p class="text-slate-400 text-base mb-8 leading-relaxed">
                     Admin bisa mengontrol kehadiran, pengajuan ijin/cuti dan lebur dalam dashboard yang lengkap. Atur hari libur, Saldo Cuti dan pengaturan payroll dalam sekali klik.
                 </p>
 
@@ -264,7 +321,7 @@
                     <img 
                         src="https://i.imghippo.com/files/NFG7501AE.png" 
                         alt="Dashboard Admin" 
-                        class="w-full h-auto object-cover"
+                        class="w-full h-auto object-cover clickable-img cursor-pointer"
                     >
                 </div>
             </div>
@@ -281,8 +338,8 @@
                         <i data-lucide="zap" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Real-time Sync</h3>
-                        <p class="text-xs text-slate-500 mt-1">Data tersinkronisasi otomatis antara aplikasi mobile dan CMS desktop.</p>
+                        <h3 class="font-bold text-slate-800 text-xl">Real-time Sync</h3>
+                        <p class="text-lg text-slate-500 mt-1">Data tersinkronisasi otomatis antara aplikasi mobile dan CMS desktop.</p>
                     </div>
                 </div>
                  <div class="flex gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -290,8 +347,8 @@
                         <i data-lucide="shield-check" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Keamanan Data</h3>
-                        <p class="text-xs text-slate-500 mt-1">Penyimpanan data dan server profesional untuk memastikan data Anda aman.</p>
+                        <h3 class="font-bold text-slate-800 text-xl">Keamanan Data</h3>
+                        <p class="text-lg text-slate-500 mt-1">Penyimpanan data dan server profesional untuk memastikan data Anda aman.</p>
                     </div>
                 </div>
                  <div class="flex gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -299,8 +356,8 @@
                         <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Mudah Rekap Laporan</h3>
-                        <p class="text-xs text-slate-500 mt-1">Laporan otomatis harian, mingguan, dan bulanan siap dicetak.</p>
+                        <h3 class="font-bold text-slate-800 text-xl">Mudah Rekap Laporan</h3>
+                        <p class="text-lg text-slate-500 mt-1">Laporan otomatis harian, mingguan, dan bulanan siap dicetak.</p>
                     </div>
                 </div>
             </div>
@@ -357,6 +414,16 @@
             </div>
         </div>
 
+        <!-- Image Popup Modal -->
+        <div id="imageModal" class="modal-overlay">
+            <div class="modal-content">
+                <img id="modalImage" src="" alt="Popup Image" class="modal-img">
+            </div>
+            <div id="modalClose" class="modal-close">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -397,6 +464,35 @@
         }
 
         menuBtn.addEventListener('click', toggleMenu);
+
+        // Image Modal Logic
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalClose = document.getElementById('modalClose');
+
+        // Select all images intended to be clickable
+        const clickableImages = document.querySelectorAll('.clickable-img');
+
+        clickableImages.forEach(img => {
+            img.addEventListener('click', () => {
+                modalImage.src = img.src;
+                imageModal.classList.add('visible');
+                // Re-run lucide to render the close icon in the modal
+                lucide.createIcons();
+            });
+        });
+
+        const closeModal = () => {
+            imageModal.classList.remove('visible');
+        };
+
+        modalClose.addEventListener('click', closeModal);
+        imageModal.addEventListener('click', (e) => {
+            // Close modal only if the overlay itself (not the content) is clicked
+            if (e.target === imageModal) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
