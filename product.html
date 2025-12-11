@@ -112,11 +112,11 @@
         }
         .modal-close {
             position: absolute;
-            top: -1rem;
-            right: -1rem;
-            background: white;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.8);
             color: #2763ea;
-            border-radius: 9999px;
+            border-radius: 0 0 0 0.5rem; /* Match image radius on one corner */
             width: 2.5rem;
             height: 2.5rem;
             display: flex;
@@ -124,7 +124,14 @@
             align-items: center;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border: 2px solid #e2e8f0;
+            border-bottom: 2px solid #e2e8f0;
+            border-left: 2px solid #e2e8f0;
+            backdrop-filter: blur(4px);
+            transform: scale(0.9);
+            transition: transform 0.2s;
+        }
+        .modal-close:hover {
+            transform: scale(1);
         }
     </style>
 </head>
@@ -417,10 +424,12 @@
         <!-- Image Popup Modal -->
         <div id="imageModal" class="modal-overlay">
             <div class="modal-content">
-                <img id="modalImage" src="" alt="Popup Image" class="modal-img">
-            </div>
-            <div id="modalClose" class="modal-close">
-                <i data-lucide="x" class="w-6 h-6"></i>
+                <div style="position: relative; line-height: 0;">
+                    <img id="modalImage" src="" alt="Popup Image" class="modal-img">
+                    <div id="modalClose" class="modal-close">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
