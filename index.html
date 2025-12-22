@@ -986,7 +986,7 @@
                                 <h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistik Kehadiran Karyawan</h2>
 
                                 <!-- Filter Tanggal -->
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 border-b pb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6 border-b pb-4">
                                     <div class="md:col-span-1">
                                         <label for="statsStartDate" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
                                         <input type="date" id="statsStartDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
@@ -995,10 +995,15 @@
                                         <label for="statsEndDate" class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                                         <input type="date" id="statsEndDate" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
                                     </div>
-                                    <div class="md:col-span-1 flex items-end">
-                                        <button id="statsFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-                                            <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan Statistik
-                                        </button>
+                                    <div class="md:col-span-2 flex items-end">
+                                        <div class="grid grid-cols-2 gap-2 w-full">
+                                            <button id="statsFilterButton" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium flex items-center justify-center">
+                                                <ion-icon name="search-outline" class="text-lg mr-1"></ion-icon> Tampilkan
+                                            </button>
+                                            <button id="statsDownloadButton" onclick="exportStatsData()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50 flex items-center justify-center" disabled>
+                                                <ion-icon name="download-outline" class="text-lg mr-1"></ion-icon> Download
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -2391,6 +2396,7 @@
         let allEmployees = []; // Digunakan untuk mengisi dropdown filter
         let timeoffBalancesCache = {}; // (BARU) Cache untuk saldo cuti karyawan
         let currentRekapData = [];
+        let currentStatsData = []; // (BARU) Untuk export statistik
         
         // DOM ELEMENTS
         const loadingView = document.getElementById('loadingView');
@@ -5080,6 +5086,7 @@
             const startDateStr = document.getElementById('statsStartDate').value;
             const endDateStr = document.getElementById('statsEndDate').value;
             const filterButton = document.getElementById('statsFilterButton');
+            const downloadButton = document.getElementById('statsDownloadButton'); // BARU
 
             if (!startDateStr || !endDateStr) {
                 showMessage("Harap isi tanggal mulai dan tanggal akhir.", 'error');
@@ -5087,6 +5094,8 @@
             }
 
             filterButton.disabled = true;
+            downloadButton.disabled = true; // BARU: Nonaktifkan saat mencari
+            currentStatsData = []; // BARU: Reset data
             statsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Mencari data statistik...</td></tr>';
             
             // Konversi tanggal ke objek Date (menggunakan format lokal untuk menghindari TZ issue)
@@ -5097,6 +5106,7 @@
             if (startDate > endDate) {
                 showMessage("Tanggal Mulai tidak boleh setelah Tanggal Akhir.", 'error');
                 filterButton.disabled = false;
+                downloadButton.disabled = true; // BARU
                 return;
             }
 
@@ -5118,6 +5128,7 @@
             if (profilesError || !profiles || profiles.length === 0) {
                 statsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada karyawan ditemukan.</td></tr>';
                 filterButton.disabled = false;
+                downloadButton.disabled = true; // BARU
                 return;
             }
             const employeeIds = profiles.map(p => p.id);
@@ -5133,6 +5144,7 @@
             if (attendanceError) {
                 statsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat absensi: ${attendanceError.message}</td></tr>`;
                 filterButton.disabled = false;
+                downloadButton.disabled = true; // BARU
                 return;
             }
 
@@ -5210,6 +5222,7 @@
 
             // 6. Render Tabel
             let html = '';
+            const dataForExport = []; // BARU: Array untuk data export
             Object.values(employeeStats).forEach(stats => {
                 html += `
                     <tr>
@@ -5221,10 +5234,42 @@
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">${stats.totalWorkDays}</td>
                     </tr>
                 `;
+                // BARU: Tambahkan data ke array export
+                dataForExport.push({
+                    'Karyawan': stats.name,
+                    'Hadir': stats.hadir,
+                    'Terlambat': stats.terlambat,
+                    'Izin / Cuti': stats.izinCuti,
+                    'Alpa': stats.alpa,
+                    'Total Hari Kerja': stats.totalWorkDays
+                });
             });
             
             statsTableBody.innerHTML = html;
+            currentStatsData = dataForExport; // BARU: Simpan data ke variabel global
+            downloadButton.disabled = false; // BARU: Aktifkan tombol download
             filterButton.disabled = false;
+        }
+
+        // --- FUNGSI BARU: EXPORT STATISTIK KE EXCEL ---
+        function exportStatsData() {
+            if (currentStatsData.length === 0) {
+                showMessage("Tidak ada data statistik untuk diunduh.", 'error');
+                return;
+            }
+            
+            showMessage("Mempersiapkan data statistik untuk diunduh...", 'info');
+
+            const ws = XLSX.utils.json_to_sheet(currentStatsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Statistik_Kehadiran");
+            
+            const startDateStr = document.getElementById('statsStartDate').value;
+            const endDateStr = document.getElementById('statsEndDate').value;
+            const fileName = `Statistik_Kehadiran_${startDateStr}_hingga_${endDateStr}.xlsx`;
+            
+            XLSX.writeFile(wb, fileName);
+            showMessage(`File ${fileName} berhasil diunduh.`, 'success');
         }
 
         // --- FUNGSI BARU: INIT FILTER PENGAJUAN KOREKSI KEHADIRAN (DITINGKATKAN) ---
