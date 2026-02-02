@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Tutorial Video</title>
+    <!-- Menggunakan Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Menggunakan FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Import Font Montserrat dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Set Font Global ke Montserrat */
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Transisi halus untuk ikon putar */
+        .icon-transition {
+            transition: transform 0.3s ease;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+
+    <!-- Header Section (Diganti jadi Green) -->
+    <header class="bg-green-600 text-white p-2 shadow-md sticky top-0 z-10">
+        <!-- Flex container untuk menyejajarkan Logo dan Teks -->
+        <div class="max-w-2xl mx-auto flex items-center gap-4">
+            <!-- Placeholder Logo (Square) -->
+            <!-- Ganti src="..." dengan URL logo Anda nanti -->
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj_jcKmddAWCojGLibCD0UiwtcrtiIW9jlyWLeHrfoP3XYwnUJJa6O4j_UKp2w1mt7Mh4_It0L_W_GL5EyXDlsuD-gb_CgBQSNciMUnJaJ52Wg_ThuL7F9T8Vhq1MUR_1ZcbKCLEKy0iP1tgUAKMsb6NcNqJr-Kjf9Gk00MwOLlE6gR4I5p1dJpcHQF280/s512/hadirin%20putih.png" alt="Logo Website" class="w-20 h-20 rounded-lg p-1 shrink-0 shadow-sm">
+            
+            <!-- Container Teks -->
+            <div class="text-left">
+                <h1 class="text-2xl font-bold leading-tight">Video Tutorial</h1>
+                <p class="text-green-100 text-sm mt-1">untuk Panel Admin Aplikasi Hadirin</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-2xl mx-auto p-4 mt-4 mb-10">
+        
+        <!-- Accordion Container -->
+        <div class="space-y-4" id="accordion-container">
+
+            <!-- Tutorial Item 1 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-1', 'icon-1')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">1. Pengenalan & Persiapan Tools</span>
+                    <i id="icon-1" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-1" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <!-- Video Placeholder -->
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4 relative group">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span class="text-white text-opacity-50 text-sm">[Area Video YouTube]</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Deskripsi -->
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Di video pertama ini, kita akan membahas apa saja software yang perlu diinstal sebelum memulai. Pastikan Anda sudah mengunduh text editor dan browser terbaru.</p>
+                            <ul class="list-disc list-inside mt-2 ml-2">
+                                <li>Instalasi VS Code</li>
+                                <li>Setup Browser Chrome/Firefox</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Item 2 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-2', 'icon-2')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">2. Memahami Struktur Dasar</span>
+                    <i id="icon-2" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-2" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Mempelajari kerangka kerja utama. Kita akan membedah anatomi folder proyek dan bagaimana file-file saling terhubung satu sama lain.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Item 3 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-3', 'icon-3')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">3. Membuat Layout Pertama</span>
+                    <i id="icon-3" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-3" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Langkah praktis membuat tampilan antarmuka. Kita akan menggunakan Grid dan Flexbox untuk mengatur posisi elemen agar terlihat rapi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Item 4 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-4', 'icon-4')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">4. Menambahkan Gaya & Warna</span>
+                    <i id="icon-4" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-4" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Tutorial ini fokus pada estetika. Bagaimana memilih palet warna yang tepat dan menggunakan tipografi agar nyaman dibaca.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial Item 5 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-5', 'icon-5')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">5. Publikasi ke Internet</span>
+                    <i id="icon-5" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-5" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Tahap terakhir! Kita akan mengunggah hasil kerja kita ke server agar bisa diakses oleh semua orang melalui internet.</p>
+                            <!-- Alert Box diganti jadi Green -->
+                            <div class="mt-4 bg-green-50 p-3 rounded text-sm text-green-700 border border-green-200">
+                                <strong>Tips:</strong> Jangan lupa cek kembali semua link sebelum melakukan publikasi.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Tutorial Item 6 -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <button onclick="toggleAccordion('panel-6', 'icon-6')" class="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors focus:outline-none">
+                    <span class="font-semibold text-lg text-gray-700">6. Menu Tambahan</span>
+                    <i id="icon-6" class="fas fa-chevron-down text-gray-400 icon-transition"></i>
+                </button>
+                <div id="panel-6" class="hidden border-t border-gray-100 bg-gray-50">
+                    <div class="p-5">
+                        <div class="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner mb-4">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-600">
+                            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Materi:</h3>
+                            <p>Tutorial ini fokus pada estetika. Bagaimana memilih palet warna yang tepat dan menggunakan tipografi agar nyaman dibaca.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-6 text-center text-sm">
+        <p>&copy; 2025 ryumedia.id   -  IG: @ryumediadigital</p>
+    </footer>
+
+    <!-- Script Logika Accordion -->
+    <script>
+        function toggleAccordion(panelId, iconId) {
+            const panel = document.getElementById(panelId);
+            const icon = document.getElementById(iconId);
+            const isHidden = panel.classList.contains('hidden');
+
+            const allPanels = document.querySelectorAll('[id^="panel-"]');
+            const allIcons = document.querySelectorAll('[id^="icon-"]');
+            
+            allPanels.forEach(p => p.classList.add('hidden'));
+            allIcons.forEach(i => i.classList.remove('rotate-180'));
+
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+                
+                setTimeout(() => {
+                    panel.parentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
+    </script>
+
+</body>
+</html>
