@@ -2022,6 +2022,7 @@
                                                 <option value="Nominal Tetap">Nominal Tetap</option>
                                                 <option value="Berdasarkan Lembur">Berdasarkan Lembur</option>
                                                 <option value="Berdasarkan Absensi">Berdasarkan Absensi</option>
+                                                <option value="Berdasarkan Jam Kerja">Berdasarkan Jam Kerja</option>
                                             </select>
                                         </div>
                                         <div>
@@ -2929,7 +2930,7 @@
                 // Atur placeholder input nominal
                 const nominalInput = document.getElementById('modalSalaryAmount');
                 if (method !== 'Nominal Tetap') {
-                     nominalInput.placeholder = `Masukkan nilai per ${method === 'Berdasarkan Lembur' ? 'jam' : 'hari'} (cth: ${selectedType.value || 0})`;
+                     nominalInput.placeholder = `Masukkan nilai per ${method === 'Berdasarkan Lembur' || method === 'Berdasarkan Jam Kerja' ? 'jam' : 'hari'} (cth: ${selectedType.value || 0})`;
                 } else {
                     nominalInput.placeholder = "Masukkan jumlah nominal (cth: 5000000)";
                 }
@@ -6379,7 +6380,7 @@
                 document.getElementById('masterDeductionValue').value = value;
                 
                 // Tampilkan pemicu jika 'Berdasarkan Absensi'
-                if (method === 'Berdasarkan Absensi') {
+                if (method === 'Berdasarkan Absensi' || method === 'Persentase') {
                     deductionConditionContainer.classList.remove('hidden');
                     document.getElementById('masterDeductionCondition').value = conditionRule?.trigger_status || '';
                 }
@@ -6391,7 +6392,7 @@
                 document.getElementById('masterSalaryValue').value = value;
 
                 // Tampilkan pemicu jika 'Berdasarkan Lembur' atau 'Berdasarkan Absensi'
-                if (method === 'Berdasarkan Lembur') {
+                if (method === 'Berdasarkan Lembur' || method === 'Berdasarkan Jam Kerja') {
                     salaryConditionContainer.classList.remove('hidden');
                     // Tentukan nilai pemicu berdasarkan 'trigger_source'
                     document.getElementById('masterSalaryCondition').value = (conditionRule?.trigger_source === 'overtime_requests') ? 'overtime_approved' : '';
@@ -6522,6 +6523,7 @@
                 // Format nilai
                 const valueDisplay = (item.method === 'Berdasarkan Lembur') ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)} /jam` : 
                                      (item.method === 'Berdasarkan Absensi') ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)}` : 
+                                     (item.method === 'Berdasarkan Jam Kerja') ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)} /jam` : 
                                      '-'; // Nominal Tetap tidak tampil nilai di sini
 
                 return `
@@ -6639,7 +6641,7 @@
                 payload.value = parseFloat(document.getElementById('masterDeductionValue').value) || 0;
                 
                 payload.condition_rule = null; // <-- PINDAHKAN KE SINI
-                if (payload.method === 'Berdasarkan Absensi') {
+                if (payload.method === 'Berdasarkan Absensi' || payload.method === 'Persentase') {
                     const triggerStatus = document.getElementById('masterDeductionCondition').value;
                     if (triggerStatus) {
                         payload.condition_rule = { trigger_status: triggerStatus };
@@ -7636,14 +7638,14 @@
             selectElement.disabled = false;
         }
 
-        // (BARU) Event listener untuk modal master,
+        // (BARU) Event listener untuk modal master
         // Tampilkan/sembunyikan field 'Trigger Status' berdasarkan 'Metode'
         try {
             const deductionMethodSelect = document.getElementById('masterDeductionMethod');
             const deductionConditionContainer = document.getElementById('masterDeductionConditionContainer');
             
             deductionMethodSelect.addEventListener('change', () => {
-                if (deductionMethodSelect.value === 'Berdasarkan Absensi') {
+                if (deductionMethodSelect.value === 'Berdasarkan Absensi' || deductionMethodSelect.value === 'Persentase') {
                     deductionConditionContainer.classList.remove('hidden');
                 } else {
                     deductionConditionContainer.classList.add('hidden');
@@ -7653,7 +7655,7 @@
              console.warn("Elemen listener untuk Deductions tidak ditemukan.");
         }
 
-        // (BARU) Event listener untuk modal master,
+        // (BARU) Event listener untuk modal master
         // Tampilkan/sembunyikan field 'Trigger Status' untuk GAJI
         try {
             const salaryMethodSelect = document.getElementById('masterSalaryMethod');
@@ -7662,7 +7664,7 @@
             salaryMethodSelect.addEventListener('change', () => {
                 const method = salaryMethodSelect.value;
                 // Tampilkan pemicu jika 'Berdasarkan Lembur' ATAU 'Berdasarkan Absensi'
-                if (method === 'Berdasarkan Lembur' || method === 'Berdasarkan Absensi') {
+                if (method === 'Berdasarkan Lembur' || method === 'Berdasarkan Absensi' || method === 'Berdasarkan Jam Kerja') {
                     salaryConditionContainer.classList.remove('hidden');
                 } else {
                     salaryConditionContainer.classList.add('hidden');
@@ -7864,7 +7866,7 @@
             // 4a. Ambil SEMUA data absensi dalam rentang waktu
             const { data: allAttendance, error: attError } = await _supabase
                 .from('attendance')
-                .select('user_id, attendance_status, created_at') // (REVISI: Ambil created_at)
+                .select('user_id, attendance_status, created_at, clock_in, clock_out') // (REVISI: Ambil created_at & jam)
                 .in('user_id', employeeIds)
                 .gte('created_at', startAttendanceISO)
                 .lt('created_at', endAttendanceISO);
@@ -7880,7 +7882,7 @@
                 allAttendance.forEach(att => {
                     // Konversi UTC ke tanggal lokal yang benar
                     const dateKey = getTodayDateString(new Date(att.created_at)); 
-                    attendanceLookupMap.set(`${att.user_id}|${dateKey}`, att.attendance_status);
+                    attendanceLookupMap.set(`${att.user_id}|${dateKey}`, att); // Simpan object lengkap
                 });
             }
 
@@ -7952,9 +7954,12 @@
             for (const employee of employees) {
                 try {
                     let grossSalary = 0;
+                    let basicSalary = 0; // Variabel untuk menyimpan Gaji Pokok
                     let salaryDetails = {};
                     let totalDeductions = 0;
                     let deductionDetails = {};
+                    let totalWorkingHours = 0; // Variabel untuk total jam kerja
+                    let ignoreDeductions = false; // Flag untuk mengabaikan potongan
 
                     // (REVISI) Ambil data lembur
                     const employeeOvertimeHours = overtimeMap.get(employee.id) || 0;
@@ -7976,10 +7981,15 @@
                         let status = 'Alpa'; // Status default
                         
                         // 1. Cek di Peta Absensi (Lookup Map)
-                        const attStatus = attendanceLookupMap.get(`${employee.id}|${dateKey}`);
+                        const attData = attendanceLookupMap.get(`${employee.id}|${dateKey}`);
                         
-                        if (attStatus) {
-                            status = attStatus; // 'Hadir', 'Terlambat', 'Izin / Cuti'
+                        if (attData) {
+                            status = attData.attendance_status; // 'Hadir', 'Terlambat', 'Izin / Cuti'
+                            // Hitung Jam Kerja jika Hadir/Terlambat
+                            if ((status === 'Hadir' || status === 'Terlambat') && attData.clock_in && attData.clock_out) {
+                                const duration = (new Date(attData.clock_out) - new Date(attData.clock_in)) / (1000 * 60 * 60);
+                                if (duration > 0) totalWorkingHours += duration;
+                            }
                         } else {
                             // 2. Tidak ada data, cek apakah hari libur/shift
                             const schedule = employee.workhours?.schedule;
@@ -8028,13 +8038,23 @@
                             const hadirs = employeeAttendance.filter(s => s === 'Hadir').length;
                             calculatedAmount = hadirs * componentRate; // Cth: Bonus per kehadiran
                         }
+                        else if (componentMethod === 'Berdasarkan Jam Kerja') {
+                            // (LOGIKA BARU) Hitung berdasarkan total jam kerja
+                            calculatedAmount = totalWorkingHours * componentRate;
+                            ignoreDeductions = true; // Aktifkan flag abaikan potongan
+                        }
+                        
+                        // Cek apakah komponen ini adalah Gaji Pokok (Case insensitive)
+                        if (componentName.toLowerCase() === 'gaji pokok') {
+                            basicSalary = calculatedAmount;
+                        }
                         
                         salaryDetails[componentName] = calculatedAmount;
                         grossSalary += calculatedAmount;
                     }
 
-                    // 5c. Hitung POTONGAN (Deductions)
-                    if(allDeductionRules) {
+                    // 5c. Hitung POTONGAN (Deductions) - Hanya jika ignoreDeductions FALSE
+                    if(allDeductionRules && !ignoreDeductions) {
                         for (const rule of allDeductionRules) {
                             const componentName = rule.name;
                             const componentMethod = rule.method;
@@ -8044,7 +8064,17 @@
                             if (componentMethod === 'Nominal Tetap') {
                                 calculatedAmount = componentRate;
                             } else if (componentMethod === 'Persentase') {
-                                calculatedAmount = (grossSalary * componentRate) / 100;
+                                // Menggunakan basicSalary (Gaji Pokok) sebagai dasar perhitungan persentase
+                                // REVISI: Dukung persentase per kejadian (jika ada trigger)
+                                const triggerStatus = rule.condition_rule?.trigger_status;
+                                let multiplier = 1;
+                                
+                                if (triggerStatus) {
+                                    // Jika ada trigger (misal: Terlambat), multiplier = jumlah kejadian
+                                    const count = employeeAttendance.filter(s => s === triggerStatus).length;
+                                    multiplier = count;
+                                }
+                                calculatedAmount = ((basicSalary * componentRate) / 100) * multiplier;
                             } else if (componentMethod === 'Berdasarkan Absensi') {
                                 // (Logika ini sekarang berfungsi)
                                 const triggerStatus = rule.condition_rule?.trigger_status; // "Alpa"
@@ -8063,7 +8093,7 @@
                     }
 
                     // 5d. Hitung Potongan Softloan (BARU)
-                    if (activeSoftloans) {
+                    if (activeSoftloans && !ignoreDeductions) {
                         // Cari softloan milik karyawan ini
                         const empLoans = activeSoftloans.filter(l => l.user_id === employee.id);
                         
@@ -8087,6 +8117,18 @@
 
                     // 5d. Kalkulasi Final
                     const netPay = grossSalary - totalDeductions;
+
+                    // (BARU) Cek Validasi: Jangan timpa data yang sudah 'Paid'
+                    const { data: existingPayroll } = await _supabase
+                        .from('payroll')
+                        .select('status')
+                        .eq('user_id', employee.id)
+                        .eq('pay_period_month', payPeriodMonth)
+                        .maybeSingle();
+
+                    if (existingPayroll && existingPayroll.status === 'Paid') {
+                        throw new Error("Gaji periode ini sudah berstatus 'Paid' (Lunas) dan terkunci.");
+                    }
 
                     // 5e. Siapkan Payload untuk Disimpan
                     const payrollPayload = {
